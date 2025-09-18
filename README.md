@@ -5,10 +5,9 @@
 * **Nome do projeto:** Banho e Tosa
 * **Objetivo:** Criar um sistema para gerenciar clientes, animais e pacotes de banho, com possibilidade de integração futura com SimplesVet e envio de mensagens automatizadas.
 * **Tecnologias:**
-
   * **Banco de dados:** PostgreSQL
   * **Backend:** Java (Spring Boot)
-  * **Frontend:** React + Tailwind
+  * **Frontend:** Vue 3 + Tailwind CSS
 
 ## 2️⃣ Banco de dados
 
@@ -17,7 +16,7 @@
 * **Host:** localhost
 * **Porta:** 5432
 * **Usuário:** postgres
-* **Senha:** \[sua senha]
+* **Senha:** [sua senha]
 
 ## 3️⃣ Observações importantes
 

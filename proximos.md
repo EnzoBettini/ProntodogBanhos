@@ -19,23 +19,34 @@
   - `/animal_servico` - CRUD
 - Permitir manipulação de dados via backend.
 
-## 4️⃣ Escolher e Criar Front-End
-- Escolher framework (React, Angular ou Vue).
-- Criar páginas básicas:
-  - Página de clientes
-  - Página de animais do cliente
-  - Página de registro de serviços
-- Consumir APIs do backend para mostrar e inserir dados.
+## 4️⃣ Criar o Front-End em Vue 3 + Tailwind
+- Iniciar projeto Vue 3 com Vite:
+  ```bash
+  npm create vite@latest banhoetosa-frontend --template vue
+  cd banhoetosa-frontend
+  npm install
+````
+
+* Instalar e configurar Tailwind CSS.
+* Criar páginas básicas:
+
+  * Página de clientes
+  * Página de animais do cliente
+  * Página de registro de serviços
+* Consumir APIs do backend para mostrar e inserir dados.
 
 ## 5️⃣ Funcionalidades Extras
-- Automatizar envio de mensagens WhatsApp (via API externa, como Twilio).
-- Relatórios:
-  - Quantos banhos cada animal já fez
-  - Animais sem serviços
-  - Histórico de serviços por cliente
-- Planejar integração futura com SimplesVet.
+
+* Automatizar envio de mensagens WhatsApp (via API externa, como Twilio).
+* Relatórios:
+
+  * Quantos banhos cada animal já fez
+  * Animais sem serviços
+  * Histórico de serviços por cliente
+* Planejar integração futura com SimplesVet.
 
 ## 6️⃣ Testes e Versionamento
-- Testar todas as queries via backend e front-end.
-- Criar backups do banco regularmente.
-- Guardar scripts `.sql` para recriar o banco em outro PC.
+
+* Testar todas as queries via backend e front-end.
+* Criar backups do banco regularmente.
+* Guardar scripts `.sql` para recriar o banco em outro PC.
