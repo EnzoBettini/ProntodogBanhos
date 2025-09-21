@@ -47,3 +47,16 @@ create table banhoetosa.email_clientes (
     email varchar not null,
     constraint fk_cliente_id_email foreign key (cliente_id) references banhoetosa.clientes (id)
 );
+
+create table banhoetosa.usuarios (
+    id bigserial primary key,
+    nome varchar(100) not null,
+    email varchar(100) not null unique,
+    senha varchar(255) not null,
+    role varchar(50) not null
+);
+
+ALTER TABLE banhoetosa.animal_servico ADD COLUMN usuario_id BIGINT;
+
+ALTER TABLE banhoetosa.animal_servico
+ADD CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES banhoetosa.usuarios (id);

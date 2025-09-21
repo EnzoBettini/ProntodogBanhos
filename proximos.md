@@ -1,52 +1,68 @@
-# Próximos Passos - Projeto Banho & Tosa
+
+# Próximos Passos - Projeto Banho & Tosa (atualizado)
 
 ## 1️⃣ Refinar e Organizar o Banco
-- Revisar se todas as colunas estão corretas e necessárias.
-- Adicionar constraints extras se necessário (`NOT NULL`, checks, etc.).
-- Documentar relacionamentos entre tabelas (clientes, animais, serviços, animal_servico, telefones, emails).
 
-## 2️⃣ Conectar Backend Java ao Banco
-- Criar projeto Java (Spring Boot ou JDBC puro).
-- Configurar conexão com PostgreSQL local:
-  `jdbc:postgresql://localhost:5432/banhoetosa`
-- Testar conexão com queries simples via Java.
+* Revisar todas as tabelas e colunas (clientes, animais, serviços, animal\_servico, telefones, emails).
+* Adicionar constraints (`NOT NULL`, checks) se necessário.
+* Documentar relacionamentos entre tabelas.
 
-## 3️⃣ Criar APIs para o Front-End
-- Criar endpoints REST básicos:
-  - `/clientes` - CRUD
-  - `/animais` - CRUD
-  - `/servicos` - CRUD
-  - `/animal_servico` - CRUD
-- Permitir manipulação de dados via backend.
+## 2️⃣ Backend Java com Spring Boot
 
-## 4️⃣ Criar o Front-End em Vue 3 + Tailwind
-- Iniciar projeto Vue 3 com Vite:
+* Projeto já criado.
+* Conexão com PostgreSQL local configurada.
+* Testar queries simples via Java para confirmar comunicação com o banco.
+
+## 3️⃣ Repositórios JPA
+
+
+  * ClienteRepository
+  * TelefoneRepository
+  * EmailRepository
+  * AnimalRepository
+  * ServicoRepository
+  * AnimalServicoRepository
+  * UsuarioRepository
+
+
+## 4️⃣ Service Layer (próximo passo)
+
+* Criar classes de serviço para lógica de negócios:
+
+  * Cadastrar cliente com telefones e emails.
+  * Registrar animal e vincular ao cliente.
+  * Registrar serviços feitos por animais com usuário responsável.
+  * Consultar histórico de serviços por animal ou cliente.
+* Por enquanto, focar em apenas **um teste de inserção** para validar se o fluxo funciona.
+
+## 5️⃣ Criar APIs REST
+
+* Criar endpoints básicos para cada entidade:
+
+  * GET, POST, PUT, DELETE
+  * Ex.: `/clientes`, `/animais`, `/servicos`, `/animal_servico`
+* Consumir dados via backend (testar com Postman ou Insomnia).
+
+## 6️⃣ Front-End em Vue 3 + Tailwind
+
+* Iniciar projeto Vue 3 com Vite (se ainda não feito):
+
   ```bash
   npm create vite@latest banhoetosa-frontend --template vue
   cd banhoetosa-frontend
   npm install
-````
+  ```
+* Configurar Tailwind CSS.
+* Criar páginas básicas: clientes, animais, registro de serviços.
+* Consumir APIs do backend.
 
-* Instalar e configurar Tailwind CSS.
-* Criar páginas básicas:
+## 7️⃣ Funcionalidades Extras
 
-  * Página de clientes
-  * Página de animais do cliente
-  * Página de registro de serviços
-* Consumir APIs do backend para mostrar e inserir dados.
+* Automatizar envio de mensagens (opcional por enquanto).
+* Relatórios: banhos feitos, animais sem serviços, histórico de serviços por cliente.
 
-## 5️⃣ Funcionalidades Extras
+## 8️⃣ Testes e Versionamento
 
-* Automatizar envio de mensagens WhatsApp (via API externa, como Twilio).
-* Relatórios:
-
-  * Quantos banhos cada animal já fez
-  * Animais sem serviços
-  * Histórico de serviços por cliente
-* Planejar integração futura com SimplesVet.
-
-## 6️⃣ Testes e Versionamento
-
-* Testar todas as queries via backend e front-end.
-* Criar backups do banco regularmente.
-* Guardar scripts `.sql` para recriar o banco em outro PC.
+* Testar CRUD de todas as entidades via backend e frontend.
+* Criar backups do banco.
+* Guardar scripts `.sql` para recriar o banco.

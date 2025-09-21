@@ -27,6 +27,10 @@ public class AnimalServico {
     @JoinColumn(name="servico_id", nullable = false)
     private Servico servico;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="usuario_id", nullable = false)
+    private Usuario usuario;
+
 
     public AnimalServico() {}
 
@@ -69,4 +73,13 @@ public class AnimalServico {
     public void setServico(Servico servico) {
         this.servico = servico;
     }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
 }
