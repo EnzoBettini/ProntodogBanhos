@@ -1,11 +1,17 @@
 package backend.prontodogbanho.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
 @Table(name="servicos")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Servico {
 
     @Id
@@ -27,54 +33,4 @@ public class Servico {
 
     @OneToMany(mappedBy = "servico", cascade = CascadeType.ALL)
     private List<AnimalServico> servicosAnimais;
-
-    public Servico() {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public Double getValor() {
-        return valor;
-    }
-
-    public void setValor(Double valor) {
-        this.valor = valor;
-    }
-
-    public List<AnimalServico> getServicosAnimais() {
-        return servicosAnimais;
-    }
-
-    public void setServicosAnimais(List<AnimalServico> servicosAnimais) {
-        this.servicosAnimais = servicosAnimais;
-    }
 }

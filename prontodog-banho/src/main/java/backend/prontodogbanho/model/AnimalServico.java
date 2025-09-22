@@ -1,11 +1,17 @@
 package backend.prontodogbanho.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name="animal_servico")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AnimalServico {
 
     @Id
@@ -30,56 +36,4 @@ public class AnimalServico {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="usuario_id", nullable = false)
     private Usuario usuario;
-
-
-    public AnimalServico() {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDate getDataServico() {
-        return dataServico;
-    }
-
-    public void setDataServico(LocalDate dataServico) {
-        this.dataServico = dataServico;
-    }
-
-    public Integer getBanhosUsados() {
-        return banhosUsados;
-    }
-
-    public void setBanhosUsados(Integer banhosUsados) {
-        this.banhosUsados = banhosUsados;
-    }
-
-    public Animal getAnimal() {
-        return animal;
-    }
-
-    public void setAnimal(Animal animal) {
-        this.animal = animal;
-    }
-
-    public Servico getServico() {
-        return servico;
-    }
-
-    public void setServico(Servico servico) {
-        this.servico = servico;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
 }

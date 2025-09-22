@@ -1,9 +1,15 @@
 package backend.prontodogbanho.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="telefones_clientes")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Telefone {
 
     @Id
@@ -17,30 +23,4 @@ public class Telefone {
 
     @Column(name="telefone", nullable=false)
     private String telefone;
-
-    public Telefone() {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public String getTelefone() {
-        return telefone;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
 }

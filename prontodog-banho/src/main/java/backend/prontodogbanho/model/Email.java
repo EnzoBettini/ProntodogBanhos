@@ -1,9 +1,15 @@
 package backend.prontodogbanho.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="email_clientes")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Email {
 
     @Id
@@ -17,30 +23,4 @@ public class Email {
 
     @Column(name="email", nullable=false)
     private String email;
-
-    public Email() {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 }
