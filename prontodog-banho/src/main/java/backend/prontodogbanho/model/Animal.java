@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Table(name="animais")
+@Table(name="animais", schema="banhoetosa")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,7 +35,7 @@ public class Animal {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="cliente_id", nullable = false)
-    @JsonManagedReference
+    @JsonBackReference
     private Cliente cliente;
 
     @OneToMany(mappedBy="animal", cascade=CascadeType.ALL)

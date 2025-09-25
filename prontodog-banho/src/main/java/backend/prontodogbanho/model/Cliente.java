@@ -7,7 +7,7 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name="clientes")
+@Table(name="clientes", schema="banhoetosa")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

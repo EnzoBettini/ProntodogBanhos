@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="email_clientes")
+@Table(name="email_clientes", schema="banhoetosa")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +21,7 @@ public class Email {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="cliente_id", nullable=false)
-    @JsonManagedReference
+    @JsonBackReference
     private Cliente cliente;
 
     @Column(name="email", nullable=false)
