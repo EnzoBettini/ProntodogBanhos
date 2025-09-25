@@ -20,6 +20,7 @@ public class ServicoService {
     public List<Servico> listarTodos() {
         return servicoRepository.findAll();
     }
+
     public Optional<Servico> buscarPorId(Long id) {
         return servicoRepository.findById(id);
     }

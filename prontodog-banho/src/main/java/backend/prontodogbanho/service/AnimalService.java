@@ -29,4 +29,15 @@ public class AnimalService {
     public void deletar(Long id) {
         animalRespository.deleteById(id);
     }
+
+    public Animal atualizarNome(Long id, Animal novosDados) {
+        Optional<Animal> animalOptional = this.animalRespository.findById(id);
+        if (animalOptional.isPresent()) {
+            Animal animalExistente = animalOptional.get();
+            animalExistente.setNome(novosDados.getNome());
+            return animalRespository.save(animalExistente);
+        } else {
+            throw new RuntimeException("Animal não encontrado com id: " + id);
+        }
+    }
 }

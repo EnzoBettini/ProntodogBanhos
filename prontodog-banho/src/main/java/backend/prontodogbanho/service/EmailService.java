@@ -31,4 +31,15 @@ public class EmailService {
     public void deletar(Long id) {
         emailRepository.deleteById(id);
     }
+
+    public Email atualizarEmail(Long id, Email novosDados) {
+        Optional<Email> emailOptional = emailRepository.findById(id);
+        if (emailOptional.isPresent()) {
+            Email emailExistente = emailOptional.get();
+            emailExistente.setEmail(novosDados.getEmail());
+            return emailRepository.save(emailExistente);
+        } else {
+            throw new RuntimeException("Email não encontrado com id: " + id);
+        }
+    }
 }

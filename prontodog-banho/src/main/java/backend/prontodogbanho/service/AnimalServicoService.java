@@ -2,6 +2,7 @@ package backend.prontodogbanho.service;
 
 
 import backend.prontodogbanho.model.AnimalServico;
+import backend.prontodogbanho.model.AnimalServico;
 import backend.prontodogbanho.repository.AnimalServicoRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +26,29 @@ public class AnimalServicoService {
         return animalServicoRepository.findById(id);
     }
 
-    public AnimalServico salvar(AnimalServico animal) {
-        return animalServicoRepository.save(animal);
+    public AnimalServico salvar(AnimalServico animalServico) {
+        return animalServicoRepository.save(animalServico);
     }
 
     public void deletar(Long id) {
         animalServicoRepository.deleteById(id);
+    }
+
+    public AnimalServico atualizarTudo(Long id, AnimalServico novosDados) {
+        Optional<AnimalServico> animalServicoOptional = animalServicoRepository.findById(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico animalServicoExistente = animalServicoOptional.get();
+
+            animalServicoExistente.setDataServico(novosDados.getDataServico());
+            animalServicoExistente.setBanhosUsados(novosDados.getBanhosUsados());
+            animalServicoExistente.setAnimal(novosDados.getAnimal());
+            animalServicoExistente.setServico(novosDados.getServico());
+            animalServicoExistente.setUsuario(novosDados.getUsuario());
+
+            return animalServicoRepository.save(animalServicoExistente);
+        } else {
+            throw new RuntimeException("AnimalServico não encontrado com id: " + id);
+        }
     }
 }

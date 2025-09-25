@@ -1,5 +1,6 @@
 package backend.prontodogbanho.service;
 
+import backend.prontodogbanho.model.AnimalServico;
 import backend.prontodogbanho.model.Cliente;
 import backend.prontodogbanho.repository.ClienteRespository;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,24 @@ public class ClienteService {
 
     public void deletar(Long id) {
         clienteRespository.deleteById(id);
+    }
+
+    public Cliente atualizarTudo(Long id, Cliente novosDados) {
+        Optional<Cliente> clienteOptional = this.clienteRespository.findById(id);
+
+        if (clienteOptional.isPresent()) {
+            Cliente clienteExistente = clienteOptional.get();
+
+            clienteExistente.setNomeCompleto(novosDados.getNomeCompleto());
+            clienteExistente.setCodigoSimplesVet(novosDados.getCodigoSimplesVet());
+            clienteExistente.setCpf(novosDados.getCpf());
+            clienteExistente.setTelefones(novosDados.getTelefones());
+            clienteExistente.setEmails(novosDados.getEmails());
+            clienteExistente.setEmails(novosDados.getEmails());
+
+            return clienteRespository.save(clienteExistente);
+        } else {
+            throw new RuntimeException("AnimalServico não encontrado com id: " + id);
+        }
     }
 }
