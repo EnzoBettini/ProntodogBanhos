@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,7 @@ public class Cliente {
     @Column(name="id")
     private Long id;
 
-    @Column(name="codigo_clientes_sistema", unique=true, nullable=false)
+    @Column(name="codigo_cliente_sistema", unique=true, nullable=false)
     private Long codigoClienteSistema;
 
     @Column(name="nome_completo", nullable=false)
@@ -30,11 +31,14 @@ public class Cliente {
     private Long codigoSimplesVet;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
+    @JsonManagedReference
     private List<Telefone> telefones;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
+    @JsonManagedReference
     private List<Email> emails;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
+    @JsonManagedReference
     private List<Animal> animais;
 }

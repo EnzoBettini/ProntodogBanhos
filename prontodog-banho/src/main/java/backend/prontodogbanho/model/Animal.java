@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class Animal {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="cliente_id", nullable = false)
+    @JsonManagedReference
     private Cliente cliente;
 
     @OneToMany(mappedBy="animal", cascade=CascadeType.ALL)

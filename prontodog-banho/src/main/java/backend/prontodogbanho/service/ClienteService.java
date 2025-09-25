@@ -1,8 +1,7 @@
 package backend.prontodogbanho.service;
 
-import backend.prontodogbanho.model.AnimalServico;
 import backend.prontodogbanho.model.Cliente;
-import backend.prontodogbanho.repository.ClienteRespository;
+import backend.prontodogbanho.repository.ClienteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,30 +9,30 @@ import java.util.Optional;
 
 @Service
 public class ClienteService {
-    private final ClienteRespository clienteRespository;
+    private final ClienteRepository clienteRepository;
 
-    public ClienteService(ClienteRespository clienteRespository) {
-        this.clienteRespository = clienteRespository;
+    public ClienteService(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
     }
 
     public List<Cliente> listarTodos() {
-        return clienteRespository.findAll();
+        return clienteRepository.findAll();
     }
 
     public Optional<Cliente> buscarPorId(Long id) {
-        return clienteRespository.findById(id);
+        return clienteRepository.findById(id);
     }
 
     public Cliente salvar(Cliente cliente) {
-        return clienteRespository.save(cliente);
+        return clienteRepository.save(cliente);
     }
 
     public void deletar(Long id) {
-        clienteRespository.deleteById(id);
+        clienteRepository.deleteById(id);
     }
 
     public Cliente atualizarTudo(Long id, Cliente novosDados) {
-        Optional<Cliente> clienteOptional = this.clienteRespository.findById(id);
+        Optional<Cliente> clienteOptional = this.clienteRepository.findById(id);
 
         if (clienteOptional.isPresent()) {
             Cliente clienteExistente = clienteOptional.get();
@@ -45,7 +44,7 @@ public class ClienteService {
             clienteExistente.setEmails(novosDados.getEmails());
             clienteExistente.setEmails(novosDados.getEmails());
 
-            return clienteRespository.save(clienteExistente);
+            return clienteRepository.save(clienteExistente);
         } else {
             throw new RuntimeException("AnimalServico não encontrado com id: " + id);
         }
