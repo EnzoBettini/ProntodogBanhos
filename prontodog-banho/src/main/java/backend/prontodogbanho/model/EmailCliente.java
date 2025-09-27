@@ -1,7 +1,6 @@
 package backend.prontodogbanho.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +19,7 @@ public class Email {
     private  Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="cliente_id", nullable=false)
+    @JoinColumn(name="cliente_id")
     @JsonBackReference("cliente-email")
     private Cliente cliente;
 
