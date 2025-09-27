@@ -42,9 +42,15 @@ public class AnimalController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/atualizarnome/{id}")
     public ResponseEntity<Animal> atualizarNomeAnimal(@PathVariable Long id, @RequestBody Animal novoAnimal) {
         Animal animalAtualizado = this.animalService.atualizarNome(id, novoAnimal);
+        return ResponseEntity.ok(animalAtualizado);
+    }
+
+    @PutMapping("/atualizarcodigosimplesvet/{id}")
+    public ResponseEntity<Animal> atualizarCodigoSimplesVet(@PathVariable Long id, @RequestBody Animal novoAnimal) {
+        Animal animalAtualizado = this.animalService.atualizarCodigoSimplesVet(id, novoAnimal);
         return ResponseEntity.ok(animalAtualizado);
     }
 }

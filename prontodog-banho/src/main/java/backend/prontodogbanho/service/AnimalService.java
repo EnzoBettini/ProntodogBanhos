@@ -36,6 +36,7 @@ public class AnimalService {
         animalRepository.deleteById(id);
     }
 
+    @Transactional
     public Animal atualizarNome(Long id, Animal novosDados) {
         Optional<Animal> animalOptional = this.animalRepository.findById(id);
         if (animalOptional.isPresent()) {
@@ -44,6 +45,18 @@ public class AnimalService {
             return animalRepository.save(animalExistente);
         } else {
             throw new RuntimeException("Animal não encontrado com id: " + id);
+        }
+    }
+
+    @Transactional
+    public Animal atualizarCodigoSimplesVet(Long id, Animal novosDados) {
+        Optional<Animal> animalOptional = this.animalRepository.findById(id);
+        if (animalOptional.isPresent()) {
+            Animal animalExistente = animalOptional.get();
+            animalExistente.setCodigoSimplesVet(novosDados.getCodigoSimplesVet());
+            return animalRepository.save(animalExistente);
+        } else {
+            throw new RuntimeException("Animal não encontrado");
         }
     }
 }
