@@ -151,3 +151,7 @@ SET
     banhos_usados = banhos_usados + 1
 WHERE
     id = 1;
+
+SELECT *
+FROM clientes c
+    LEFT JOIN animais a ON c.id = a.cliente_id;

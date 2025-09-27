@@ -2,6 +2,7 @@ package backend.prontodogbanho.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class Cliente {
     private String nomeCompleto;
 
     @Column(name="cpf", unique=true)
+    @Pattern(regexp="^\\d{11}$", message="CPF inválido")
     private String cpf;
 
     @Column(name="codigo_simplesvet", unique=true)
@@ -36,7 +38,7 @@ public class Cliente {
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
     @JsonManagedReference("cliente-email")
-    private List<Email> emails;
+    private List<EmailCliente> emailClientes;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
     @JsonManagedReference("cliente-animal")

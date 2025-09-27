@@ -1,43 +1,43 @@
 package backend.prontodogbanho.service;
 
-import backend.prontodogbanho.model.Email;
-import backend.prontodogbanho.repository.EmailRepository;
+import backend.prontodogbanho.model.EmailCliente;
+import backend.prontodogbanho.repository.EmailClienteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EmailService {
+public class EmailClienteService {
 
-    private EmailRepository emailRepository;
+    private EmailClienteRepository emailClienteRepository;
 
-    public EmailService(EmailRepository emailRepository) {
-        this.emailRepository = emailRepository;
+    public EmailClienteService(EmailClienteRepository emailClienteRepository) {
+        this.emailClienteRepository = emailClienteRepository;
     }
 
-    public List<Email> listarTodos() {
-        return emailRepository.findAll();
+    public List<EmailCliente> listarTodos() {
+        return emailClienteRepository.findAll();
     }
 
-    public Optional<Email> buscarPorId(Long id) {
-        return emailRepository.findById(id);
+    public Optional<EmailCliente> buscarPorId(Long id) {
+        return emailClienteRepository.findById(id);
     }
 
-    public Email salvar(Email email) {
-        return emailRepository.save(email);
+    public EmailCliente salvar(EmailCliente emailCliente) {
+        return emailClienteRepository.save(emailCliente);
     }
 
     public void deletar(Long id) {
-        emailRepository.deleteById(id);
+        emailClienteRepository.deleteById(id);
     }
 
-    public Email atualizarEmail(Long id, Email novosDados) {
-        Optional<Email> emailOptional = emailRepository.findById(id);
+    public EmailCliente atualizarEmail(Long id, EmailCliente novosDados) {
+        Optional<EmailCliente> emailOptional = emailClienteRepository.findById(id);
         if (emailOptional.isPresent()) {
-            Email emailExistente = emailOptional.get();
-            emailExistente.setEmail(novosDados.getEmail());
-            return emailRepository.save(emailExistente);
+            EmailCliente emailClienteExistente = emailOptional.get();
+            emailClienteExistente.setEmail(novosDados.getEmail());
+            return emailClienteRepository.save(emailClienteExistente);
         } else {
             throw new RuntimeException("Email não encontrado com id: " + id);
         }

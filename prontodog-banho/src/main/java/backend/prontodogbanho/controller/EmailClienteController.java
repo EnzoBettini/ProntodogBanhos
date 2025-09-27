@@ -1,7 +1,7 @@
 package backend.prontodogbanho.controller;
 
-import backend.prontodogbanho.model.Email;
-import backend.prontodogbanho.service.EmailService;
+import backend.prontodogbanho.model.EmailCliente;
+import backend.prontodogbanho.service.EmailClienteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,41 +10,41 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/email")
-public class EmailController {
+public class EmailClienteController {
 
-    private final EmailService emailService;
+    private final EmailClienteService emailClienteService;
 
-    public EmailController(EmailService emailService) {
-        this.emailService = emailService;
+    public EmailClienteController(EmailClienteService emailClienteService) {
+        this.emailClienteService = emailClienteService;
     }
 
     @GetMapping
-    public List<Email> listarTodos() {
-        return this.emailService.listarTodos();
+    public List<EmailCliente> listarTodos() {
+        return this.emailClienteService.listarTodos();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Email> buscarPorId(@PathVariable Long id) {
-        Optional<Email> email = this.emailService.buscarPorId(id);
+    public ResponseEntity<EmailCliente> buscarPorId(@PathVariable Long id) {
+        Optional<EmailCliente> email = this.emailClienteService.buscarPorId(id);
         return email.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Email> criar(@RequestBody Email email) {
-        Email novoEmail = this.emailService.salvar(email);
-        return ResponseEntity.ok(novoEmail);
+    public ResponseEntity<EmailCliente> criar(@RequestBody EmailCliente emailCliente) {
+        EmailCliente novoEmailCliente = this.emailClienteService.salvar(emailCliente);
+        return ResponseEntity.ok(novoEmailCliente);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        this.emailService.deletar(id);
+        this.emailClienteService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Email> atualizarEmail(@PathVariable Long id, @RequestBody Email novosDados) {
-        Email emailAtualizado = this.emailService.atualizarEmail(id, novosDados);
-        return ResponseEntity.ok(emailAtualizado);
+    public ResponseEntity<EmailCliente> atualizarEmail(@PathVariable Long id, @RequestBody EmailCliente novosDados) {
+        EmailCliente emailClienteAtualizado = this.emailClienteService.atualizarEmail(id, novosDados);
+        return ResponseEntity.ok(emailClienteAtualizado);
     }
 }

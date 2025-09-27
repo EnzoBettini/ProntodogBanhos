@@ -60,3 +60,8 @@ ALTER TABLE banhoetosa.animal_servico ADD COLUMN usuario_id BIGINT;
 
 ALTER TABLE banhoetosa.animal_servico
 ADD CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES banhoetosa.usuarios (id);
+
+ALTER TABLE banhoetosa.animais
+ADD COLUMN status VARCHAR(20) DEFAULT 'vivo' NOT NULL CHECK (
+    status IN ('vivo', 'falecido')
+);

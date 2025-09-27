@@ -28,7 +28,7 @@ public class Animal {
     private String nome;
 
     @Column(name="codigo_simplesvet", unique = true)
-    private Long codigoSimpleSvet;
+    private Long codigoSimplesVet;
 
     @Column(name="tipo")
     private String tipo;
@@ -41,11 +41,4 @@ public class Animal {
     @OneToMany(mappedBy="animal", cascade=CascadeType.ALL)
     @JsonManagedReference("animal-servico")
     private List<AnimalServico> servicos;
-
-    @PrePersist
-    public void gerarCodigo() {
-        if (this.codigoAnimalSistema == null) {
-            this.codigoAnimalSistema = System.currentTimeMillis(); // ou algum gerador único
-        }
-    }
 }

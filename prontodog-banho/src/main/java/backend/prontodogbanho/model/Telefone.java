@@ -3,6 +3,7 @@ package backend.prontodogbanho.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,5 +26,6 @@ public class Telefone {
     private Cliente cliente;
 
     @Column(name="telefone", nullable=false)
+    @Pattern(regexp="^\\d{10,11}$", message="Telefone inválido")
     private String telefone;
 }

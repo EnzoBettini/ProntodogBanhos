@@ -1,7 +1,9 @@
 package backend.prontodogbanho.controller;
 
 import backend.prontodogbanho.model.Cliente;
+import backend.prontodogbanho.model.EmailCliente;
 import backend.prontodogbanho.service.ClienteService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +32,7 @@ public class ClienteController {
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Cliente> adicionarCliente(@RequestBody Cliente novoCliente) {
+    public ResponseEntity<Cliente> adicionarCliente(@RequestBody @Valid Cliente novoCliente) {
         Cliente novoClienteResponse = this.clienteService.salvar(novoCliente);
         return ResponseEntity.ok(novoClienteResponse);
     }
@@ -43,7 +45,13 @@ public class ClienteController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> atualizarCliente(@PathVariable Long id, @RequestBody Cliente novosDadosCliente) {
-        Cliente novoCliente = this.clienteService.atualizarTudo(id, novosDadosCliente);
+        Cliente novoCliente = this.clienteService.atualizarDados(id, novosDadosCliente);
         return ResponseEntity.ok(novoCliente);
+    }
+
+    @PutMapping("/{id}/atualizaremail")
+    public ResponseEntity<List<EmailCliente>> atualizarEmail(@PathVariable Long id,@Valid @RequestBody EmailCliente novosDadosEmailCliente) {
+        List<EmailCliente> emailsAtualizados = this.clienteService.atualizarEmail(id, novosDadosEmailCliente);
+        return ResponseEntity.ok(emailsAtualizados);
     }
 }
