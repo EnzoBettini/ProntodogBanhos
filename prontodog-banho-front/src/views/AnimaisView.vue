@@ -1,0 +1,9 @@
+<script setup lang="ts">
+</script>
+
+<template>
+  <div>
+    <h1>Gestão de Animais</h1>
+    <p>Aqui você vai gerenciar os pets.</p>
+  </div>
+</template>
