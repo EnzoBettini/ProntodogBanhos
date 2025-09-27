@@ -2,6 +2,7 @@ package backend.prontodogbanho.service;
 
 import backend.prontodogbanho.model.EmailCliente;
 import backend.prontodogbanho.repository.EmailClienteRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class EmailClienteService {
         return emailClienteRepository.findById(id);
     }
 
+    @Transactional
     public EmailCliente salvar(EmailCliente emailCliente) {
         return emailClienteRepository.save(emailCliente);
     }
@@ -32,6 +34,7 @@ public class EmailClienteService {
         emailClienteRepository.deleteById(id);
     }
 
+    @Transactional
     public EmailCliente atualizarEmail(Long id, EmailCliente novosDados) {
         Optional<EmailCliente> emailOptional = emailClienteRepository.findById(id);
         if (emailOptional.isPresent()) {

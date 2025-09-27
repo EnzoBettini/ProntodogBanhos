@@ -2,6 +2,7 @@ package backend.prontodogbanho.service;
 
 import backend.prontodogbanho.model.Animal;
 import backend.prontodogbanho.repository.AnimalRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class AnimalService {
         return animalRepository.findById(id);
     }
 
+    @Transactional
     public Animal salvar(Animal animal) {
         if (animal.getCodigoAnimalSistema() == null) {
             Long maxCodigo = animalRepository.findMaxCodigoAnimalSistema();

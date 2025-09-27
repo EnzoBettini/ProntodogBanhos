@@ -3,9 +3,12 @@ package backend.prontodogbanho.service;
 import backend.prontodogbanho.model.Animal;
 import backend.prontodogbanho.model.Cliente;
 import backend.prontodogbanho.model.EmailCliente;
+import backend.prontodogbanho.model.Telefone;
 import backend.prontodogbanho.repository.AnimalRepository;
 import backend.prontodogbanho.repository.ClienteRepository;
 import backend.prontodogbanho.repository.EmailClienteRepository;
+import backend.prontodogbanho.repository.TelefoneRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,10 +22,13 @@ public class ClienteService {
 
     private final EmailClienteRepository emailClienteRepository;
 
-    public ClienteService(ClienteRepository clienteRepository, AnimalRepository animalRepository,  EmailClienteRepository emailClienteRepository) {
+    private final TelefoneRepository telefoneRepository;
+
+    public ClienteService(ClienteRepository clienteRepository, AnimalRepository animalRepository, EmailClienteRepository emailClienteRepository, TelefoneRepository telefoneRepository) {
         this.clienteRepository = clienteRepository;
         this.animalRepository = animalRepository;
         this.emailClienteRepository = emailClienteRepository;
+        this.telefoneRepository = telefoneRepository;
     }
 
     public List<Cliente> listarTodos() {
@@ -33,14 +39,13 @@ public class ClienteService {
         return clienteRepository.findById(id);
     }
 
+    @Transactional
     public Cliente salvar(Cliente cliente) {
-        // Gera código do cliente se estiver nulo
         if (cliente.getCodigoClienteSistema() == null) {
             Long maxCodigo =  this.clienteRepository.findMaxCodigoClienteSistema();
             cliente.setCodigoClienteSistema(maxCodigo != null ? maxCodigo + 1 : 1L);
         }
 
-        // Trata os animais
         if (cliente.getAnimais() != null) {
             for (Animal animal : cliente.getAnimais()) {
                 if (animal.getCodigoAnimalSistema() == null) {
@@ -87,26 +92,48 @@ public class ClienteService {
     }
 
     public List<EmailCliente> atualizarEmail(Long idCliente, EmailCliente novosEmailCliente) {
-        Cliente cliente = clienteRepository.findById(idCliente)
+        Cliente cliente = this.clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado com id: " + idCliente));
 
         if(novosEmailCliente.getEmail() == null || novosEmailCliente.getEmail().isEmpty()) {
             throw new RuntimeException("Não pode atualizar um email vazio");
         }
 
-        List<EmailCliente> emailClientes = emailClienteRepository.findEmailsByCliente(idCliente);
+        List<EmailCliente> emailClientes = this.emailClienteRepository.findEmailsByCliente(idCliente);
 
         if (emailClientes.isEmpty()) {
             novosEmailCliente.setCliente(cliente);
-            emailClientes.add(emailClienteRepository.save(novosEmailCliente));
+            emailClientes.add(this.emailClienteRepository.save(novosEmailCliente));
         } else {
             EmailCliente emailClienteExistente = emailClientes.getFirst();
             emailClienteExistente.setEmail(novosEmailCliente.getEmail());
-            emailClientes.set(0, emailClienteRepository.save(emailClienteExistente));
+            emailClientes.set(0, this.emailClienteRepository.save(emailClienteExistente));
         }
-
         return emailClientes;
     }
 
+    @Transactional
+    public Telefone atualizarTelefone(Long idCliente, String numeroAntigo, String numeroNovo) {
+        Cliente cliente = this.clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com id: " + idCliente));
 
+        Telefone telefoneExistente = this.telefoneRepository.findTelefonesByCliente(idCliente, numeroAntigo);
+
+        if (telefoneExistente == null) {
+            throw new RuntimeException("Telefone não encontrado para este cliente");
+        }
+
+        if (!telefoneExistente.getCliente().getId().equals(cliente.getId())) {
+            throw new RuntimeException("Telefone não pertence a este cliente");
+        }
+
+        if (numeroNovo == null || !numeroNovo.matches("\\d{10,11}")) {
+            throw new RuntimeException("Telefone inválido, deve ter 10 ou 11 dígitos");
+        }
+
+        telefoneExistente.setTelefone(numeroNovo);
+        telefoneExistente = this.telefoneRepository.save(telefoneExistente);
+
+        return telefoneExistente;
+    }
 }

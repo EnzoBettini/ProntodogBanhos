@@ -4,6 +4,7 @@ package backend.prontodogbanho.service;
 import backend.prontodogbanho.model.AnimalServico;
 import backend.prontodogbanho.model.AnimalServico;
 import backend.prontodogbanho.repository.AnimalServicoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class AnimalServicoService {
         return animalServicoRepository.findById(id);
     }
 
+    @Transactional
     public AnimalServico salvar(AnimalServico animalServico) {
         return animalServicoRepository.save(animalServico);
     }
@@ -34,6 +36,7 @@ public class AnimalServicoService {
         animalServicoRepository.deleteById(id);
     }
 
+    @Transactional
     public AnimalServico atualizarTudo(Long id, AnimalServico novosDados) {
         Optional<AnimalServico> animalServicoOptional = animalServicoRepository.findById(id);
 

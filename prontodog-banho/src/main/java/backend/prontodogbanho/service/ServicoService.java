@@ -3,6 +3,7 @@ package backend.prontodogbanho.service;
 
 import backend.prontodogbanho.model.Servico;
 import backend.prontodogbanho.repository.ServicoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class ServicoService {
         return servicoRepository.findById(id);
     }
 
+    @Transactional
     public Servico salvar(Servico servico) {
         return servicoRepository.save(servico);
     }

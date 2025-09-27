@@ -2,6 +2,7 @@ package backend.prontodogbanho.service;
 
 import backend.prontodogbanho.model.Telefone;
 import backend.prontodogbanho.repository.TelefoneRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class TelefoneService {
         return telefoneRepository.findById(id);
     }
 
+    @Transactional
     public Telefone salvar(Telefone telefone) {
         return telefoneRepository.save(telefone);
     }

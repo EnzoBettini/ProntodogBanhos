@@ -2,6 +2,7 @@ package backend.prontodogbanho.service;
 
 import backend.prontodogbanho.model.Usuario;
 import backend.prontodogbanho.repository.UsuarioRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
+    @Transactional
     public Usuario salvar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
