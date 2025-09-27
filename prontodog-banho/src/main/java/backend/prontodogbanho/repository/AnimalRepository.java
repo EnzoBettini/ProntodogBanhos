@@ -2,8 +2,14 @@ package backend.prontodogbanho.repository;
 
 import backend.prontodogbanho.model.Animal;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AnimalRepository extends JpaRepository<Animal, Long> {
+
+    @Query("SELECT MAX(a.codigoAnimalSistema) FROM Animal a")
+    Long findMaxCodigoAnimalSistema();
+
+
 }

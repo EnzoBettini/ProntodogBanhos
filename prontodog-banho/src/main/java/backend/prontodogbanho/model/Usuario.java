@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,5 +29,6 @@ public class Usuario {
     private String role;
 
     @OneToMany(mappedBy="usuario", cascade=CascadeType.ALL)
+    @JsonManagedReference("usuario-servico")
     private List<AnimalServico> animalServicos;
 }

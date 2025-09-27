@@ -21,7 +21,7 @@ public class Email {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="cliente_id", nullable=false)
-    @JsonBackReference
+    @JsonBackReference("cliente-email")
     private Cliente cliente;
 
     @Column(name="email", nullable=false)

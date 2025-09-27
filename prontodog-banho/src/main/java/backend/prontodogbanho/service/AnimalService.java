@@ -9,33 +9,37 @@ import java.util.Optional;
 
 @Service
 public class AnimalService {
-    private final AnimalRepository animalRespository;
+    private final AnimalRepository animalRepository;
 
-    public AnimalService(AnimalRepository animalRespository) {
-        this.animalRespository = animalRespository;
+    public AnimalService(AnimalRepository animalRepository) {
+        this.animalRepository = animalRepository;
     }
 
     public List<Animal> listarTodos() {
-        return animalRespository.findAll();
+        return animalRepository.findAll();
     }
     public Optional<Animal> buscarPorId(Long id) {
-        return animalRespository.findById(id);
+        return animalRepository.findById(id);
     }
 
     public Animal salvar(Animal animal) {
-        return animalRespository.save(animal);
+        if (animal.getCodigoAnimalSistema() == null) {
+            Long maxCodigo = animalRepository.findMaxCodigoAnimalSistema();
+            animal.setCodigoAnimalSistema(maxCodigo != null ? maxCodigo + 1 : 1L);
+        }
+        return animalRepository.save(animal);
     }
 
     public void deletar(Long id) {
-        animalRespository.deleteById(id);
+        animalRepository.deleteById(id);
     }
 
     public Animal atualizarNome(Long id, Animal novosDados) {
-        Optional<Animal> animalOptional = this.animalRespository.findById(id);
+        Optional<Animal> animalOptional = this.animalRepository.findById(id);
         if (animalOptional.isPresent()) {
             Animal animalExistente = animalOptional.get();
             animalExistente.setNome(novosDados.getNome());
-            return animalRespository.save(animalExistente);
+            return animalRepository.save(animalExistente);
         } else {
             throw new RuntimeException("Animal não encontrado com id: " + id);
         }

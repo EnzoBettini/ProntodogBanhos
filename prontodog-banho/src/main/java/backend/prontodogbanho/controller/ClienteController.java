@@ -29,7 +29,7 @@ public class ClienteController {
         return clienteOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<Cliente> adicionarCliente(@RequestBody Cliente novoCliente) {
         Cliente novoClienteResponse = this.clienteService.salvar(novoCliente);
         return ResponseEntity.ok(novoClienteResponse);

@@ -31,14 +31,14 @@ public class Cliente {
     private Long codigoSimplesVet;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("cliente-telefone")
     private List<Telefone> telefones;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("cliente-email")
     private List<Email> emails;
 
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("cliente-animal")
     private List<Animal> animais;
 }

@@ -35,9 +35,17 @@ public class Animal {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="cliente_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("cliente-animal")
     private Cliente cliente;
 
     @OneToMany(mappedBy="animal", cascade=CascadeType.ALL)
+    @JsonManagedReference("animal-servico")
     private List<AnimalServico> servicos;
+
+    @PrePersist
+    public void gerarCodigo() {
+        if (this.codigoAnimalSistema == null) {
+            this.codigoAnimalSistema = System.currentTimeMillis(); // ou algum gerador único
+        }
+    }
 }

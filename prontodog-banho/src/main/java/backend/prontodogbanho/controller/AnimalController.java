@@ -30,7 +30,7 @@ public class AnimalController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<Animal> criar(@RequestBody Animal novoAnimal) {
         Animal novoAnimalResponse = this.animalService.salvar(novoAnimal);
         return ResponseEntity.ok(novoAnimalResponse);
