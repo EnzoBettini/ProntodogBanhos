@@ -1,99 +1,176 @@
 <template>
-  <div class="p-4">
-    <h1 class="text-2xl font-bold mb-4">Clientes</h1>
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header com gradiente da marca -->
+    <BaseCard variant="gradient" padding="lg" class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-4">🐕 ProntoDog Banhos</h1>
+      <p class="text-xl opacity-90">Componentes Base Criados! ✅</p>
+    </BaseCard>
 
-    <div v-if="clientes.length === 0">Carregando...</div>
+    <!-- Demonstração dos Componentes Base -->
+    <div class="space-y-8">
+      <!-- Botões -->
+      <BaseCard>
+        <template #header>
+          <h2 class="text-xl font-semibold text-primary-700">🔘 BaseButton - Variantes</h2>
+        </template>
 
-    <div v-for="cliente in clientes" :key="cliente.id" class="mb-4 p-4 border rounded shadow">
-      <p><strong>Nome:</strong> {{ cliente.nomeCompleto }}</p>
-      <p><strong>CPF:</strong> {{ cliente.cpf }}</p>
-      <p><strong>Código SimplesVet:</strong> {{ cliente.codigoSimplesVet }}</p>
+        <div class="space-y-4">
+          <div class="flex flex-wrap gap-3">
+            <BaseButton variant="primary">Primário</BaseButton>
+            <BaseButton variant="secondary">Secundário</BaseButton>
+            <BaseButton variant="outline">Outline</BaseButton>
+            <BaseButton variant="ghost">Ghost</BaseButton>
+            <BaseButton variant="danger">Perigo</BaseButton>
+          </div>
 
-      <div class="mt-2">
-        <strong>Telefones:</strong>
-        <ul>
-          <li v-for="tel in cliente.telefones" :key="tel.id">{{ tel.telefone }}</li>
-          <li v-if="cliente.telefones.length === 0">Nenhum telefone cadastrado</li>
-        </ul>
-      </div>
+          <div class="flex flex-wrap gap-3">
+            <BaseButton size="sm">Pequeno</BaseButton>
+            <BaseButton size="md">Médio</BaseButton>
+            <BaseButton size="lg">Grande</BaseButton>
+            <BaseButton disabled>Desabilitado</BaseButton>
+          </div>
+        </div>
+      </BaseCard>
 
-      <div class="mt-2">
-        <strong>Emails:</strong>
-        <ul>
-          <li v-for="email in cliente.emailClientes" :key="email.id">{{ email.email }}</li>
-          <li v-if="cliente.emailClientes.length === 0">Nenhum email cadastrado</li>
-        </ul>
-      </div>
+      <!-- Cards -->
+      <BaseCard>
+        <template #header>
+          <h2 class="text-xl font-semibold text-primary-700">📦 BaseCard - Variantes</h2>
+        </template>
 
-      <div class="mt-2">
-        <strong>Animais:</strong>
-        <ul>
-          <li v-for="animal in cliente.animais" :key="animal.id">
-            {{ animal.nome }} ({{ animal.tipo }})
-            <ul>
-              <li v-for="servico in animal.servicos" :key="servico.id">
-                Serviço em: {{ servico.dataServico }} | Banhos usados: {{ servico.banhosUsados }}
-              </li>
-            </ul>
-          </li>
-          <li v-if="cliente.animais.length === 0">Nenhum animal cadastrado</li>
-        </ul>
-      </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <BaseCard variant="default" padding="sm">
+            <h3 class="font-semibold mb-2">Card Padrão</h3>
+            <p class="text-sm text-gray-600">Com sombra sutil</p>
+          </BaseCard>
+
+          <BaseCard variant="outlined" padding="sm">
+            <h3 class="font-semibold mb-2">Card Outlined</h3>
+            <p class="text-sm text-gray-600">Com borda</p>
+          </BaseCard>
+
+          <BaseCard variant="elevated" padding="sm">
+            <h3 class="font-semibold mb-2">Card Elevado</h3>
+            <p class="text-sm text-gray-600">Sombra intensa</p>
+          </BaseCard>
+
+          <BaseCard variant="gradient" padding="sm">
+            <h3 class="font-semibold mb-2">Card Gradiente</h3>
+            <p class="text-sm opacity-90">Com gradiente da marca</p>
+          </BaseCard>
+        </div>
+      </BaseCard>
+
+      <!-- Inputs -->
+      <BaseCard>
+        <template #header>
+          <h2 class="text-xl font-semibold text-primary-700">📝 BaseInput - Exemplos</h2>
+        </template>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <BaseInput
+            label="Nome do Cliente"
+            placeholder="Digite o nome..."
+            hint="Nome completo do cliente"
+          />
+
+          <BaseInput label="E-mail" type="email" placeholder="cliente@email.com" required />
+
+          <BaseInput label="Telefone" type="tel" placeholder="(11) 99999-9999" />
+
+          <BaseInput
+            label="Campo com Erro"
+            placeholder="Valor inválido"
+            error="Este campo é obrigatório"
+          />
+        </div>
+      </BaseCard>
+
+      <!-- Badges -->
+      <BaseCard>
+        <template #header>
+          <h2 class="text-xl font-semibold text-primary-700">🏷️ BaseBadge - Status</h2>
+        </template>
+
+        <div class="space-y-4">
+          <div class="flex flex-wrap gap-3">
+            <BaseBadge variant="primary">Agendado</BaseBadge>
+            <BaseBadge variant="secondary">Em Andamento</BaseBadge>
+            <BaseBadge variant="success">Concluído</BaseBadge>
+            <BaseBadge variant="warning">Aguardando</BaseBadge>
+            <BaseBadge variant="danger">Cancelado</BaseBadge>
+            <BaseBadge variant="info">Informação</BaseBadge>
+            <BaseBadge variant="gray">Inativo</BaseBadge>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <BaseBadge size="sm" variant="primary">Pequeno</BaseBadge>
+            <BaseBadge size="md" variant="secondary">Médio</BaseBadge>
+            <BaseBadge size="lg" variant="success">Grande</BaseBadge>
+            <BaseBadge variant="warning" rounded>Arredondado</BaseBadge>
+          </div>
+        </div>
+      </BaseCard>
+
+      <!-- Modal (demonstração) -->
+      <BaseCard>
+        <template #header>
+          <h2 class="text-xl font-semibold text-primary-700">🔲 BaseModal - Pop-ups</h2>
+        </template>
+
+        <div class="space-y-4">
+          <BaseButton @click="showModal = true">Abrir Modal</BaseButton>
+
+          <BaseModal v-model="showModal" title="Exemplo de Modal" size="md">
+            <p class="text-gray-600 mb-4">
+              Este é um exemplo de modal usando o componente BaseModal.
+            </p>
+            <BaseInput label="Nome do Pet" placeholder="Digite o nome do pet..." />
+
+            <template #footer>
+              <BaseButton variant="ghost" @click="showModal = false"> Cancelar </BaseButton>
+              <BaseButton variant="primary" @click="showModal = false"> Salvar </BaseButton>
+            </template>
+          </BaseModal>
+        </div>
+      </BaseCard>
+
+      <!-- Guia de uso -->
+      <BaseCard variant="outlined" class="bg-primary-50">
+        <template #header>
+          <h2 class="text-xl font-semibold text-primary-700">📚 Como usar os componentes:</h2>
+        </template>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold text-primary-600 mb-3">Importação:</h3>
+            <pre
+              class="bg-gray-100 p-3 rounded text-sm overflow-x-auto"
+            ><code>import { BaseButton, BaseCard, BaseInput } from '@/components/UI'</code></pre>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-primary-600 mb-3">Uso no template:</h3>
+            <pre
+              class="bg-gray-100 p-3 rounded text-sm overflow-x-auto"
+            ><code>&lt;BaseButton variant="primary"&gt;
+  Texto do Botão
+&lt;/BaseButton&gt;</code></pre>
+          </div>
+        </div>
+      </BaseCard>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
-import api from "../services/api";
+<script setup lang="ts">
+import { ref } from 'vue'
+import BaseButton from '@/components/UI/BaseButton.vue'
+import BaseCard from '@/components/UI/BaseCard.vue'
+import BaseInput from '@/components/UI/BaseInput.vue'
+import BaseModal from '@/components/UI/BaseModal.vue'
+import BaseBadge from '@/components/UI/BaseBadge.vue'
 
-interface Servico {
-  id: number;
-  dataServico: string;
-  banhosUsados: number;
-}
-
-interface Animal {
-  id: number;
-  nome: string;
-  tipo: string;
-  servicos: Servico[];
-}
-
-interface Telefone {
-  id: number;
-  telefone: string;
-}
-
-interface EmailCliente {
-  id: number;
-  email: string;
-}
-
-interface Cliente {
-  id: number;
-  nomeCompleto: string;
-  cpf: string;
-  codigoSimplesVet: number;
-  telefones: Telefone[];
-  emailClientes: EmailCliente[];
-  animais: Animal[];
-}
-
-export default defineComponent({
-  setup() {
-    const clientes = ref<Cliente[]>([]);
-
-    onMounted(async () => {
-      try {
-        const response = await api.get("/cliente");
-        clientes.value = response.data;
-      } catch (error) {
-        console.error("Erro ao buscar clientes:", error);
-      }
-    });
-
-    return { clientes };
-  },
-});
+// Estado para o modal de demonstração
+const showModal = ref(false)
 </script>

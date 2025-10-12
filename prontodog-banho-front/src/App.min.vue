@@ -1,1 +1,0 @@
-<script setup lang="ts"></script><template><nav><RouterLink to="/">Home</RouterLink>| <RouterLink to="/clientes">Clientes</RouterLink>| <RouterLink to="/animais">Animais</RouterLink></nav><RouterView /></template><style scoped></style>

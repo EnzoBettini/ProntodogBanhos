@@ -1,1 +1,0 @@
-<script setup lang="ts"></script><template><div><h1>Gestão de Clientes</h1><p>Aqui você vai listar, criar e editar clientes.</p></div></template>

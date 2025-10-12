@@ -1,11 +1,58 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
+    content: [
+        "./index.html",
+        "./src/**/*.{vue,js,ts,jsx,tsx}",
+    ],
+    theme: {
+        extend: {
+            colors: {
+                // Paleta Verde Natureza - ProntoDog Banhos
+                primary: {
+                    50: '#f0fdfa',
+                    100: '#ccfbf1',
+                    200: '#99f6e4',
+                    300: '#5eead4',
+                    400: '#2dd4bf',
+                    500: '#11998e', // Cor principal (gradiente início)
+                    600: '#0d7377',
+                    700: '#0f5e63',
+                    800: '#134e4a',
+                    900: '#134e4a',
+                },
+                secondary: {
+                    50: '#f0fdf4',
+                    100: '#dcfce7',
+                    200: '#bbf7d0',
+                    300: '#86efac',
+                    400: '#4ade80',
+                    500: '#38ef7d', // Cor secundária (gradiente fim)
+                    600: '#16a34a',
+                    700: '#15803d',
+                    800: '#166534',
+                    900: '#14532d',
+                },
+                // Cores complementares
+                accent: {
+                    50: '#fefce8',
+                    100: '#fef9c3',
+                    200: '#fef08a',
+                    300: '#fde047',
+                    400: '#facc15',
+                    500: '#eab308',
+                    600: '#ca8a04',
+                    700: '#a16207',
+                    800: '#854d0e',
+                    900: '#713f12',
+                }
+            },
+            backgroundImage: {
+                // Gradiente principal da marca
+                'gradient-primary': 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                'gradient-primary-hover': 'linear-gradient(135deg, #0d7377 0%, #16a34a 100%)',
+                'gradient-primary-light': 'linear-gradient(135deg, #2dd4bf 0%, #4ade80 100%)',
+            }
+        },
+    },
+    plugins: [],
 }

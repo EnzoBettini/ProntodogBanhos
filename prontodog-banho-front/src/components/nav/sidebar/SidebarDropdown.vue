@@ -1,0 +1,62 @@
+<template>
+  <div>
+    <SidebarItem
+      :title="title"
+      :icon="icon"
+      :active="active"
+      :hasChildren="true"
+      :collapsed="collapsed"
+      @click="toggleOpen"
+    >
+      <template #arrow>
+        <FontAwesomeIcon
+          v-show="!collapsed"
+          :icon="isOpen ? 'chevron-up' : 'chevron-down'"
+          class="w-4 h-4 ml-auto transition-transform"
+        />
+      </template>
+    </SidebarItem>
+
+    <Transition
+      enter-active-class="transition-all duration-200 ease-out"
+      enter-from-class="opacity-0 max-h-0"
+      enter-to-class="opacity-100 max-h-96"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-from-class="opacity-100 max-h-96"
+      leave-to-class="opacity-0 max-h-0"
+    >
+      <div v-show="isOpen && !collapsed" class="ml-8 mt-1 space-y-1 overflow-hidden">
+        <slot />
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import SidebarItem from './SidebarItem.vue'
+
+interface Props {
+  title: string
+  icon?: string
+  basePath?: string
+  collapsed?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  collapsed: false,
+})
+
+const route = useRoute()
+const isOpen = ref(false)
+
+const active = computed(() => {
+  if (!props.basePath) return false
+  return route.path.startsWith(props.basePath)
+})
+
+const toggleOpen = () => {
+  isOpen.value = !isOpen.value
+}
+</script>

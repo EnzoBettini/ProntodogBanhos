@@ -1,13 +1,17 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+import { TheSidebar } from '@/components/nav'
+</script>
 
 <template>
-  <nav>
-    <RouterLink to="/">Home</RouterLink> |
-    <RouterLink to="/clientes">Clientes</RouterLink> |
-    <RouterLink to="/animais">Animais</RouterLink>
-  </nav>
-  <RouterView />
+  <div id="app" class="min-h-screen bg-gray-50 flex">
+    <TheSidebar />
+    <main class="flex-1 overflow-auto">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-
-<style scoped></style>
+<style scoped>
+/* Estilos personalizados do projeto aqui */
+</style>
