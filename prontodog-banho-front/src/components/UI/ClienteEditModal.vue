@@ -1,0 +1,538 @@
+<template>
+  <!-- 🎭 Modal de Edição do Cliente -->
+  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
+    <!-- Overlay -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="fecharModal"></div>
+
+    <!-- Modal Content -->
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+
+        <!-- 🎯 Header do modal (fixo) -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-primary text-white rounded-t-lg flex-shrink-0">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <FontAwesomeIcon icon="edit" class="text-lg" />
+            </div>
+            <div>
+              <h2 class="text-xl font-bold">Editar Cliente</h2>
+              <p class="opacity-90">{{ cliente?.nomeCompleto || 'Carregando...' }}</p>
+            </div>
+          </div>
+          <button
+            @click="fecharModal"
+            class="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+          >
+            <FontAwesomeIcon icon="times" class="text-lg" />
+          </button>
+        </div>
+
+        <!-- 📋 Formulário de edição (scrollável) -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <form @submit.prevent="salvarAlteracoes" class="space-y-6">
+
+            <!-- 👤 Dados Pessoais -->
+            <BaseCard>
+              <template #header>
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <FontAwesomeIcon icon="user" class="text-primary-500" />
+                  Dados Pessoais
+                </h3>
+              </template>
+
+              <div class="space-y-4">
+                <!-- Nome Completo -->
+                <FormInput
+                  v-model="formulario.nomeCompleto"
+                  label="Nome Completo"
+                  placeholder="Digite o nome completo"
+                  icon="user"
+                  required
+                  :error="erros.nomeCompleto"
+                  :maxLength="100"
+                  :showCount="true"
+                  @blur="validarCampo('nomeCompleto')"
+                />
+
+                <!-- CPF (readonly) -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    CPF
+                    <span class="text-xs text-gray-500 ml-2">(não pode ser alterado)</span>
+                  </label>
+                  <div class="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500">
+                    {{ formatarCpf(cliente?.cpf || '') }}
+                  </div>
+                </div>
+
+                <!-- Código SimplesVet -->
+                <FormInput
+                  v-model="formulario.codigoSimplesVet"
+                  label="Código SimplesVet"
+                  placeholder="Digite o código SimplesVet"
+                  icon="hashtag"
+                  type="number"
+                  required
+                  :error="erros.codigoSimplesVet"
+                  @blur="validarCampo('codigoSimplesVet')"
+                />
+              </div>
+            </BaseCard>
+
+            <!-- 📞 Telefones (Editável) -->
+            <BaseCard>
+              <template #header>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <FontAwesomeIcon icon="phone" class="text-primary-500" />
+                    Telefones
+                    <span class="text-sm font-normal text-gray-500">(Obrigatório pelo menos 1)</span>
+                  </h3>
+                  <BaseButton
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="adicionarTelefone"
+                    :disabled="formulario.telefones.length >= 3"
+                  >
+                    <FontAwesomeIcon icon="plus" class="mr-2" />
+                    Adicionar Telefone
+                  </BaseButton>
+                </div>
+              </template>
+
+              <div v-if="formulario.telefones.length === 0" class="text-center py-8 text-gray-500">
+                <FontAwesomeIcon icon="phone" class="text-4xl mb-4 opacity-50" />
+                <p class="text-lg font-medium mb-2">Nenhum telefone cadastrado</p>
+                <p class="text-sm">
+                  Clique em "Adicionar Telefone" para incluir números de telefone do cliente
+                </p>
+              </div>
+
+              <div v-else class="space-y-4">
+                <div
+                  v-for="(telefone, index) in formulario.telefones"
+                  :key="`telefone-${index}`"
+                  class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex-1">
+                    <FormInput
+                      :model-value="formulario.telefones[index] || ''"
+                      @update:model-value="(value: string) => formulario.telefones[index] = value"
+                      :label="`Telefone ${index + 1}`"
+                      placeholder="(11) 99999-9999"
+                      icon="phone"
+                      type="tel"
+                      mask="telefone"
+                      :error="erros.telefones[index] || null"
+                      :hint="index === 0 ? 'Telefone principal (obrigatório)' : 'Telefone adicional'"
+                      :maxLength="15"
+                      autocomplete="tel"
+                      @blur="validarTelefone(index)"
+                    />
+                  </div>
+                  <BaseButton
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="removerTelefone(index)"
+                    class="text-red-600 hover:text-red-700 mt-7"
+                    title="Remover telefone"
+                    :disabled="formulario.telefones.length === 1"
+                  >
+                    <FontAwesomeIcon icon="trash" />
+                  </BaseButton>
+                </div>
+              </div>
+            </BaseCard>
+
+            <!-- 📧 Emails (Editável) -->
+            <BaseCard>
+              <template #header>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <FontAwesomeIcon icon="envelope" class="text-primary-500" />
+                    Emails
+                    <span class="text-sm font-normal text-gray-500">(Opcional)</span>
+                  </h3>
+                  <BaseButton
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="adicionarEmail"
+                    :disabled="formulario.emailClientes.length >= 3"
+                  >
+                    <FontAwesomeIcon icon="plus" class="mr-2" />
+                    Adicionar Email
+                  </BaseButton>
+                </div>
+              </template>
+
+              <div v-if="formulario.emailClientes.length === 0" class="text-center py-8 text-gray-500">
+                <FontAwesomeIcon icon="envelope" class="text-4xl mb-4 opacity-50" />
+                <p class="text-lg font-medium mb-2">Nenhum email cadastrado</p>
+                <p class="text-sm">
+                  Clique em "Adicionar Email" para incluir endereços de email do cliente
+                </p>
+              </div>
+
+              <div v-else class="space-y-4">
+                <div
+                  v-for="(email, index) in formulario.emailClientes"
+                  :key="`email-${index}`"
+                  class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex-1">
+                    <FormInput
+                      :model-value="formulario.emailClientes[index] || ''"
+                      @update:model-value="(value: string) => formulario.emailClientes[index] = value"
+                      :label="`Email ${index + 1}`"
+                      placeholder="exemplo@email.com"
+                      icon="at"
+                      type="email"
+                      :error="erros.emailClientes[index] || null"
+                      :hint="index === 0 ? 'Email principal (opcional)' : 'Email adicional (opcional)'"
+                      :maxLength="100"
+                      autocomplete="email"
+                      @blur="validarEmailCliente(index)"
+                    />
+                  </div>
+                  <BaseButton
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="removerEmail(index)"
+                    class="text-red-600 hover:text-red-700 mt-7"
+                    title="Remover email"
+                  >
+                    <FontAwesomeIcon icon="trash" />
+                  </BaseButton>
+                </div>
+              </div>
+            </BaseCard>
+
+            <!-- 💾 Status de salvamento -->
+            <div v-if="statusSalvamento" class="p-4 rounded-lg" :class="statusSalvamento.cor">
+              <div class="flex items-center gap-2">
+                <FontAwesomeIcon :icon="statusSalvamento.icone" />
+                <span class="font-medium">{{ statusSalvamento.mensagem }}</span>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- 🎬 Footer com ações (fixo) -->
+        <div class="border-t border-gray-200 p-6 bg-gray-50 rounded-b-lg flex-shrink-0">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-500">
+              <FontAwesomeIcon icon="exclamation-circle" class="mr-1" />
+              Para adicionar animais ou edições mais avançadas, use a tela de criação
+            </div>
+            <div class="flex gap-3">
+              <BaseButton
+                variant="outline"
+                @click="fecharModal"
+                :disabled="salvando"
+              >
+                <FontAwesomeIcon icon="times" class="mr-2" />
+                Cancelar
+              </BaseButton>
+              <BaseButton
+                variant="primary"
+                @click="salvarAlteracoes"
+                :disabled="!formularioValido || salvando"
+              >
+                <FontAwesomeIcon
+                  :icon="salvando ? 'spinner' : 'save'"
+                  :class="{ 'animate-spin': salvando }"
+                  class="mr-2"
+                />
+                {{ salvando ? 'Salvando...' : 'Salvar Alterações' }}
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// 📚 Imports
+import { ref, computed, watch } from 'vue'
+import BaseCard from '@/components/UI/BaseCard.vue'
+import BaseButton from '@/components/UI/BaseButton.vue'
+import BaseBadge from '@/components/UI/BaseBadge.vue'
+import FormInput from '@/components/UI/FormInput.vue'
+import { clientesService } from '@/services/api'
+import type { Cliente } from '@/types/api'
+import { validarNomeCompleto, validarCodigoSimplesVet, validarEmail, validarTelefone as validarTelefoneUtil } from '@/utils/validations'
+
+// 🎯 Props
+interface Props {
+  isOpen: boolean
+  cliente: Cliente | null
+}
+
+const props = defineProps<Props>()
+
+// 🎭 Emits
+const emit = defineEmits<{
+  close: []
+  clienteAtualizado: [cliente: Cliente]
+}>()
+
+// 📊 Estado do componente
+const formulario = ref({
+  nomeCompleto: '',
+  codigoSimplesVet: '',
+  telefones: [] as string[],
+  emailClientes: [] as string[]
+})
+
+const erros = ref<{
+  nomeCompleto?: string | null
+  codigoSimplesVet?: string | null
+  telefones: (string | null)[]
+  emailClientes: (string | null)[]
+}>({
+  telefones: [],
+  emailClientes: []
+})
+const salvando = ref(false)
+const statusSalvamento = ref<{
+  icone: string
+  cor: string
+  mensagem: string
+} | null>(null)
+
+// 🎨 Computed Properties
+const formularioValido = computed(() => {
+  const camposObrigatoriosValidos = (
+    formulario.value.nomeCompleto.trim() &&
+    formulario.value.codigoSimplesVet.trim()
+  )
+
+  const errosCamposBasicos = !!(erros.value.nomeCompleto || erros.value.codigoSimplesVet)
+
+  const errosTelefones = erros.value.telefones.some(erro => erro !== null)
+  const errosEmails = erros.value.emailClientes.some(erro => erro !== null)
+
+  return camposObrigatoriosValidos && !errosCamposBasicos && !errosTelefones && !errosEmails
+})
+
+// 👀 Watchers
+watch(() => props.cliente, (cliente) => {
+  if (cliente) {
+    const telefonesRaw = cliente.telefones?.map(telefone => telefone.telefone) || []
+    const emailsExistentes = cliente.emailClientes?.map(email => email.email) || []
+
+    // LIMPA os telefones vindos do backend para evitar formatação dupla
+    const telefonesLimpos = telefonesRaw.map(telefone => limparFormatacaoTelefone(telefone))
+
+    formulario.value = {
+      nomeCompleto: cliente.nomeCompleto,
+      codigoSimplesVet: cliente.codigoSimplesVet?.toString() || '',
+      telefones: telefonesLimpos,
+      emailClientes: emailsExistentes
+    }
+
+    // Limpa erros quando carrega novo cliente
+    erros.value = {
+      nomeCompleto: null,
+      codigoSimplesVet: null,
+      telefones: new Array(telefonesLimpos.length).fill(null),
+      emailClientes: new Array(emailsExistentes.length).fill(null)
+    }
+
+    statusSalvamento.value = null
+  }
+}, { immediate: true })
+
+// 🛠️ Métodos
+const validarCampo = (campo: keyof typeof formulario.value): void => {
+  const valor = formulario.value[campo]
+
+  switch (campo) {
+    case 'nomeCompleto':
+      erros.value.nomeCompleto = validarNomeCompleto(valor as string)
+      break
+    case 'codigoSimplesVet':
+      erros.value.codigoSimplesVet = validarCodigoSimplesVet(valor as string)
+      break
+  }
+}
+
+const validarTelefone = (index: number): void => {
+  const telefone = formulario.value.telefones[index]
+  const erro = telefone && telefone.trim() ? validarTelefoneUtil(telefone.trim()) : null
+  erros.value.telefones[index] = erro
+}
+
+const adicionarTelefone = (): void => {
+  if (formulario.value.telefones.length < 3) {
+    formulario.value.telefones.push('')
+    erros.value.telefones.push(null)
+  }
+}
+
+const removerTelefone = (index: number): void => {
+  formulario.value.telefones.splice(index, 1)
+  erros.value.telefones.splice(index, 1)
+}
+
+const validarEmailCliente = (index: number): void => {
+  const email = formulario.value.emailClientes[index]
+  const erro = email && email.trim() ? validarEmail(email.trim()) : null
+  erros.value.emailClientes[index] = erro
+}
+
+const adicionarEmail = (): void => {
+  if (formulario.value.emailClientes.length < 3) {
+    formulario.value.emailClientes.push('')
+    erros.value.emailClientes.push(null)
+  }
+}
+
+const removerEmail = (index: number): void => {
+  formulario.value.emailClientes.splice(index, 1)
+  erros.value.emailClientes.splice(index, 1)
+}
+
+const formatarCpf = (cpf: string): string => {
+  if (!cpf) return 'N/A'
+  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+}
+
+const formatarTelefone = (telefone: string): string => {
+  if (!telefone) return 'N/A'
+  return telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+}
+
+const limparFormatacaoTelefone = (telefone: string): string => {
+  return telefone.replace(/\D/g, '')
+}
+
+const salvarAlteracoes = async (): Promise<void> => {
+  if (!props.cliente || !formularioValido.value) return
+
+  try {
+    console.log('💾 Salvando alterações do cliente...')
+    salvando.value = true
+    statusSalvamento.value = null
+
+    // Valida todos os campos antes de enviar
+    validarCampo('nomeCompleto')
+    validarCampo('codigoSimplesVet')
+
+    // Verifica erros nos campos básicos (exclui telefones e emailClientes)
+    const errosCamposBasicos = Object.entries(erros.value)
+      .filter(([key]) => !['telefones', 'emailClientes'].includes(key))
+      .some(([, erro]) => erro !== null)
+
+    if (errosCamposBasicos) {
+      const camposComErro = Object.entries(erros.value)
+        .filter(([key, erro]) => !['telefones', 'emailClientes'].includes(key) && erro !== null)
+        .map(([key, erro]) => `${key}: ${erro}`)
+
+      throw new Error(`Por favor, corrija os erros: ${camposComErro.join(', ')}`)
+    }
+
+    // Valida telefones antes de enviar
+    formulario.value.telefones.forEach((_, index) => {
+      validarTelefone(index)
+    })
+
+    // Verifica se há erros nos telefones
+    const temErrosTelefones = erros.value.telefones.some(erro => erro !== null)
+
+    if (temErrosTelefones) {
+      const telefonesComErro = erros.value.telefones
+        .map((erro, index) => erro ? `Telefone ${index + 1}: ${erro}` : null)
+        .filter(Boolean)
+
+      throw new Error(`Por favor, corrija os erros nos telefones: ${telefonesComErro.join(', ')}`)
+    }
+
+    // Valida emails antes de enviar
+    formulario.value.emailClientes.forEach((_, index) => {
+      validarEmailCliente(index)
+    })
+
+    // Verifica se há erros nos emails
+    const temErrosEmails = erros.value.emailClientes.some(erro => erro !== null)
+
+    if (temErrosEmails) {
+      const emailsComErro = erros.value.emailClientes
+        .map((erro, index) => erro ? `Email ${index + 1}: ${erro}` : null)
+        .filter(Boolean)
+
+      throw new Error(`Por favor, corrija os erros nos emails: ${emailsComErro.join(', ')}`)
+    }
+
+    // Monta dados para enviar à API
+    const telefonesFiltrados = formulario.value.telefones
+      .filter(telefone => telefone && telefone.trim() !== '')
+      .map(telefone => ({ telefone: limparFormatacaoTelefone(telefone.trim()) }))
+
+    const emailsFiltrados = formulario.value.emailClientes
+      .filter(email => email && email.trim() !== '')
+      .map(email => ({ email: email.trim() }))
+
+    const dadosAtualizados = {
+      nomeCompleto: formulario.value.nomeCompleto.trim(),
+      codigoSimplesVet: parseInt(formulario.value.codigoSimplesVet),
+      telefones: telefonesFiltrados,
+      emailClientes: emailsFiltrados
+    }
+
+    console.log('🚀 Salvando alterações do cliente:', dadosAtualizados)
+
+    // Chama a API
+    const clienteAtualizado = await clientesService.atualizar(props.cliente.id, dadosAtualizados)
+
+    console.log('✅ Cliente atualizado com sucesso!')
+
+    // Mostra status de sucesso
+    statusSalvamento.value = {
+      icone: 'check-circle',
+      cor: 'bg-green-50 text-green-700 border border-green-200',
+      mensagem: 'Cliente atualizado com sucesso!'
+    }
+
+    // Emite evento para atualizar o cliente na lista
+    emit('clienteAtualizado', clienteAtualizado)
+
+    // Fecha o modal após 1.5 segundos
+    setTimeout(() => {
+      fecharModal()
+    }, 1500)
+
+  } catch (error) {
+    console.error('❌ Erro ao atualizar cliente:', error)
+
+    // Mostra status de erro
+    statusSalvamento.value = {
+      icone: 'exclamation-circle',
+      cor: 'bg-red-50 text-red-700 border border-red-200',
+      mensagem: error instanceof Error ? error.message : 'Erro inesperado ao atualizar cliente'
+    }
+  } finally {
+    salvando.value = false
+  }
+}
+
+const fecharModal = (): void => {
+  emit('close')
+  // Limpa status após um delay para evitar flickering
+  setTimeout(() => {
+    statusSalvamento.value = null
+    erros.value = {
+      nomeCompleto: null,
+      codigoSimplesVet: null,
+      telefones: [],
+      emailClientes: []
+    }
+  }, 300)
+}
+</script>

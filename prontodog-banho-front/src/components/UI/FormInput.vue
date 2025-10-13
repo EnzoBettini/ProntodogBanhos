@@ -152,17 +152,23 @@ const aplicarMascara = (valor: string): string => {
     case 'telefone':
       // Máscara: (00) 00000-0000 ou (00) 0000-0000
       if (numeroLimpo.length <= 10) {
-        return numeroLimpo
-          .substring(0, 10)
-          .replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3')
-          .replace(/(\d{2})(\d{4})/, '($1) $2')
-          .replace(/(\d{2})/, '($1')
+        // Telefone fixo: (00) 0000-0000
+        if (numeroLimpo.length >= 6) {
+          return numeroLimpo.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3')
+        } else if (numeroLimpo.length >= 2) {
+          return numeroLimpo.replace(/(\d{2})(\d{0,4})/, '($1) $2')
+        } else {
+          return numeroLimpo
+        }
       } else {
-        return numeroLimpo
-          .substring(0, 11)
-          .replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
-          .replace(/(\d{2})(\d{5})/, '($1) $2')
-          .replace(/(\d{2})/, '($1')
+        // Celular: (00) 00000-0000
+        if (numeroLimpo.length >= 7) {
+          return numeroLimpo.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+        } else if (numeroLimpo.length >= 2) {
+          return numeroLimpo.replace(/(\d{2})(\d{0,5})/, '($1) $2')
+        } else {
+          return numeroLimpo
+        }
       }
 
     default:

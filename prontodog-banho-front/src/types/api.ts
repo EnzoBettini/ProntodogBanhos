@@ -21,6 +21,7 @@ export interface Animal {
   nome: string
   codigoSimplesVet: number
   tipo: string
+  cliente?: Cliente // Relacionamento com cliente (opcional para evitar referência circular)
   servicos: Servico[]
 }
 

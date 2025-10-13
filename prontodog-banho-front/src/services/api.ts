@@ -3,7 +3,7 @@
 // É aqui que centralizamos todas as chamadas HTTP
 
 import axios from 'axios'
-import type { ClientesResponse, Cliente, NovoCliente } from '@/types/api'
+import type { ClientesResponse, Cliente, NovoCliente, Animal } from '@/types/api'
 
 // 🔧 CONFIGURAÇÃO DO AXIOS
 // Criamos uma instância do axios com configurações padrão
@@ -46,6 +46,45 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// 🐕 SERVIÇOS DE ANIMAIS
+// Aqui ficam todos os métodos relacionados aos animais
+export const animaisService = {
+
+  // 📖 BUSCAR TODOS OS ANIMAIS
+  // GET /animal
+  async buscarTodos(): Promise<Animal[]> {
+    try {
+      console.log('🔍 Buscando todos os animais...')
+      const response = await api.get<Animal[]>('/animal')
+      console.log(`✅ ${response.data.length} animais encontrados!`)
+      return response.data
+    } catch (error) {
+      console.error('❌ Erro ao buscar animais:', error)
+      if ((error as any).response?.status === 404) {
+        throw new Error('Nenhum animal encontrado.')
+      }
+      throw new Error('Não foi possível carregar a lista de animais.')
+    }
+  },
+
+  // 📖 BUSCAR ANIMAL POR ID
+  // GET /animal/{id}
+  async buscarPorId(id: number): Promise<Animal> {
+    try {
+      console.log(`🔍 Buscando animal com ID ${id}...`)
+      const response = await api.get<Animal>(`/animal/${id}`)
+      console.log('✅ Animal encontrado!')
+      return response.data
+    } catch (error) {
+      console.error('❌ Erro ao buscar animal:', error)
+      if ((error as any).response?.status === 404) {
+        throw new Error('Animal não encontrado.')
+      }
+      throw new Error('Não foi possível buscar os dados do animal.')
+    }
+  }
+}
 
 // 📋 SERVIÇOS DE CLIENTES
 // Aqui ficam todos os métodos relacionados aos clientes
@@ -116,15 +155,48 @@ export const clientesService = {
       // Erro genérico
       throw new Error('Não foi possível cadastrar o cliente. Tente novamente.')
     }
-  }
+  },
 
-  // ✏️ EDITAR CLIENTE (para futuramente)
+  // 🗑️ EXCLUIR CLIENTE POR ID
+  // POST /cliente/{id} (Backend usa POST para exclusão)
+  async excluir(id: number): Promise<void> {
+    try {
+      console.log(`🗑️ Excluindo cliente com ID ${id}...`)
+      await api.post(`/cliente/${id}`)
+      console.log('✅ Cliente excluído com sucesso!')
+    } catch (error) {
+      console.error('❌ Erro ao excluir cliente:', error)
+      if ((error as any).response?.status === 404) {
+        throw new Error('Cliente não encontrado.')
+      }
+      if ((error as any).response?.status === 409) {
+        throw new Error('Não é possível excluir este cliente pois ele possui animais cadastrados.')
+      }
+      throw new Error('Não foi possível excluir o cliente. Tente novamente.')
+    }
+  },
+
+  // ✏️ ATUALIZAR CLIENTE POR ID
   // PUT /cliente/{id}
-  // async editar(id: number, clienteEditado: Partial<Cliente>): Promise<Cliente> { ... }
+  async atualizar(id: number, dadosAtualizados: Partial<NovoCliente>): Promise<Cliente> {
+    try {
+      console.log(`✏️ Atualizando cliente com ID ${id}...`, dadosAtualizados)
+      const response = await api.put<Cliente>(`/cliente/${id}`, dadosAtualizados)
+      console.log('✅ Cliente atualizado com sucesso!')
+      return response.data
+    } catch (error) {
+      console.error('❌ Erro ao atualizar cliente:', error)
+      console.error('❌ Resposta do servidor:', (error as any).response?.data)
 
-  // 🗑️ DELETAR CLIENTE (para futuramente)
-  // DELETE /cliente/{id}
-  // async deletar(id: number): Promise<void> { ... }
+      if ((error as any).response?.status === 404) {
+        throw new Error('Cliente não encontrado.')
+      }
+      if ((error as any).response?.status === 400) {
+        throw new Error('Dados inválidos. Verifique as informações e tente novamente.')
+      }
+      throw new Error('Não foi possível atualizar o cliente. Tente novamente.')
+    }
+  }
 }
 
 // 🔄 Exporta a instância do axios caso precise usar diretamente

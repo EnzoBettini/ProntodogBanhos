@@ -101,6 +101,7 @@
                 <div class="flex-1">
                   <h3 class="font-semibold text-gray-900 mb-1">{{ cliente.nomeCompleto }}</h3>
                   <p class="text-sm text-gray-500">CPF: {{ formatarCpf(cliente.cpf) }}</p>
+                  <p class="text-sm text-gray-500">SimplesVet: {{ cliente.codigoSimplesVet }}</p>
                 </div>
                 <BaseBadge
                   :variant="cliente.animais.length > 0 ? 'success' : 'gray'"
@@ -162,6 +163,15 @@
         </div>
       </div>
     </BaseCard>
+
+    <!-- 🎭 Modal de Perfil do Cliente -->
+    <ClienteProfileModal
+      :is-open="modalPerfilAberto"
+      :cliente-id="clienteSelecionadoId"
+      @close="fecharModalPerfil"
+      @cliente-excluido="onClienteExcluido"
+      @cliente-atualizado="onClienteAtualizado"
+    />
   </div>
 </template>
 
@@ -174,6 +184,7 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
 import { clientesService } from '@/services/api'
 import type { Cliente } from '@/types/api'
+import ClienteProfileModal from '@/components/UI/ClienteProfileModal.vue'
 
 // 🎯 Configuração do router
 const router = useRouter()
@@ -184,6 +195,10 @@ const loading = ref(false)                    // Estado de carregamento
 const error = ref<string | null>(null)       // Mensagem de erro
 const filtroNome = ref('')                   // Filtro de busca
 const ultimaAtualizacao = ref('')            // Timestamp da última atualização
+
+// 🎭 Modal de perfil
+const modalPerfilAberto = ref(false)
+const clienteSelecionadoId = ref<number | null>(null)
 
 // 💻 Computadas (dados derivados)
 const clientesFiltrados = computed(() => {
@@ -252,13 +267,29 @@ const carregarClientes = async (): Promise<void> => {
 
 // 👀 Função para ver detalhes do cliente
 const verDetalhes = (cliente: Cliente): void => {
-  console.log('👀 Visualizando cliente:', cliente.nomeCompleto)
+  console.log('👁️ Ver detalhes:', cliente.nomeCompleto)
+  clienteSelecionadoId.value = cliente.id
+  modalPerfilAberto.value = true
+}
 
-  // TODO: Navegar para página de detalhes
-  // router.push(`/clientes/${cliente.id}`)
+const fecharModalPerfil = (): void => {
+  modalPerfilAberto.value = false
+  clienteSelecionadoId.value = null
+}
 
-  // Por enquanto, mostra no console
-  console.log('📋 Dados do cliente:', cliente)
+const onClienteExcluido = (clienteId: number): void => {
+  // Remove o cliente da lista local
+  clientes.value = clientes.value.filter(c => c.id !== clienteId)
+  console.log(`✅ Cliente ID ${clienteId} removido da lista`)
+}
+
+const onClienteAtualizado = (clienteAtualizado: Cliente): void => {
+  // Atualiza o cliente na lista local
+  const index = clientes.value.findIndex(c => c.id === clienteAtualizado.id)
+  if (index !== -1) {
+    clientes.value[index] = clienteAtualizado
+    console.log(`✅ Cliente ID ${clienteAtualizado.id} atualizado na lista`)
+  }
 }
 
 // 🎬 Lifecycle - carrega dados quando o componente é montado

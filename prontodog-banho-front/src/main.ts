@@ -43,7 +43,9 @@ import {
   faTrash,
   faIdCard,
   faHashtag,
-  faAt
+  faAt,
+  faEye,
+  faEdit
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -80,7 +82,12 @@ library.add(
   faTrash,
   faIdCard,
   faHashtag,
-  faAt
+  faAt,
+  faEye,
+  faEdit,
+  faTrash,
+  faChartBar,
+  faCalendarDays
 )
 
 const app = createApp(App)

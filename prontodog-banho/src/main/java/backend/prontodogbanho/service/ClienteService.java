@@ -11,6 +11,7 @@ import backend.prontodogbanho.repository.TelefoneRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,6 +65,7 @@ public class ClienteService {
         clienteRepository.deleteById(id);
     }
 
+    @Transactional
     public Cliente atualizarDados(Long id, Cliente novosDados) {
         Cliente clienteExistente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado com id: " + id));
@@ -81,11 +83,45 @@ public class ClienteService {
         }
 
         if (novosDados.getTelefones() != null) {
-            clienteExistente.setTelefones(novosDados.getTelefones());
+            // Remove TODOS os telefones existentes usando query customizada
+            telefoneRepository.deleteAllByClienteId(clienteExistente.getId());
+
+            // Limpa a lista do cliente para sincronizar o estado
+            if (clienteExistente.getTelefones() != null) {
+                clienteExistente.getTelefones().clear();
+            } else {
+                clienteExistente.setTelefones(new ArrayList<>());
+            }
+
+            // Adiciona os novos telefones estabelecendo a relação bidirecional
+            for (Telefone novoTelefone : novosDados.getTelefones()) {
+                // Cria um novo objeto para evitar problemas de referência
+                Telefone telefoneParaSalvar = new Telefone();
+                telefoneParaSalvar.setTelefone(novoTelefone.getTelefone());
+                telefoneParaSalvar.setCliente(clienteExistente);
+                clienteExistente.getTelefones().add(telefoneParaSalvar);
+            }
         }
 
         if (novosDados.getEmailClientes() != null) {
-            clienteExistente.setEmailClientes(novosDados.getEmailClientes());
+            // Remove TODOS os emails existentes usando query customizada
+            emailClienteRepository.deleteAllByClienteId(clienteExistente.getId());
+
+            // Limpa a lista do cliente para sincronizar o estado
+            if (clienteExistente.getEmailClientes() != null) {
+                clienteExistente.getEmailClientes().clear();
+            } else {
+                clienteExistente.setEmailClientes(new ArrayList<>());
+            }
+
+            // Adiciona os novos emails estabelecendo a relação bidirecional
+            for (EmailCliente novoEmail : novosDados.getEmailClientes()) {
+                // Cria um novo objeto para evitar problemas de referência
+                EmailCliente emailParaSalvar = new EmailCliente();
+                emailParaSalvar.setEmail(novoEmail.getEmail());
+                emailParaSalvar.setCliente(clienteExistente);
+                clienteExistente.getEmailClientes().add(emailParaSalvar);
+            }
         }
 
         return this.clienteRepository.save(clienteExistente);
