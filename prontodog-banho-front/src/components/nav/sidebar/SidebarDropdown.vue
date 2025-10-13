@@ -35,6 +35,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useSidebarStore } from '@/stores/sidebar'
 import SidebarItem from './SidebarItem.vue'
 
 interface Props {
@@ -50,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const route = useRoute()
 const isOpen = ref(false)
+const sidebarStore = useSidebarStore()
 
 const active = computed(() => {
   if (!props.basePath) return false
@@ -57,6 +59,12 @@ const active = computed(() => {
 })
 
 const toggleOpen = () => {
-  isOpen.value = !isOpen.value
+  // Se a sidebar está colapsada, abrir ela primeiro
+  if (props.collapsed) {
+    sidebarStore.open()
+  } else {
+    // Se não está colapsada, funciona normalmente (toggle do dropdown)
+    isOpen.value = !isOpen.value
+  }
 }
 </script>

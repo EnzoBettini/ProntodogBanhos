@@ -1,25 +1,14 @@
 <template>
   <div
     :class="sidebarClasses"
-    class="bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300"
+    class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300 fixed left-0 z-40"
+    :style="{ top: '64px', height: 'calc(100vh - 64px)' }"
   >
-    <!-- Header com logo e toggle -->
-    <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-      <div v-show="sidebarStore.isOpen" class="flex items-center gap-2">
-        <FontAwesomeIcon icon="bath" class="text-primary-500 text-xl" />
-        <h1 class="text-lg font-bold text-primary-600">ProntoDog Banhos</h1>
-      </div>
-
-      <FontAwesomeIcon
-        v-show="!sidebarStore.isOpen"
-        icon="bath"
-        class="text-primary-500 text-xl mx-auto"
-      />
-
+    <!-- Botão Toggle apenas -->
+    <div class="p-3 border-b border-gray-200 flex items-center justify-center">
       <button
         @click="sidebarStore.toggle()"
         class="p-2 rounded-lg hover:bg-primary-50 text-primary-600 transition-colors"
-        :class="{ 'ml-auto': !sidebarStore.isOpen }"
       >
         <FontAwesomeIcon :icon="sidebarStore.isOpen ? 'xmark' : 'bars'" class="w-4 h-4" />
       </button>

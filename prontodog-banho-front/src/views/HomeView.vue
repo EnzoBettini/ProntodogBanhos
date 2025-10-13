@@ -1,176 +1,152 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <!-- Header com gradiente da marca -->
+    <!-- Header de Boas-vindas -->
     <BaseCard variant="gradient" padding="lg" class="text-center mb-8">
-      <h1 class="text-4xl font-bold mb-4">🐕 ProntoDog Banhos</h1>
-      <p class="text-xl opacity-90">Componentes Base Criados! ✅</p>
+      <h1 class="text-4xl font-bold mb-2">🐕 ProntoDog Banhos</h1>
+      <p class="text-xl opacity-90">Sistema de Gerenciamento</p>
+      <p class="text-lg opacity-75 mt-2">Bem-vindo! Escolha uma opção abaixo para começar</p>
     </BaseCard>
 
-    <!-- Demonstração dos Componentes Base -->
-    <div class="space-y-8">
-      <!-- Botões -->
-      <BaseCard>
-        <template #header>
-          <h2 class="text-xl font-semibold text-primary-700">🔘 BaseButton - Variantes</h2>
-        </template>
-
-        <div class="space-y-4">
-          <div class="flex flex-wrap gap-3">
-            <BaseButton variant="primary">Primário</BaseButton>
-            <BaseButton variant="secondary">Secundário</BaseButton>
-            <BaseButton variant="outline">Outline</BaseButton>
-            <BaseButton variant="ghost">Ghost</BaseButton>
-            <BaseButton variant="danger">Perigo</BaseButton>
+    <!-- Menu Principal -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <!-- Animais -->
+      <BaseCard
+        variant="elevated"
+        class="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+        @click="$router.push('/animais')"
+      >
+        <div class="text-center p-6">
+          <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-200 transition-colors">
+            <FontAwesomeIcon icon="dog" class="text-3xl text-primary-600" />
           </div>
-
-          <div class="flex flex-wrap gap-3">
-            <BaseButton size="sm">Pequeno</BaseButton>
-            <BaseButton size="md">Médio</BaseButton>
-            <BaseButton size="lg">Grande</BaseButton>
-            <BaseButton disabled>Desabilitado</BaseButton>
-          </div>
+          <h3 class="text-xl font-semibold text-primary-700 mb-2">Animais</h3>
+          <p class="text-gray-600 text-sm">
+            Gerenciar pets, cadastrar novos animais e visualizar histórico de banhos
+          </p>
         </div>
       </BaseCard>
 
-      <!-- Cards -->
-      <BaseCard>
-        <template #header>
-          <h2 class="text-xl font-semibold text-primary-700">📦 BaseCard - Variantes</h2>
-        </template>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <BaseCard variant="default" padding="sm">
-            <h3 class="font-semibold mb-2">Card Padrão</h3>
-            <p class="text-sm text-gray-600">Com sombra sutil</p>
-          </BaseCard>
-
-          <BaseCard variant="outlined" padding="sm">
-            <h3 class="font-semibold mb-2">Card Outlined</h3>
-            <p class="text-sm text-gray-600">Com borda</p>
-          </BaseCard>
-
-          <BaseCard variant="elevated" padding="sm">
-            <h3 class="font-semibold mb-2">Card Elevado</h3>
-            <p class="text-sm text-gray-600">Sombra intensa</p>
-          </BaseCard>
-
-          <BaseCard variant="gradient" padding="sm">
-            <h3 class="font-semibold mb-2">Card Gradiente</h3>
-            <p class="text-sm opacity-90">Com gradiente da marca</p>
-          </BaseCard>
-        </div>
-      </BaseCard>
-
-      <!-- Inputs -->
-      <BaseCard>
-        <template #header>
-          <h2 class="text-xl font-semibold text-primary-700">📝 BaseInput - Exemplos</h2>
-        </template>
-
-        <div class="grid md:grid-cols-2 gap-6">
-          <BaseInput
-            label="Nome do Cliente"
-            placeholder="Digite o nome..."
-            hint="Nome completo do cliente"
-          />
-
-          <BaseInput label="E-mail" type="email" placeholder="cliente@email.com" required />
-
-          <BaseInput label="Telefone" type="tel" placeholder="(11) 99999-9999" />
-
-          <BaseInput
-            label="Campo com Erro"
-            placeholder="Valor inválido"
-            error="Este campo é obrigatório"
-          />
-        </div>
-      </BaseCard>
-
-      <!-- Badges -->
-      <BaseCard>
-        <template #header>
-          <h2 class="text-xl font-semibold text-primary-700">🏷️ BaseBadge - Status</h2>
-        </template>
-
-        <div class="space-y-4">
-          <div class="flex flex-wrap gap-3">
-            <BaseBadge variant="primary">Agendado</BaseBadge>
-            <BaseBadge variant="secondary">Em Andamento</BaseBadge>
-            <BaseBadge variant="success">Concluído</BaseBadge>
-            <BaseBadge variant="warning">Aguardando</BaseBadge>
-            <BaseBadge variant="danger">Cancelado</BaseBadge>
-            <BaseBadge variant="info">Informação</BaseBadge>
-            <BaseBadge variant="gray">Inativo</BaseBadge>
+      <!-- Clientes -->
+      <BaseCard
+        variant="elevated"
+        class="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+        @click="$router.push('/clientes')"
+      >
+        <div class="text-center p-6">
+          <div class="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-secondary-200 transition-colors">
+            <FontAwesomeIcon icon="users" class="text-3xl text-secondary-600" />
           </div>
-
-          <div class="flex flex-wrap gap-3">
-            <BaseBadge size="sm" variant="primary">Pequeno</BaseBadge>
-            <BaseBadge size="md" variant="secondary">Médio</BaseBadge>
-            <BaseBadge size="lg" variant="success">Grande</BaseBadge>
-            <BaseBadge variant="warning" rounded>Arredondado</BaseBadge>
-          </div>
+          <h3 class="text-xl font-semibold text-secondary-700 mb-2">Clientes</h3>
+          <p class="text-gray-600 text-sm">
+            Cadastro de clientes, informações de contato e histórico de agendamentos
+          </p>
         </div>
       </BaseCard>
 
-      <!-- Modal (demonstração) -->
-      <BaseCard>
-        <template #header>
-          <h2 class="text-xl font-semibold text-primary-700">🔲 BaseModal - Pop-ups</h2>
-        </template>
-
-        <div class="space-y-4">
-          <BaseButton @click="showModal = true">Abrir Modal</BaseButton>
-
-          <BaseModal v-model="showModal" title="Exemplo de Modal" size="md">
-            <p class="text-gray-600 mb-4">
-              Este é um exemplo de modal usando o componente BaseModal.
-            </p>
-            <BaseInput label="Nome do Pet" placeholder="Digite o nome do pet..." />
-
-            <template #footer>
-              <BaseButton variant="ghost" @click="showModal = false"> Cancelar </BaseButton>
-              <BaseButton variant="primary" @click="showModal = false"> Salvar </BaseButton>
-            </template>
-          </BaseModal>
+      <!-- Relatórios (Placeholder) -->
+      <BaseCard
+        variant="outlined"
+        class="cursor-not-allowed opacity-60"
+      >
+        <div class="text-center p-6">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FontAwesomeIcon icon="chart-bar" class="text-3xl text-gray-400" />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-500 mb-2">Relatórios</h3>
+          <p class="text-gray-500 text-sm">
+            Em desenvolvimento - Relatórios e estatísticas detalhadas
+          </p>
+          <BaseBadge variant="warning" class="mt-2">Em breve</BaseBadge>
         </div>
       </BaseCard>
+    </div>
 
-      <!-- Guia de uso -->
-      <BaseCard variant="outlined" class="bg-primary-50">
-        <template #header>
-          <h2 class="text-xl font-semibold text-primary-700">📚 Como usar os componentes:</h2>
-        </template>
+    <!-- Ações Rápidas -->
+    <BaseCard class="mb-12">
+      <template #header>
+        <h2 class="text-xl font-semibold text-primary-700">🚀 Ações Rápidas</h2>
+      </template>
 
-        <div class="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 class="font-semibold text-primary-600 mb-3">Importação:</h3>
-            <pre
-              class="bg-gray-100 p-3 rounded text-sm overflow-x-auto"
-            ><code>import { BaseButton, BaseCard, BaseInput } from '@/components/UI'</code></pre>
-          </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <BaseButton
+          variant="primary"
+          size="lg"
+          class="justify-start"
+          @click="$router.push('/animais/novo')"
+        >
+          <FontAwesomeIcon icon="plus" class="mr-3" />
+          Cadastrar Novo Animal
+        </BaseButton>
 
-          <div>
-            <h3 class="font-semibold text-primary-600 mb-3">Uso no template:</h3>
-            <pre
-              class="bg-gray-100 p-3 rounded text-sm overflow-x-auto"
-            ><code>&lt;BaseButton variant="primary"&gt;
-  Texto do Botão
-&lt;/BaseButton&gt;</code></pre>
-          </div>
+        <BaseButton
+          variant="secondary"
+          size="lg"
+          class="justify-start"
+          @click="$router.push('/clientes/novo')"
+        >
+          <FontAwesomeIcon icon="user-plus" class="mr-3" />
+          Cadastrar Novo Cliente
+        </BaseButton>
+      </div>
+    </BaseCard>
+
+    <!-- Status do Sistema -->
+    <BaseCard variant="outlined" class="mb-16">
+      <template #header>
+        <h2 class="text-xl font-semibold text-primary-700">📊 Status do Sistema</h2>
+      </template>
+
+      <div class="grid md:grid-cols-3 gap-6 text-center">
+        <div>
+          <div class="text-2xl font-bold text-primary-600">Sistema Online</div>
+          <p class="text-sm text-gray-600 mt-1">Todos os serviços funcionando</p>
+          <BaseBadge variant="success" class="mt-2">✓ Ativo</BaseBadge>
         </div>
-      </BaseCard>
+
+        <div>
+          <div class="text-2xl font-bold text-secondary-600">Banco de Dados</div>
+          <p class="text-sm text-gray-600 mt-1">Conexão estabelecida</p>
+          <BaseBadge variant="success" class="mt-2">✓ Conectado</BaseBadge>
+        </div>
+
+        <div>
+          <div class="text-2xl font-bold text-gray-600">Versão</div>
+          <p class="text-sm text-gray-600 mt-1">Sistema ProntoDog</p>
+          <BaseBadge variant="info" class="mt-2">v1.0.0</BaseBadge>
+        </div>
+      </div>
+    </BaseCard>
+
+    <!-- Botões Inferiores -->
+    <div class="fixed bottom-4 right-4 flex flex-col gap-3">
+      <!-- Botão Configurações -->
+      <BaseButton
+        variant="outline"
+        size="lg"
+        class="shadow-lg"
+        @click="$router.push('/configuracoes')"
+      >
+        <FontAwesomeIcon icon="cog" class="mr-2" />
+        Configurações
+      </BaseButton>
+
+      <!-- Botão Estilos (Modo Dev) -->
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        class="shadow-lg bg-white"
+        @click="$router.push('/style-guide')"
+        title="Guia de Estilos - Modo Desenvolvedor"
+      >
+        <FontAwesomeIcon icon="palette" class="mr-2" />
+        Estilos
+      </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseCard from '@/components/UI/BaseCard.vue'
-import BaseInput from '@/components/UI/BaseInput.vue'
-import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
-
-// Estado para o modal de demonstração
-const showModal = ref(false)
 </script>

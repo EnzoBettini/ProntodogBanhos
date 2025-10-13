@@ -33,7 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const cardClasses = computed(() => {
-  const baseClasses = 'bg-white overflow-hidden'
+  const baseClasses = 'bg-white overflow-hidden transition-colors'
 
   const variantClasses = {
     default: 'shadow-md',

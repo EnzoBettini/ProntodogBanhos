@@ -29,6 +29,16 @@ const router = createRouter({
       name: 'clientes-novo',
       component: () => import('../views/ClientesNovoView.vue'),
     },
+    {
+      path: '/configuracoes',
+      name: 'configuracoes',
+      component: () => import('../views/ConfiguracoesView.vue'),
+    },
+    {
+      path: '/style-guide',
+      name: 'style-guide',
+      component: () => import('../views/StyleGuideView.vue'),
+    },
   ],
 })
 

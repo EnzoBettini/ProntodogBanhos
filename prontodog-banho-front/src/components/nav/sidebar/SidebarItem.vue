@@ -3,14 +3,14 @@
     v-if="to"
     :to="to"
     :class="itemClasses"
-    @click="$emit('click')"
+    @click="handleClick"
     :title="collapsed ? title : ''"
   >
     <FontAwesomeIcon v-if="icon" :icon="icon" class="w-5 h-5 flex-shrink-0" />
     <span v-show="!collapsed" class="truncate">{{ title }}</span>
   </router-link>
 
-  <div v-else :class="itemClasses" @click="$emit('click')" :title="collapsed ? title : ''">
+  <div v-else :class="itemClasses" @click="handleClick" :title="collapsed ? title : ''">
     <FontAwesomeIcon v-if="icon" :icon="icon" class="w-5 h-5 flex-shrink-0" />
     <span v-show="!collapsed" class="truncate">{{ title }}</span>
     <slot name="arrow" />
@@ -19,6 +19,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useSidebarStore } from '@/stores/sidebar'
 
 interface Props {
   title: string
@@ -35,13 +36,26 @@ const props = withDefaults(defineProps<Props>(), {
   collapsed: false,
 })
 
-defineEmits<{
+const emit = defineEmits<{
   click: []
 }>()
 
+const sidebarStore = useSidebarStore()
+
+const handleClick = () => {
+  // Se a sidebar está colapsada, abrir ela
+  if (props.collapsed) {
+    sidebarStore.open()
+  }
+
+  // Emitir o evento click original
+  emit('click')
+}
+
 const itemClasses = computed(() => {
   const paddingX = props.collapsed ? 'px-3' : 'px-4'
-  const baseClasses = `flex items-center gap-3 ${paddingX} py-3 rounded-lg transition-colors cursor-pointer`
+  const justifyContent = props.collapsed ? 'justify-center' : 'justify-start'
+  const baseClasses = `flex items-center gap-3 ${paddingX} ${justifyContent} py-3 rounded-lg transition-colors cursor-pointer`
 
   if (props.active) {
     return `${baseClasses} bg-primary-500 text-white`
