@@ -94,6 +94,17 @@ export const animaisService = {
       devLog('✅ Animal criado com sucesso! ID:', response.data.id)
       return response.data
     }, 'Não foi possível cadastrar o animal. Tente novamente.')
+  },
+
+  // 🗑️ EXCLUIR ANIMAL POR ID
+  // DELETE /animal/{id}
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo animal com ID ${id}...`)
+      await api.delete(`/animal/${id}`)
+      devLog('✅ Animal excluído com sucesso!')
+    }, 'Não foi possível excluir o animal. Tente novamente.')
   }
 }
 

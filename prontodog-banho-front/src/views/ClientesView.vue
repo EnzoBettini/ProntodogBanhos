@@ -331,14 +331,6 @@
       </div>
     </div>
 
-    <!-- 🎭 Modal de Perfil do Cliente -->
-    <ClienteProfileModal
-      :is-open="modalPerfilAberto"
-      :cliente-id="clienteSelecionadoId"
-      @close="fecharModalPerfil"
-      @cliente-excluido="onClienteExcluido"
-      @cliente-atualizado="onClienteAtualizado"
-    />
   </div>
 </template>
 
@@ -351,7 +343,6 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
 import { clientesService } from '@/services/api'
 import type { Cliente } from '@/types/api'
-import ClienteProfileModal from '@/components/UI/ClienteProfileModal.vue'
 import { formatarCpf, formatarTelefone, formatarHorario } from '@/utils/formatters'
 import { useAutoAnimateList } from '@/composables/useAutoAnimate'
 
@@ -369,9 +360,6 @@ const ultimaAtualizacao = ref('')            // Timestamp da última atualizaç�
 const itensPorPagina = ref(10)                // Quantos itens mostrar por vez
 const itensExibidos = ref(10)                 // Quantos itens estão sendo exibidos atualmente
 
-// 🎭 Modal de perfil
-const modalPerfilAberto = ref(false)
-const clienteSelecionadoId = ref<number | null>(null)
 
 // 🎬 Auto-animate para listas
 const listaClientesRef = ref<HTMLElement>()
@@ -459,13 +447,7 @@ const carregarClientes = async (): Promise<void> => {
 // 👀 Função para ver detalhes do cliente
 const verDetalhes = (cliente: Cliente): void => {
   console.log('👁️ Ver detalhes:', cliente.nomeCompleto)
-  clienteSelecionadoId.value = cliente.id
-  modalPerfilAberto.value = true
-}
-
-const fecharModalPerfil = (): void => {
-  modalPerfilAberto.value = false
-  clienteSelecionadoId.value = null
+  router.push(`/clientes/${cliente.id}/editar`)
 }
 
 const onClienteExcluido = (clienteId: number): void => {

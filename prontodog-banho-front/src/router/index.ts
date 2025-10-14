@@ -40,6 +40,24 @@ const router = createRouter({
       component: () => import('../views/ServicosNovoView.vue'),
     },
     {
+      path: '/servicos/:id/editar',
+      name: 'servicos-editar',
+      component: () => import('../views/ServicosEditarView.vue'),
+      props: true,
+    },
+    {
+      path: '/animais/:id/editar',
+      name: 'animais-editar',
+      component: () => import('../views/AnimaisEditarView.vue'),
+      props: true,
+    },
+    {
+      path: '/clientes/:id/editar',
+      name: 'clientes-editar',
+      component: () => import('../views/ClientesEditarView.vue'),
+      props: true,
+    },
+    {
       path: '/configuracoes',
       name: 'configuracoes',
       component: () => import('../views/ConfiguracoesView.vue'),

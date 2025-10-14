@@ -102,8 +102,8 @@ export interface NovoCliente {
 export interface NovoServico {
   nome: string
   descricao: string
-  quantidade: number
-  valor: number
+  quantidade: number // Representa banhos por pacote (1 = banho único, 4 = pacote 4 banhos)
+  valor: number // Valor total do pacote/serviço
 }
 
 // 📋 Dados do formulário (estrutura interna do componente)
@@ -134,6 +134,7 @@ export type TipoAnimal = typeof TIPOS_ANIMAIS[number]
 
 // 💼 Tipos de serviços comuns em petshops
 export const TIPOS_SERVICOS = [
+  // Serviços Únicos
   'Banho Simples',
   'Banho e Tosa',
   'Tosa Higiênica',
@@ -145,6 +146,11 @@ export const TIPOS_SERVICOS = [
   'Hidratação',
   'Perfume',
   'Transporte',
+  // Pacotes de Banhos
+  'Pacote Banho Simples',
+  'Pacote Banho e Tosa',
+  'Pacote Premium',
+  'Pacote Completo',
   'Outro'
 ] as const
 

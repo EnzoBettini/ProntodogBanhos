@@ -61,17 +61,33 @@
         </div>
       </div>
 
-      <!-- 🌊 Wave Decoration (Verde para contraste) -->
-      <div class="absolute bottom-0 left-0 right-0 z-10">
-        <svg viewBox="0 0 1440 120" class="w-full h-12">
+      <!-- 🌊 Wave Decoration Profissional -->
+      <div class="absolute bottom-0 left-0 right-0 z-10 overflow-hidden">
+        <svg viewBox="0 0 1440 100" class="w-full h-20" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-              <stop offset="50%" style="stop-color:#059669;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+            <linearGradient id="waveGradientServices" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.9" />
+              <stop offset="30%" style="stop-color:#059669;stop-opacity:0.8" />
+              <stop offset="70%" style="stop-color:#047857;stop-opacity:0.7" />
+              <stop offset="100%" style="stop-color:#064e3b;stop-opacity:0.6" />
             </linearGradient>
+            <!-- Sombra sutil -->
+            <filter id="waveShadow">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.2"/>
+            </filter>
           </defs>
-          <path d="M0 60h1440V0c-120 40-240 60-360 60S840 40 720 60s-240 0-360-60S120 40 0 60z" fill="url(#waveGradient)"></path>
+          <!-- Wave suave e profissional -->
+          <path
+            d="M0,50 C240,30 480,70 720,50 C960,30 1200,70 1440,50 L1440,100 L0,100 Z"
+            fill="url(#waveGradientServices)"
+            filter="url(#waveShadow)"
+          />
+          <!-- Wave secundária para profundidade -->
+          <path
+            d="M0,60 C360,35 600,75 960,55 C1200,35 1320,80 1440,60 L1440,100 L0,100 Z"
+            fill="url(#waveGradientServices)"
+            opacity="0.4"
+          />
         </svg>
       </div>
     </div>
@@ -118,7 +134,7 @@
             <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl">
               <FontAwesomeIcon :icon="['fas', 'dollar-sign']" class="text-green-600" />
               <span class="text-sm font-medium text-green-800">
-                Valor Total: R$ {{ valorTotalServicos }}
+                Catálogo: R$ {{ valorTotalServicos }}
               </span>
             </div>
           </div>
@@ -203,9 +219,9 @@
                   <div class="w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <FontAwesomeIcon :icon="['fas', 'cog']" class="text-xl text-white drop-shadow-sm" />
                   </div>
-                  <!-- Badge de quantidade -->
-                  <div class="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                    {{ servico.quantidade }}x
+                  <!-- Badge de banhos -->
+                  <div class="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                    {{ servico.quantidade }}{{ servico.quantidade === 1 ? '' : 'x' }}
                   </div>
                 </div>
 
@@ -222,7 +238,12 @@
                       <div class="text-2xl font-bold text-green-600">
                         R$ {{ formatarValor(servico.valor) }}
                       </div>
-                      <div class="text-sm text-gray-500">por unidade</div>
+                      <div class="text-sm text-gray-500">
+                        {{ servico.quantidade === 1 ? 'serviço único' : 'pacote completo' }}
+                      </div>
+                      <div v-if="servico.quantidade > 1" class="text-xs text-blue-600 font-medium">
+                        R$ {{ formatarValor(servico.valor / servico.quantidade) }} por banho
+                      </div>
                     </div>
                   </div>
 
@@ -234,8 +255,10 @@
                     </div>
 
                     <div class="flex items-center gap-2 text-sm">
-                      <FontAwesomeIcon :icon="['fas', 'box']" class="text-blue-600" />
-                      <span class="text-gray-600">Qtd: <span class="font-medium">{{ servico.quantidade }}</span></span>
+                      <FontAwesomeIcon :icon="['fas', 'calculator']" class="text-blue-600" />
+                      <span class="text-gray-600">
+                        {{ servico.quantidade === 1 ? 'Banho único' : `${servico.quantidade} banhos` }}
+                      </span>
                     </div>
 
                     <div class="flex items-center gap-2 text-sm">
@@ -245,7 +268,14 @@
 
                     <div class="flex items-center gap-2 text-sm">
                       <FontAwesomeIcon :icon="['fas', 'dollar-sign']" class="text-green-600" />
-                      <span class="text-gray-600">Total: <span class="font-medium text-green-600">R$ {{ formatarValor(servico.valor * servico.quantidade) }}</span></span>
+                      <span class="text-gray-600">
+                        <span v-if="servico.quantidade === 1">
+                          Valor: <span class="font-medium text-green-600">R$ {{ formatarValor(servico.valor) }}</span>
+                        </span>
+                        <span v-else>
+                          Por banho: <span class="font-medium text-green-600">R$ {{ formatarValor(servico.valor / servico.quantidade) }}</span>
+                        </span>
+                      </span>
                     </div>
                   </div>
 
@@ -308,7 +338,7 @@
 
             <div class="flex items-center gap-2 text-green-700">
               <FontAwesomeIcon :icon="['fas', 'dollar-sign']" class="text-lg" />
-              <span class="font-semibold">R$ {{ valorTotalServicos }} em serviços</span>
+              <span class="font-semibold">R$ {{ valorTotalServicos }} no catálogo</span>
             </div>
           </div>
 
@@ -394,8 +424,9 @@ const servicosCount = computed(() => {
 const valorTotalServicos = computed(() => {
   if (!servicos.value) return '0,00'
 
+  // Soma apenas os valores dos serviços (não multiplica por quantidade)
   const total = servicos.value.reduce((acc, servico) => {
-    return acc + (servico.valor * servico.quantidade)
+    return acc + servico.valor
   }, 0)
 
   return formatarValor(total)

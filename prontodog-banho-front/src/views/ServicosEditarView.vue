@@ -1,4 +1,4 @@
-<!-- 💼 Página de Cadastro de Serviços -->
+<!-- ✏️ Página de Edição de Serviços -->
 <!-- Visual profissional e corporativo com cores amarelo/verde -->
 <template>
   <div class="min-h-screen bg-gray-50">
@@ -15,25 +15,28 @@
             <div class="relative">
               <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center shadow-2xl">
                 <FontAwesomeIcon
-                  :icon="['fas', 'cog']"
+                  :icon="['fas', 'edit']"
                   class="text-3xl text-white drop-shadow-lg transform rotate-12 animate-bounce-gentle"
                 />
               </div>
-              <!-- Indicador de "novo" -->
-              <div class="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                <FontAwesomeIcon :icon="['fas', 'plus']" class="text-sm text-white animate-pulse" />
+              <!-- Indicador de "editar" -->
+              <div class="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                <FontAwesomeIcon :icon="['fas', 'edit']" class="text-sm text-white animate-pulse" />
               </div>
             </div>
           </div>
 
           <div class="space-y-2">
             <h1 class="text-4xl font-bold">
-              <FontAwesomeIcon :icon="['fas', 'cog']" class="text-yellow-300 mr-2 animate-twinkle" />
-              Cadastro de Serviços
+              <FontAwesomeIcon :icon="['fas', 'edit']" class="text-yellow-300 mr-2 animate-twinkle" />
+              Editar Serviço
             </h1>
             <p class="text-xl text-white opacity-90 font-medium">
-              Registre novos serviços profissionais no sistema
+              Atualize as informações do serviço no sistema
             </p>
+            <div v-if="servicoCarregado" class="text-lg text-yellow-100 font-medium mt-4">
+              📋 Editando: <span class="font-bold">{{ formulario.nome || 'Carregando...' }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -42,35 +45,82 @@
       <div class="absolute bottom-0 left-0 right-0 z-10 overflow-hidden">
         <svg viewBox="0 0 1440 100" class="w-full h-20" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="waveGradientNovoServico" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="waveGradientEditarServico" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.9" />
               <stop offset="30%" style="stop-color:#059669;stop-opacity:0.8" />
               <stop offset="70%" style="stop-color:#047857;stop-opacity:0.7" />
               <stop offset="100%" style="stop-color:#064e3b;stop-opacity:0.6" />
             </linearGradient>
             <!-- Sombra sutil -->
-            <filter id="waveShadowNovo">
+            <filter id="waveShadowEditar">
               <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.2"/>
             </filter>
           </defs>
           <!-- Wave suave e profissional -->
           <path
             d="M0,50 C240,30 480,70 720,50 C960,30 1200,70 1440,50 L1440,100 L0,100 Z"
-            fill="url(#waveGradientNovoServico)"
-            filter="url(#waveShadowNovo)"
+            fill="url(#waveGradientEditarServico)"
+            filter="url(#waveShadowEditar)"
           />
           <!-- Wave secundária para profundidade -->
           <path
             d="M0,60 C360,35 600,75 960,55 C1200,35 1320,80 1440,60 L1440,100 L0,100 Z"
-            fill="url(#waveGradientNovoServico)"
+            fill="url(#waveGradientEditarServico)"
             opacity="0.4"
           />
         </svg>
       </div>
     </div>
 
+    <!-- ⏳ Estado de Loading (Carregando dados do serviço) -->
+    <div v-if="loadingServico" class="max-w-4xl mx-auto px-4 py-8">
+      <div class="flex items-center justify-center py-20">
+        <div class="text-center space-y-4">
+          <div class="relative">
+            <div class="w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-xl animate-bounce">
+              <FontAwesomeIcon :icon="['fas', 'spinner']" class="text-2xl text-white animate-spin" />
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-r from-amber-400/30 to-yellow-500/30 rounded-2xl blur-xl animate-pulse"></div>
+          </div>
+          <div class="space-y-2">
+            <h3 class="text-xl font-semibold text-gray-700">Carregando dados do serviço...</h3>
+            <p class="text-gray-500">ID: {{ $route.params.id }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ❌ Estado de Erro -->
+    <div v-else-if="errorCarregando" class="max-w-4xl mx-auto px-4 py-8">
+      <div class="flex items-center justify-center py-20">
+        <BaseCard class="text-center max-w-md bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
+          <div class="space-y-4">
+            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl">
+              <FontAwesomeIcon :icon="['fas', 'exclamation-triangle']" class="text-2xl text-white" />
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-red-700 mb-2">Erro ao carregar serviço</h3>
+              <p class="text-red-600 mb-4">{{ errorCarregando }}</p>
+              <div class="flex gap-3 justify-center">
+                <BaseButton variant="secondary" @click="carregarServico">
+                  <FontAwesomeIcon :icon="['fas', 'refresh']" class="mr-2" />
+                  Tentar Novamente
+                </BaseButton>
+                <RouterLink to="/servicos">
+                  <BaseButton variant="primary">
+                    <FontAwesomeIcon :icon="['fas', 'arrow-left']" class="mr-2" />
+                    Voltar à Lista
+                  </BaseButton>
+                </RouterLink>
+              </div>
+            </div>
+          </div>
+        </BaseCard>
+      </div>
+    </div>
+
     <!-- 💼 Formulário Principal -->
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div v-else-if="servicoCarregado" class="max-w-4xl mx-auto px-4 py-8">
       <form @submit.prevent="submeterFormulario" class="space-y-8">
 
         <!-- 📋 Seção: Informações Básicas -->
@@ -148,7 +198,7 @@
                     <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-amber-500" />
                   </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Selecione um tipo pré-definido ou digite um personalizado</p>
+                <p class="text-xs text-gray-500 mt-1">Selecione um tipo pré-definido ou mantenha o atual</p>
               </div>
             </div>
 
@@ -293,20 +343,20 @@
           </div>
         </div>
 
-        <!-- 📋 Informações Importantes -->
-        <BaseCard class="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 animate-fade-in-up">
+        <!-- 📋 Informações sobre Edição -->
+        <BaseCard class="bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 animate-fade-in-up">
           <div class="flex gap-4">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-white text-lg" />
+              <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-xl flex items-center justify-center">
+                <FontAwesomeIcon :icon="['fas', 'edit']" class="text-white text-lg" />
               </div>
             </div>
             <div>
-              <h3 class="font-semibold text-blue-800 mb-2">Informações Importantes</h3>
-              <ul class="space-y-2 text-sm text-blue-700">
+              <h3 class="font-semibold text-orange-800 mb-2">Informações sobre Edição</h3>
+              <ul class="space-y-2 text-sm text-orange-700">
                 <li class="flex items-center gap-2">
                   <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                  Todos os campos marcados com * são obrigatórios
+                  As alterações serão salvas imediatamente no sistema
                 </li>
                 <li class="flex items-center gap-2">
                   <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
@@ -314,11 +364,11 @@
                 </li>
                 <li class="flex items-center gap-2">
                   <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
-                  "Banhos por Pacote" define quantos banhos o cliente receberá
+                  Modificar "Banhos por Pacote" pode impactar clientes existentes
                 </li>
                 <li class="flex items-center gap-2">
                   <div class="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                  Selecione "1 Banho" para serviços únicos ou até 10 para pacotes
+                  ID do serviço: <span class="font-mono bg-gray-100 px-2 py-0.5 rounded">#{{ $route.params.id }}</span>
                 </li>
               </ul>
             </div>
@@ -341,7 +391,7 @@
             type="submit"
             variant="primary"
             :disabled="loading"
-            class="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0"
+            class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0"
           >
             <FontAwesomeIcon
               v-if="loading"
@@ -353,7 +403,7 @@
               :icon="['fas', 'save']"
               class="mr-2"
             />
-            {{ loading ? 'Cadastrando...' : 'Cadastrar Serviço' }}
+            {{ loading ? 'Salvando...' : 'Salvar Alterações' }}
           </BaseButton>
         </div>
 
@@ -401,13 +451,13 @@
     <!-- 🎉 Modal de Sucesso -->
     <BaseModal
       v-model="mostrarSucesso"
-      title="Serviço Cadastrado!"
+      title="Alterações Salvas!"
     >
       <div class="text-center space-y-6 p-6">
         <!-- Ícone de sucesso animado -->
         <div class="relative mx-auto w-24 h-24">
-          <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse"></div>
-          <div class="relative w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl">
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full animate-pulse"></div>
+          <div class="relative w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-2xl">
             <FontAwesomeIcon :icon="['fas', 'check']" class="text-3xl text-white animate-bounce" />
           </div>
           <!-- Confetti effect -->
@@ -421,28 +471,28 @@
 
         <!-- Mensagem de sucesso -->
         <div>
-          <h2 class="text-2xl font-bold text-gray-800 mb-2">Serviço Cadastrado com Sucesso!</h2>
-          <p class="text-gray-600 mb-6">O serviço foi registrado no sistema e já está disponível.</p>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">Serviço Atualizado com Sucesso!</h2>
+          <p class="text-gray-600 mb-6">As alterações foram salvas e já estão disponíveis no sistema.</p>
         </div>
 
-        <!-- Detalhes do serviço criado -->
-        <div v-if="servicoCriado" class="bg-gradient-to-r from-gray-50 to-green-50 rounded-xl p-4 border border-green-200">
+        <!-- Detalhes do serviço atualizado -->
+        <div v-if="servicoAtualizado" class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 border border-blue-200">
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium text-gray-600">Nome:</span>
-              <span class="font-semibold text-gray-800">{{ servicoCriado.nome }}</span>
+              <span class="font-semibold text-gray-800">{{ servicoAtualizado.nome }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium text-gray-600">Valor:</span>
-              <span class="font-semibold text-green-600">R$ {{ formatarValor(servicoCriado.valor) }}</span>
+              <span class="font-semibold text-green-600">R$ {{ formatarValor(servicoAtualizado.valor) }}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-600">Quantidade:</span>
-              <span class="font-semibold text-blue-600">{{ servicoCriado.quantidade }} unidades</span>
+              <span class="text-sm font-medium text-gray-600">Banhos:</span>
+              <span class="font-semibold text-blue-600">{{ servicoAtualizado.quantidade }}{{ servicoAtualizado.quantidade === 1 ? ' (único)' : ' banhos' }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium text-gray-600">ID do Serviço:</span>
-              <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">#{{ servicoCriado.id }}</span>
+              <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">#{{ servicoAtualizado.id }}</span>
             </div>
           </div>
         </div>
@@ -450,18 +500,18 @@
         <!-- Botões do modal -->
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <BaseButton
-            @click="adicionarOutroServico"
+            @click="continuarEditando"
             variant="secondary"
-            class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white border-0"
+            class="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white border-0"
           >
-            <FontAwesomeIcon :icon="['fas', 'plus']" class="mr-2" />
-            Cadastrar Outro
+            <FontAwesomeIcon :icon="['fas', 'edit']" class="mr-2" />
+            Continuar Editando
           </BaseButton>
 
           <BaseButton
             @click="voltarParaLista"
             variant="primary"
-            class="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 border-0"
+            class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 border-0"
           >
             <FontAwesomeIcon :icon="['fas', 'list']" class="mr-2" />
             Ver Lista de Serviços
@@ -475,14 +525,14 @@
       <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4">
         <div class="text-center space-y-4">
           <div class="relative mx-auto w-16 h-16">
-            <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-2xl animate-pulse"></div>
-            <div class="relative w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-xl">
-              <FontAwesomeIcon :icon="['fas', 'cog']" class="text-2xl text-white animate-spin" />
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl animate-pulse"></div>
+            <div class="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
+              <FontAwesomeIcon :icon="['fas', 'save']" class="text-2xl text-white animate-pulse" />
             </div>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800">Cadastrando Serviço</h3>
-            <p class="text-gray-600">Processando informações...</p>
+            <h3 class="text-lg font-semibold text-gray-800">Salvando Alterações</h3>
+            <p class="text-gray-600">Atualizando informações do serviço...</p>
           </div>
         </div>
       </div>
@@ -491,26 +541,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { BaseCard, BaseButton, BaseInput, BaseModal } from '@/components/UI'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { BaseCard, BaseButton, BaseModal } from '@/components/UI'
 import { servicosService } from '@/services/api'
-import { TIPOS_SERVICOS } from '@/types/api'
 import type { NovoServico, ServicoCompleto } from '@/types/api'
 
 // 🎯 Configuração inicial
 const router = useRouter()
+const route = useRoute()
 
 // 📋 Estados do formulário
 const loading = ref(false)
+const loadingServico = ref(true)
+const errorCarregando = ref('')
+const servicoCarregado = ref(false)
 const mostrarSucesso = ref(false)
-const servicoCriado = ref<ServicoCompleto | null>(null)
+const servicoAtualizado = ref<ServicoCompleto | null>(null)
 
 // 📝 Dados do formulário
 const formulario = reactive({
   nome: '',
   descricao: '',
-  quantidade: 4, // Padrão: Pacote de 4 banhos
+  quantidade: 4,
   valor: 0
 })
 
@@ -530,7 +583,7 @@ const formStatus = ref<{
 } | null>(null)
 
 // 💡 Computed properties
-const tiposServicos = computed(() => TIPOS_SERVICOS)
+const servicoId = computed(() => Number(route.params.id))
 
 // 🔧 Funções utilitárias
 const formatarValor = (valor: number): string => {
@@ -541,6 +594,7 @@ const formatarValor = (valor: number): string => {
 }
 
 const preencherDescricaoAutomatica = () => {
+  // Só preenche se a descrição estiver vazia (para não sobrescrever na edição)
   if (!formulario.descricao && formulario.nome) {
     const descricoesPadrao: Record<string, string> = {
       // Serviços Únicos
@@ -604,20 +658,39 @@ const validarFormulario = (): boolean => {
   return valido
 }
 
-const limparFormulario = () => {
-  formulario.nome = ''
-  formulario.descricao = ''
-  formulario.quantidade = 4 // Resetar para padrão de 4 banhos
-  formulario.valor = 0
-
+const limparErros = () => {
   Object.keys(erros).forEach(key => {
     erros[key as keyof typeof erros] = ''
   })
-
   formStatus.value = null
 }
 
 // 🎯 Ações principais
+const carregarServico = async () => {
+  loadingServico.value = true
+  errorCarregando.value = ''
+  servicoCarregado.value = false
+
+  try {
+    const servico = await servicosService.buscarPorId(servicoId.value)
+
+    // Preenche o formulário com os dados existentes
+    formulario.nome = servico.nome
+    formulario.descricao = servico.descricao || ''
+    formulario.quantidade = servico.quantidade
+    formulario.valor = servico.valor
+
+    servicoCarregado.value = true
+    console.log('✅ Serviço carregado:', servico)
+
+  } catch (error) {
+    console.error('❌ Erro ao carregar serviço:', error)
+    errorCarregando.value = error instanceof Error ? error.message : 'Erro ao carregar serviço'
+  } finally {
+    loadingServico.value = false
+  }
+}
+
 const submeterFormulario = async () => {
   if (!validarFormulario()) {
     formStatus.value = {
@@ -632,40 +705,50 @@ const submeterFormulario = async () => {
   formStatus.value = null
 
   try {
-    const dadosServico: NovoServico = {
+    // Como o backend não tem PUT, vamos usar o método salvar() com ID
+    const dadosServico = {
+      id: servicoId.value,
       nome: formulario.nome.trim(),
       descricao: formulario.descricao.trim(),
       quantidade: Number(formulario.quantidade),
       valor: Number(formulario.valor)
     }
 
-    const resultado = await servicosService.criar(dadosServico)
+    // Usando criar() que chama POST / - o JPA fará update se ID existir
+    const resultado = await servicosService.criar(dadosServico as any)
 
-    servicoCriado.value = resultado
+    servicoAtualizado.value = resultado
     mostrarSucesso.value = true
-    limparFormulario()
+    limparErros()
+
+    console.log('✅ Serviço atualizado com sucesso:', resultado)
 
   } catch (error) {
-    console.error('❌ Erro ao criar serviço:', error)
+    console.error('❌ Erro ao atualizar serviço:', error)
     formStatus.value = {
       icon: 'exclamation-triangle',
-      title: 'Erro ao Cadastrar',
-      message: error instanceof Error ? error.message : 'Erro inesperado ao cadastrar serviço.'
+      title: 'Erro ao Atualizar',
+      message: error instanceof Error ? error.message : 'Erro inesperado ao atualizar serviço.'
     }
   } finally {
     loading.value = false
   }
 }
 
-const adicionarOutroServico = () => {
+const continuarEditando = () => {
   mostrarSucesso.value = false
-  servicoCriado.value = null
-  limparFormulario()
+  servicoAtualizado.value = null
+  limparErros()
 }
 
 const voltarParaLista = () => {
   router.push('/servicos')
 }
+
+// 🎬 Lifecycle
+onMounted(() => {
+  carregarServico()
+})
 </script>
 
 <style scoped>

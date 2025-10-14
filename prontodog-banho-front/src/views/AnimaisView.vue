@@ -483,8 +483,7 @@ const carregarAnimais = async (): Promise<void> => {
 
 const visualizarAnimal = (animal: Animal): void => {
   console.log('👁️ Visualizar animal:', animal.nome)
-  // TODO: Implementar modal ou página de detalhes
-  alert(`Detalhes do ${animal.nome} serão implementados em breve!`)
+  router.push(`/animais/${animal.id}/editar`)
 }
 
 // 📄 Funções de Paginação
@@ -507,8 +506,7 @@ watch([filtroNome, filtroCliente, filtroTipo], () => {
 
 const editarAnimal = (animal: Animal): void => {
   console.log('✏️ Editar animal:', animal.nome)
-  // TODO: Navegar para página de edição
-  alert(`Edição do ${animal.nome} será implementada em breve!`)
+  router.push(`/animais/${animal.id}/editar`)
 }
 
 // 🎬 Lifecycle

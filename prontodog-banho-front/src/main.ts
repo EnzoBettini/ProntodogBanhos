@@ -63,7 +63,10 @@ import {
   faAlignLeft,
   faBox,
   faFilter,
-  faDollarSign
+  faDollarSign,
+  faPaw,
+  faQrcode,
+  faBarcode
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -120,7 +123,10 @@ library.add(
   faAlignLeft,
   faBox,
   faFilter,
-  faDollarSign
+  faDollarSign,
+  faPaw,
+  faQrcode,
+  faBarcode
 )
 
 const app = createApp(App)
