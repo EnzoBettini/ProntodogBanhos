@@ -60,6 +60,17 @@
         <SidebarItem title="Novo Cliente" to="/clientes/novo" :collapsed="false" />
         <SidebarItem title="Relatórios" to="/clientes/relatorios" :collapsed="false" />
       </SidebarDropdown>
+
+      <SidebarDropdown
+        title="Serviços"
+        icon="cog"
+        basePath="/servicos"
+        :collapsed="!sidebarStore.isOpen"
+      >
+        <SidebarItem title="Lista de Serviços" to="/servicos" :collapsed="false" />
+        <SidebarItem title="Novo Serviço" to="/servicos/novo" :collapsed="false" />
+        <SidebarItem title="Relatórios" to="/servicos/relatorios" :collapsed="false" />
+      </SidebarDropdown>
     </nav>
 
     <!-- ✨ Footer com gradiente sutil (apenas quando aberto) -->

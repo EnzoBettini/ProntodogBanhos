@@ -3,7 +3,11 @@
 // É aqui que centralizamos todas as chamadas HTTP
 
 import axios from 'axios'
-import type { ClientesResponse, Cliente, NovoCliente, Animal, NovoAnimal } from '@/types/api'
+import type {
+  ClientesResponse, Cliente, NovoCliente,
+  Animal, NovoAnimal,
+  ServicosResponse, ServicoCompleto, NovoServico
+} from '@/types/api'
 import { handleApiError, devLog, withErrorHandling, validateId } from '@/utils/apiHelpers'
 
 // 🔧 CONFIGURAÇÃO DO AXIOS
@@ -203,6 +207,68 @@ export const clientesService = {
       }
       throw new Error('Não foi possível atualizar o cliente. Tente novamente.')
     }
+  }
+}
+
+// 💼 SERVIÇOS DE SERVIÇOS
+// Aqui ficam todos os métodos relacionados aos serviços do petshop
+export const servicosService = {
+
+  // 📖 BUSCAR TODOS OS SERVIÇOS
+  // GET /servico
+  async buscarTodos(): Promise<ServicosResponse> {
+    return withErrorHandling(async () => {
+      devLog('🔍 Buscando todos os serviços...')
+      const response = await api.get<ServicosResponse>('/servico')
+      devLog(`✅ ${response.data.length} serviços encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar a lista de serviços.')
+  },
+
+  // 📖 BUSCAR SERVIÇO POR ID
+  // GET /servico/{id}
+  async buscarPorId(id: number): Promise<ServicoCompleto> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando serviço com ID ${id}...`)
+      const response = await api.get<ServicoCompleto>(`/servico/${id}`)
+      devLog('✅ Serviço encontrado!')
+      return response.data
+    }, 'Não foi possível buscar os dados do serviço.')
+  },
+
+  // 💾 CRIAR NOVO SERVIÇO
+  // POST /servico
+  async criar(novoServico: NovoServico): Promise<ServicoCompleto> {
+    return withErrorHandling(async () => {
+      devLog('💾 Criando novo serviço...', novoServico.nome)
+      const response = await api.post<ServicoCompleto>('/servico', novoServico)
+      devLog('✅ Serviço criado com sucesso! ID:', response.data.id)
+      return response.data
+    }, 'Não foi possível cadastrar o serviço. Tente novamente.')
+  },
+
+  // 🗑️ EXCLUIR SERVIÇO POR ID
+  // POST /servico/{id} (Backend usa POST para exclusão)
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo serviço com ID ${id}...`)
+      await api.post(`/servico/${id}`)
+      devLog('✅ Serviço excluído com sucesso!')
+    }, 'Não foi possível excluir o serviço. Tente novamente.')
+  },
+
+  // ✏️ ATUALIZAR SERVIÇO POR ID
+  // PUT /servico/{id} (assumindo que existe, caso contrário usar POST)
+  async atualizar(id: number, dadosAtualizados: Partial<NovoServico>): Promise<ServicoCompleto> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando serviço com ID ${id}...`, dadosAtualizados)
+      const response = await api.put<ServicoCompleto>(`/servico/${id}`, dadosAtualizados)
+      devLog('✅ Serviço atualizado com sucesso!')
+      return response.data
+    }, 'Não foi possível atualizar o serviço. Tente novamente.')
   }
 }
 

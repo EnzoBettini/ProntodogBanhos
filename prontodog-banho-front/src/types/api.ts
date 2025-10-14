@@ -22,14 +22,26 @@ export interface Animal {
   codigoSimplesVet: number
   tipo: string
   cliente?: Cliente // Relacionamento com cliente (opcional para evitar referência circular)
-  servicos: Servico[]
+  servicos: AnimalServico[]
 }
 
-// 🛁 Serviço realizado no animal
-export interface Servico {
+// 🛁 Serviço realizado no animal (tabela intermediária AnimalServico)
+export interface AnimalServico {
   id: number
   dataServico: string // formato: "YYYY-MM-DD"
   banhosUsados: number
+  animal?: Animal
+  servico?: ServicoCompleto
+}
+
+// 💼 Serviço principal (entity Servico)
+export interface ServicoCompleto {
+  id: number
+  nome: string
+  descricao: string
+  quantidade: number
+  valor: number
+  servicosAnimais?: AnimalServico[]
 }
 
 // 👤 Cliente principal
@@ -46,6 +58,9 @@ export interface Cliente {
 
 // 📊 Resposta da API (lista de clientes)
 export type ClientesResponse = Cliente[]
+
+// 📊 Resposta da API (lista de serviços)
+export type ServicosResponse = ServicoCompleto[]
 
 // 🔄 Estados para controle de loading e erros
 export interface ApiState<T> {
@@ -83,6 +98,14 @@ export interface NovoCliente {
   animais: NovoAnimal[]
 }
 
+// 💼 Serviço para criação (sem ID)
+export interface NovoServico {
+  nome: string
+  descricao: string
+  quantidade: number
+  valor: number
+}
+
 // 📋 Dados do formulário (estrutura interna do componente)
 export interface FormularioCliente {
   nomeCompleto: string
@@ -108,3 +131,21 @@ export const TIPOS_ANIMAIS = [
 ] as const
 
 export type TipoAnimal = typeof TIPOS_ANIMAIS[number]
+
+// 💼 Tipos de serviços comuns em petshops
+export const TIPOS_SERVICOS = [
+  'Banho Simples',
+  'Banho e Tosa',
+  'Tosa Higiênica',
+  'Tosa Completa',
+  'Escovação de Pelos',
+  'Corte de Unhas',
+  'Limpeza de Ouvidos',
+  'Escovação Dental',
+  'Hidratação',
+  'Perfume',
+  'Transporte',
+  'Outro'
+] as const
+
+export type TipoServico = typeof TIPOS_SERVICOS[number]

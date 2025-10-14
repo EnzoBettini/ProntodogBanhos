@@ -55,7 +55,15 @@ import {
   faAddressCard,
   faStar,
   faCode,
-  faClock
+  faClock,
+  faPlusCircle,
+  faChartLine,
+  faCalculator,
+  faTags,
+  faAlignLeft,
+  faBox,
+  faFilter,
+  faDollarSign
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -104,7 +112,15 @@ library.add(
   faAddressCard,
   faStar,
   faCode,
-  faClock
+  faClock,
+  faPlusCircle,
+  faChartLine,
+  faCalculator,
+  faTags,
+  faAlignLeft,
+  faBox,
+  faFilter,
+  faDollarSign
 )
 
 const app = createApp(App)
