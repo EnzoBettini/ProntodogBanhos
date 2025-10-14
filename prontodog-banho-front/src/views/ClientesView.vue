@@ -111,20 +111,43 @@
           <div class="p-4">
             <div class="flex flex-col md:flex-row gap-4 items-center">
               <!-- Campo de busca principal -->
-              <div class="flex-1 relative">
+              <div class="flex-1 relative group">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FontAwesomeIcon icon="search" class="h-5 w-5 text-emerald-400" />
                 </div>
                 <input
-                  v-model="filtroNome"
+                  v-model="filtroBusca"
                   type="text"
-                  placeholder="Buscar por nome, CPF..."
-                  class="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-white to-emerald-50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
+                  placeholder="Buscar por nome, CPF, ID ou código SimplesVet..."
+                  class="w-full pl-10 pr-12 py-3 bg-gradient-to-r from-white to-emerald-50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
                 />
+
+                <!-- Tooltip de ajuda -->
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <div class="relative group/tooltip">
+                    <FontAwesomeIcon icon="info-circle" class="h-4 w-4 text-gray-400 hover:text-emerald-500 cursor-help transition-colors" />
+
+                    <!-- Conteúdo do tooltip -->
+                    <div class="absolute bottom-full right-0 mb-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50">
+                      <div class="space-y-2">
+                        <p class="font-semibold text-emerald-300">💡 Dicas de busca:</p>
+                        <div class="space-y-1 text-xs">
+                          <p>📝 <span class="text-emerald-200">Nome:</span> Digite parte do nome</p>
+                          <p>📱 <span class="text-emerald-200">CPF:</span> 123.456.789-00 ou 12345678900</p>
+                          <p>🆔 <span class="text-emerald-200">ID:</span> Digite o número do ID</p>
+                          <p>🏥 <span class="text-emerald-200">SimplesVet:</span> Digite o código</p>
+                        </div>
+                      </div>
+
+                      <!-- Seta do tooltip -->
+                      <div class="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Stats rápidas -->
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 flex-wrap">
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full">
                   <FontAwesomeIcon icon="users" class="text-emerald-600 text-sm" />
                   <span class="text-sm font-medium text-emerald-700">{{ clientesFiltrados.length }} encontrados</span>
@@ -132,6 +155,14 @@
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
                   <FontAwesomeIcon icon="dog" class="text-blue-600 text-sm" />
                   <span class="text-sm font-medium text-blue-700">{{ totalAnimais }} pets</span>
+                </div>
+
+                <!-- Dica de busca quando há termo -->
+                <div v-if="filtroBusca" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-100 to-amber-100 rounded-full">
+                  <FontAwesomeIcon icon="search" class="text-amber-600 text-sm animate-pulse" />
+                  <span class="text-sm font-medium text-amber-700">
+                    Buscando: "{{ filtroBusca }}"
+                  </span>
                 </div>
               </div>
             </div>
@@ -318,7 +349,7 @@ const router = useRouter()
 const clientes = ref<Cliente[]>([])           // Lista de clientes
 const loading = ref(false)                    // Estado de carregamento
 const error = ref<string | null>(null)       // Mensagem de erro
-const filtroNome = ref('')                   // Filtro de busca
+const filtroBusca = ref('')                  // Filtro de busca geral
 const ultimaAtualizacao = ref('')            // Timestamp da última atualização
 
 // 🎭 Modal de perfil
@@ -327,12 +358,29 @@ const clienteSelecionadoId = ref<number | null>(null)
 
 // 💻 Computadas (dados derivados)
 const clientesFiltrados = computed(() => {
-  if (!filtroNome.value) return clientes.value
+  if (!filtroBusca.value) return clientes.value
 
-  return clientes.value.filter(cliente =>
-    cliente.nomeCompleto.toLowerCase().includes(filtroNome.value.toLowerCase()) ||
-    cliente.cpf.includes(filtroNome.value)
-  )
+  const termoBusca = filtroBusca.value.toLowerCase().trim()
+
+  return clientes.value.filter(cliente => {
+    // 📝 Busca por nome (case-insensitive)
+    const nomeMatch = cliente.nomeCompleto.toLowerCase().includes(termoBusca)
+
+    // 📱 Busca por CPF (com e sem formatação)
+    const cpfLimpo = cliente.cpf.replace(/\D/g, '') // Remove formatação
+    const cpfFormatado = formatarCpf(cliente.cpf)
+    const cpfMatch = cpfLimpo.includes(termoBusca.replace(/\D/g, '')) ||
+                     cpfFormatado.toLowerCase().includes(termoBusca)
+
+    // 🆔 Busca por ID do sistema (número)
+    const idMatch = cliente.id.toString().includes(termoBusca) ||
+                    cliente.codigoClienteSistema.toString().includes(termoBusca)
+
+    // 🏥 Busca por código SimplesVet (número)
+    const simplesVetMatch = cliente.codigoSimplesVet.toString().includes(termoBusca)
+
+    return nomeMatch || cpfMatch || idMatch || simplesVetMatch
+  })
 })
 
 const totalAnimais = computed(() => {

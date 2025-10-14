@@ -52,7 +52,7 @@
     <div class="px-6 pb-8 -mt-8 relative z-10">
       <div class="max-w-4xl mx-auto">
         <!-- Card principal com glassmorphism -->
-        <div class="relative bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white border-opacity-20 overflow-hidden animate-slide-up">
+        <div class="relative bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white border-opacity-20 animate-slide-up">
 
           <!-- Loading overlay melhorado -->
           <div v-if="salvando" class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 bg-opacity-95 backdrop-blur-sm flex items-center justify-center z-50">
@@ -219,34 +219,38 @@
               </div>
 
               <!-- Seletor de cliente -->
-              <div v-else class="space-y-3">
+              <div v-else class="space-y-3 relative z-40">
                 <label class="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <FontAwesomeIcon icon="user-check" class="text-emerald-500" />
                   Cliente Responsável *
                 </label>
 
                 <div class="relative group">
-                  <select
-                    v-model="formulario.clienteId"
+                  <!-- Input de busca com autocomplete -->
+                  <input
+                    ref="inputRef"
+                    v-model="clienteNome"
+                    type="text"
+                    placeholder="🔍 Digite o nome ou CPF do cliente..."
                     :class="[
-                      'w-full pl-12 pr-10 py-4 border-2 rounded-xl focus:ring-4 focus:ring-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white appearance-none cursor-pointer group-hover:shadow-lg text-gray-700',
+                      'w-full pl-12 pr-10 py-4 border-2 rounded-xl focus:ring-4 focus:ring-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white group-hover:shadow-lg text-gray-700',
                       erros.clienteId ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-gray-200 hover:border-emerald-300'
                     ]"
+                    @focus="abrirDropdown"
+                    @blur="fecharDropdown"
+                    @input="aoDigitarCliente"
+                    autocomplete="off"
                     required
-                  >
-                    <option value="">🔍 Selecione o cliente responsável</option>
-                    <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id" class="py-2">
-                      👤 {{ cliente.nomeCompleto }} - CPF: {{ formatarCpf(cliente.cpf) }}
-                    </option>
-                  </select>
+                  />
 
                   <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
                     <FontAwesomeIcon icon="address-card" />
                   </div>
 
                   <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
-                    <FontAwesomeIcon icon="chevron-down" />
+                    <FontAwesomeIcon :icon="dropdownAberto ? 'chevron-up' : 'chevron-down'" class="transition-transform duration-200" />
                   </div>
+
                 </div>
 
                 <p v-if="erros.clienteId" class="text-red-500 text-sm flex items-center gap-1">
@@ -358,11 +362,71 @@
       </div>
     </BaseModal>
   </div>
+
+  <!-- 🔍 Dropdown do autocomplete (posicionado fora da estrutura principal) -->
+  <Teleport to="body">
+    <!-- Dropdown de sugestões -->
+    <div
+      v-if="dropdownAberto && clientesFiltrados.length > 0"
+      class="fixed bg-white border-2 border-emerald-100 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm z-[99999]"
+      :style="{
+        top: dropdownPosition.top + 'px',
+        left: dropdownPosition.left + 'px',
+        width: dropdownPosition.width + 'px',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+      }"
+    >
+      <div class="p-2">
+        <div
+          v-for="cliente in clientesFiltrados"
+          :key="cliente.id"
+          class="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 cursor-pointer transition-all duration-200 group/item"
+          @click="selecionarCliente(cliente)"
+        >
+          <!-- Avatar do cliente -->
+          <div class="w-10 h-10 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <FontAwesomeIcon icon="user" class="text-white text-sm" />
+          </div>
+
+          <!-- Informações do cliente -->
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-gray-900 truncate group-hover/item:text-emerald-700 transition-colors">
+              {{ cliente.nomeCompleto }}
+            </p>
+            <p class="text-sm text-gray-500 truncate">
+              CPF: {{ formatarCpf(cliente.cpf) }} • ID: {{ cliente.codigoClienteSistema }}
+            </p>
+          </div>
+
+          <!-- Ícone de seleção -->
+          <div class="opacity-0 group-hover/item:opacity-100 transition-opacity">
+            <FontAwesomeIcon icon="check" class="text-emerald-500 text-sm" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensagem quando não há resultados -->
+    <div
+      v-if="dropdownAberto && clienteNome && clientesFiltrados.length === 0"
+      class="fixed bg-white border-2 border-emerald-100 rounded-xl shadow-2xl p-4 text-center text-gray-500 backdrop-blur-sm z-[99999]"
+      :style="{
+        top: dropdownPosition.top + 'px',
+        left: dropdownPosition.left + 'px',
+        width: dropdownPosition.width + 'px',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+      }"
+    >
+      <FontAwesomeIcon icon="search" class="text-gray-400 mb-2" />
+      <p class="text-sm">Nenhum cliente encontrado para "{{ clienteNome }}"</p>
+      <p class="text-xs mt-1">Tente buscar por nome ou CPF</p>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 // 📚 Imports
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseCard from '@/components/UI/BaseCard.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
@@ -389,6 +453,24 @@ const formulario = reactive({
   tipo: '',
   codigoSimplesVet: '',
   clienteId: ''
+})
+
+// 🔍 Estado do autocomplete de cliente
+const clienteNome = ref('')
+const dropdownAberto = ref(false)
+const clienteSelecionado = ref<any>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
+const dropdownPosition = ref({ top: 0, left: 0, width: 0 })
+
+// 🔍 Filtro de clientes para autocomplete
+const clientesFiltrados = computed(() => {
+  if (!clienteNome.value) return clientes.value.slice(0, 10) // Mostra primeiros 10 se não há busca
+
+  const termo = clienteNome.value.toLowerCase().trim()
+  return clientes.value.filter(cliente =>
+    cliente.nomeCompleto.toLowerCase().includes(termo) ||
+    cliente.cpf.includes(termo)
+  ).slice(0, 10) // Limita a 10 resultados
 })
 
 // ❌ Erros de validação
@@ -495,6 +577,12 @@ const adicionarOutroAnimal = (): void => {
   Object.keys(formulario).forEach(key => {
     formulario[key as keyof typeof formulario] = ''
   })
+
+  // Limpa campos do autocomplete
+  clienteNome.value = ''
+  clienteSelecionado.value = null
+  dropdownAberto.value = false
+
   limparErros()
   mostrarSucesso.value = false
   animalCriado.value = null
@@ -504,12 +592,99 @@ const voltarParaLista = (): void => {
   router.push('/animais')
 }
 
+// 🎯 Funções do autocomplete de cliente
+const selecionarCliente = (cliente: any): void => {
+  clienteSelecionado.value = cliente
+  clienteNome.value = cliente.nomeCompleto
+  formulario.clienteId = cliente.id.toString()
+  dropdownAberto.value = false
+
+  // Limpa erro se havia
+  if (erros.clienteId) {
+    erros.clienteId = ''
+  }
+}
+
+const calcularPosicaoDropdown = (): void => {
+  if (inputRef.value) {
+    const rect = inputRef.value.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const dropdownHeight = 256 // max-h-64 em pixels aproximadamente
+
+    let top = rect.bottom + window.scrollY + 8
+    let left = rect.left + window.scrollX
+
+    // 🔄 Ajusta posição se dropdown ficaria fora da tela (abaixo)
+    if (rect.bottom + dropdownHeight > viewportHeight) {
+      top = rect.top + window.scrollY - dropdownHeight - 8 // Abre para cima
+    }
+
+    // 🔄 Ajusta posição se dropdown ficaria fora da tela (direita)
+    if (left + rect.width > window.innerWidth - 20) {
+      left = window.innerWidth - rect.width - 20
+    }
+
+    dropdownPosition.value = {
+      top,
+      left,
+      width: rect.width
+    }
+  }
+}
+
+const abrirDropdown = (): void => {
+  calcularPosicaoDropdown()
+  dropdownAberto.value = true
+}
+
+const fecharDropdown = (): void => {
+  setTimeout(() => {
+    dropdownAberto.value = false
+  }, 200) // Delay para permitir click nas opções
+}
+
+const aoDigitarCliente = (): void => {
+  calcularPosicaoDropdown()
+  dropdownAberto.value = true
+  // Limpa seleção se usuário está digitando algo diferente
+  if (clienteSelecionado.value && clienteNome.value !== clienteSelecionado.value.nomeCompleto) {
+    clienteSelecionado.value = null
+    formulario.clienteId = ''
+  }
+}
+
+// 👂 Listener para fechar dropdown ao clicar fora
+const fecharDropdownSeClicarFora = (event: MouseEvent): void => {
+  if (inputRef.value && !inputRef.value.contains(event.target as Node)) {
+    dropdownAberto.value = false
+  }
+}
+
+// 📱 Listener para reposicionar dropdown no redimensionamento
+const reposicionarDropdown = (): void => {
+  if (dropdownAberto.value) {
+    calcularPosicaoDropdown()
+  }
+}
+
 // 🎨 Utilitários visuais movidos para @/utils/formatters
 
 // 🎬 Lifecycle
 onMounted(() => {
   console.log('🎬 Página Novo Animal carregada!')
   carregarClientes()
+
+  // 👂 Adiciona listeners para o dropdown
+  document.addEventListener('click', fecharDropdownSeClicarFora)
+  window.addEventListener('resize', reposicionarDropdown)
+  window.addEventListener('scroll', reposicionarDropdown)
+})
+
+onUnmounted(() => {
+  // 🧹 Remove listeners
+  document.removeEventListener('click', fecharDropdownSeClicarFora)
+  window.removeEventListener('resize', reposicionarDropdown)
+  window.removeEventListener('scroll', reposicionarDropdown)
 })
 </script>
 

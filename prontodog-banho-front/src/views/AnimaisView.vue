@@ -85,7 +85,7 @@
               <input
                 v-model="filtroNome"
                 type="text"
-                placeholder="Buscar por nome do animal..."
+                placeholder="Buscar por nome, ID, SimplesVet ou dono..."
                 class="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-white to-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
               />
             </div>
@@ -358,12 +358,30 @@ const filtroTipo = ref('')
 // 🎨 Computed Properties
 const animaisFiltrados = computed(() => {
   return animais.value.filter(animal => {
-    const nomeMatch = !filtroNome.value ||
-      animal.nome.toLowerCase().includes(filtroNome.value.toLowerCase())
+    // 🔍 Busca por texto no campo principal (nome, ID, SimplesVet, dono)
+    let nomeMatch = true
+    if (filtroNome.value) {
+      const termoBusca = filtroNome.value.toLowerCase().trim()
 
+      // 📝 Busca por nome do animal
+      const nomeAnimalMatch = animal.nome.toLowerCase().includes(termoBusca)
+
+      // 🆔 Busca por IDs (sistema e SimplesVet)
+      const idMatch = animal.codigoAnimalSistema.toString().includes(termoBusca) ||
+                      animal.codigoSimplesVet?.toString().includes(termoBusca) ||
+                      animal.id?.toString().includes(termoBusca)
+
+      // 👤 Busca por nome do dono
+      const donoMatch = animal.cliente?.nomeCompleto?.toLowerCase().includes(termoBusca) || false
+
+      nomeMatch = nomeAnimalMatch || idMatch || donoMatch
+    }
+
+    // 👤 Filtro específico por cliente (dropdown)
     const clienteMatch = !filtroCliente.value ||
       animal.cliente?.nomeCompleto === filtroCliente.value
 
+    // 🐕 Filtro específico por tipo (dropdown)
     const tipoMatch = !filtroTipo.value ||
       animal.tipo === filtroTipo.value
 
