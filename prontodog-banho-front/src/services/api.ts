@@ -3,7 +3,8 @@
 // É aqui que centralizamos todas as chamadas HTTP
 
 import axios from 'axios'
-import type { ClientesResponse, Cliente, NovoCliente, Animal } from '@/types/api'
+import type { ClientesResponse, Cliente, NovoCliente, Animal, NovoAnimal } from '@/types/api'
+import { handleApiError, devLog, withErrorHandling, validateId } from '@/utils/apiHelpers'
 
 // 🔧 CONFIGURAÇÃO DO AXIOS
 // Criamos uma instância do axios com configurações padrão
@@ -15,34 +16,28 @@ const api = axios.create({
   }
 })
 
-// 🔍 INTERCEPTADORES (opcional, mas muito útil!)
-// Intercepta TODAS as requisições antes de serem enviadas
+// 🔍 INTERCEPTADORES
+// Intercepta requisições para logging em desenvolvimento
 api.interceptors.request.use(
   (config) => {
-    console.log('🚀 Fazendo requisição para:', `${config.baseURL || ''}${config.url || ''}`)
+    devLog('🚀 Fazendo requisição para:', `${config.baseURL || ''}${config.url || ''}`)
     return config
   },
-  (error) => {
-    console.error('❌ Erro na requisição:', error)
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Intercepta TODAS as respostas antes de serem processadas
+// Intercepta respostas para tratamento global
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ Resposta recebida:', response.status, response.data)
+    devLog('✅ Resposta recebida:', response.status)
     return response
   },
   (error) => {
-    console.error('❌ Erro na resposta:', error.response?.status, error.message)
-
-    // Aqui podemos tratar erros globais
+    // Tratamento global de erros de autenticação
     if (error.response?.status === 401) {
-      console.log('🔐 Usuário não autorizado')
-      // Futuramente: redirecionar para login
+      devLog('🔐 Usuário não autorizado')
+      // TODO: Redirecionar para login quando implementado
     }
-
     return Promise.reject(error)
   }
 )
@@ -54,35 +49,47 @@ export const animaisService = {
   // 📖 BUSCAR TODOS OS ANIMAIS
   // GET /animal
   async buscarTodos(): Promise<Animal[]> {
-    try {
-      console.log('🔍 Buscando todos os animais...')
+    return withErrorHandling(async () => {
+      devLog('🔍 Buscando todos os animais...')
       const response = await api.get<Animal[]>('/animal')
-      console.log(`✅ ${response.data.length} animais encontrados!`)
+      devLog(`✅ ${response.data.length} animais encontrados!`)
       return response.data
-    } catch (error) {
-      console.error('❌ Erro ao buscar animais:', error)
-      if ((error as any).response?.status === 404) {
-        throw new Error('Nenhum animal encontrado.')
-      }
-      throw new Error('Não foi possível carregar a lista de animais.')
-    }
+    }, 'Não foi possível carregar a lista de animais.')
   },
 
   // 📖 BUSCAR ANIMAL POR ID
   // GET /animal/{id}
   async buscarPorId(id: number): Promise<Animal> {
-    try {
-      console.log(`🔍 Buscando animal com ID ${id}...`)
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando animal com ID ${id}...`)
       const response = await api.get<Animal>(`/animal/${id}`)
-      console.log('✅ Animal encontrado!')
+      devLog('✅ Animal encontrado!')
       return response.data
-    } catch (error) {
-      console.error('❌ Erro ao buscar animal:', error)
-      if ((error as any).response?.status === 404) {
-        throw new Error('Animal não encontrado.')
+    }, 'Não foi possível buscar os dados do animal.')
+  },
+
+  // 💾 CRIAR NOVO ANIMAL
+  // POST /animal
+  async criar(novoAnimal: NovoAnimal & { clienteId: number }): Promise<Animal> {
+    validateId(novoAnimal.clienteId)
+    return withErrorHandling(async () => {
+      devLog('💾 Criando novo animal...', novoAnimal.nome)
+
+      // Prepara os dados para enviar para API
+      const dadosParaAPI = {
+        nome: novoAnimal.nome,
+        tipo: novoAnimal.tipo,
+        codigoSimplesVet: novoAnimal.codigoSimplesVet,
+        cliente: {
+          id: novoAnimal.clienteId
+        }
       }
-      throw new Error('Não foi possível buscar os dados do animal.')
-    }
+
+      const response = await api.post<Animal>('/animal', dadosParaAPI)
+      devLog('✅ Animal criado com sucesso! ID:', response.data.id)
+      return response.data
+    }, 'Não foi possível cadastrar o animal. Tente novamente.')
   }
 }
 

@@ -1,50 +1,95 @@
 <template>
-  <div class="p-8 max-w-4xl mx-auto">
-    <!-- 🎯 Cabeçalho -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            @click="voltar"
-            class="text-gray-600"
-          >
-            <FontAwesomeIcon icon="arrow-left" class="mr-2" />
-            Voltar
-          </BaseButton>
-          <div class="h-6 border-l border-gray-300"></div>
-          <h1 class="text-3xl font-bold text-primary-700 flex items-center gap-3">
-            <FontAwesomeIcon icon="user-plus" class="text-2xl" />
-          Novo Cliente
-        </h1>
-        </div>
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-100">
+    <!-- 🌟 Header com gradiente elegante -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white">
+      <!-- Background pattern -->
+      <div class="absolute inset-0 opacity-10 bg-pattern"></div>
 
-        <!-- 💾 Status do formulário -->
-        <div v-if="formStatus" class="flex items-center gap-2">
-          <FontAwesomeIcon
-            :icon="formStatus.icon"
-            :class="formStatus.color"
-          />
-          <span :class="formStatus.color" class="text-sm font-medium">
-            {{ formStatus.message }}
-          </span>
+      <div class="relative px-6 py-8 z-20">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div class="flex items-center gap-4 animate-fade-in-up">
+            <!-- Ícone animado -->
+            <div class="relative">
+              <div class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform hover:scale-110 transition-all duration-300 shadow-lg">
+                <FontAwesomeIcon icon="user-plus" class="text-2xl text-white animate-bounce-gentle" />
+              </div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
+                <FontAwesomeIcon icon="plus" class="text-xs text-yellow-800" />
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-emerald-100">
+                Novo Cliente
+              </h1>
+              <p class="text-white text-lg flex items-center gap-2 font-medium opacity-90">
+                <FontAwesomeIcon icon="star" class="text-yellow-400 animate-twinkle mr-1" />
+                Cadastre um novo cliente no sistema
+              </p>
+            </div>
+          </div>
+
+          <!-- Status do formulário elegante -->
+          <div v-if="formStatus && formStatus.icon !== 'check-circle'" class="flex items-center gap-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white border-opacity-20">
+            <FontAwesomeIcon
+              :icon="formStatus.icon"
+              :class="[formStatus.color, 'animate-pulse']"
+            />
+            <span class="text-white font-medium">
+              {{ formStatus.message }}
+            </span>
+          </div>
+
+          <!-- Botão voltar elegante -->
+          <button
+            @click="voltar"
+            class="group flex items-center gap-2 px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm text-white rounded-xl hover:bg-opacity-30 transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40 transform hover:-translate-y-1 hover:shadow-lg"
+          >
+            <FontAwesomeIcon icon="arrow-left" class="group-hover:-translate-x-1 transition-transform duration-300" />
+            <span class="font-medium">Voltar</span>
+          </button>
         </div>
       </div>
-      <p class="text-gray-600 mt-2">
-        Preencha os dados para cadastrar um novo cliente no sistema ProntoDog Banhos.
-      </p>
+
+      <!-- Wave decoration -->
+      <div class="absolute bottom-0 left-0 right-0 z-10">
+        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-15">
+          <path d="M0 60h1440V0c-120 40-240 60-360 60S840 40 720 60s-240 0-360-60S120 40 0 60z" fill="#3b82f6"/>
+        </svg>
+      </div>
     </div>
 
-    <form @submit.prevent="salvarCliente">
-      <!-- 👤 DADOS PESSOAIS -->
-      <BaseCard class="mb-8">
-        <template #header>
-          <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <FontAwesomeIcon icon="user" class="text-primary-500" />
-            Dados Pessoais
-          </h2>
-      </template>
+    <!-- 📝 Container do formulário -->
+    <div class="px-6 pb-8 -mt-8 relative z-10">
+      <div class="max-w-4xl mx-auto">
+        <!-- Card principal com glassmorphism -->
+        <div class="relative bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white border-opacity-20 overflow-hidden animate-slide-up">
+
+          <!-- Loading overlay melhorado -->
+          <div v-if="salvando" class="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-600 bg-opacity-95 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="text-center text-white">
+              <!-- Spinner customizado -->
+              <div class="relative mb-6">
+                <div class="w-20 h-20 border-4 border-white border-opacity-30 rounded-full animate-spin"></div>
+                <div class="absolute top-0 left-0 w-20 h-20 border-4 border-transparent border-t-white rounded-full animate-spin"></div>
+                <FontAwesomeIcon icon="user-plus" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl animate-bounce" />
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Cadastrando cliente...</h3>
+              <p class="text-white text-opacity-80">Criando perfil no sistema! 👤</p>
+            </div>
+          </div>
+
+          <form @submit.prevent="salvarCliente" class="p-8 space-y-8">
+            <!-- 👤 Seção: Dados Pessoais -->
+            <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-6 border border-emerald-100 transform hover:scale-[1.01] transition-all duration-300">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+                  <FontAwesomeIcon icon="user" class="text-white" />
+                </div>
+                <h2 class="text-xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+                  Dados Pessoais
+                </h2>
+              </div>
 
       <div class="grid md:grid-cols-2 gap-6">
           <!-- Nome Completo -->
@@ -90,29 +135,30 @@
             type="number"
             @blur="validarCampo('codigoSimplesVet')"
           />
-        </div>
-      </BaseCard>
+              </div>
+            </div>
 
-      <!-- 📞 CONTATOS -->
-      <BaseCard class="mb-8">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <FontAwesomeIcon icon="phone" class="text-primary-500" />
-              Telefones
-            </h2>
-            <BaseButton
-              type="button"
-              variant="outline"
-              size="sm"
-              @click="adicionarTelefone"
-              :disabled="formulario.telefones.length >= 3"
-            >
-              <FontAwesomeIcon icon="plus" class="mr-2" />
-              Adicionar Telefone
-            </BaseButton>
-          </div>
-        </template>
+            <!-- 📞 Seção: Telefones -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 transform hover:scale-[1.01] transition-all duration-300">
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                    <FontAwesomeIcon icon="phone" class="text-white" />
+                  </div>
+                  <h2 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Telefones
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  @click="adicionarTelefone"
+                  :disabled="formulario.telefones.length >= 3"
+                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <FontAwesomeIcon icon="plus" class="animate-pulse" />
+                  <span class="font-medium">Adicionar</span>
+                </button>
+              </div>
 
         <div v-if="formulario.telefones.length === 0" class="text-center py-8 text-gray-500">
           <FontAwesomeIcon icon="phone" class="text-4xl mb-4 text-gray-300" />
@@ -154,29 +200,32 @@
             </BaseButton>
           </div>
         </div>
-      </BaseCard>
+            </div>
 
-      <!-- 📧 EMAILS -->
-      <BaseCard class="mb-8">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <FontAwesomeIcon icon="envelope" class="text-primary-500" />
-              Emails
-              <span class="text-sm font-normal text-gray-500">(Opcional)</span>
-            </h2>
-            <BaseButton
-              type="button"
-              variant="outline"
-              size="sm"
-              @click="adicionarEmail"
-              :disabled="formulario.emailClientes.length >= 3"
-            >
-              <FontAwesomeIcon icon="plus" class="mr-2" />
-              Adicionar Email
-            </BaseButton>
-          </div>
-        </template>
+            <!-- 📧 Seção: Emails -->
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 transform hover:scale-[1.01] transition-all duration-300">
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <FontAwesomeIcon icon="envelope" class="text-white" />
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      Emails
+                    </h2>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">opcional</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  @click="adicionarEmail"
+                  :disabled="formulario.emailClientes.length >= 3"
+                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <FontAwesomeIcon icon="plus" class="animate-pulse" />
+                  <span class="font-medium">Adicionar</span>
+                </button>
+              </div>
 
         <div v-if="formulario.emailClientes.length === 0" class="text-center py-8 text-gray-500">
           <FontAwesomeIcon icon="envelope" class="text-4xl mb-4 opacity-50" />
@@ -218,28 +267,29 @@
             </BaseButton>
           </div>
         </div>
-      </BaseCard>
+            </div>
 
-      <!-- 🐕 ANIMAIS -->
-      <BaseCard class="mb-8">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <FontAwesomeIcon icon="dog" class="text-primary-500" />
-              Animais de Estimação
-            </h2>
-            <BaseButton
-              type="button"
-              variant="outline"
-              size="sm"
-              @click="adicionarAnimal"
-              :disabled="formulario.animais.length >= 5"
-            >
-              <FontAwesomeIcon icon="plus" class="mr-2" />
-              Adicionar Animal
-            </BaseButton>
-          </div>
-        </template>
+            <!-- 🐕 Seção: Animais de Estimação -->
+            <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100 transform hover:scale-[1.01] transition-all duration-300">
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl flex items-center justify-center">
+                    <FontAwesomeIcon icon="dog" class="text-white" />
+                  </div>
+                  <h2 class="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                    Animais de Estimação
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  @click="adicionarAnimal"
+                  :disabled="formulario.animais.length >= 5"
+                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <FontAwesomeIcon icon="plus" class="animate-pulse" />
+                  <span class="font-medium">Adicionar</span>
+                </button>
+              </div>
 
         <div v-if="formulario.animais.length === 0" class="text-center py-8 text-gray-500">
           <FontAwesomeIcon icon="dog" class="text-4xl mb-4 text-gray-300" />
@@ -330,48 +380,132 @@
             </div>
           </div>
         </div>
-      </BaseCard>
+            </div>
 
-      <!-- 💾 AÇÕES -->
-      <BaseCard>
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-600">
-            <p class="font-medium">Dados obrigatórios:</p>
-            <ul class="list-disc list-inside mt-1 space-y-1">
-              <li>Nome completo, CPF e código SimplesVet</li>
-              <li>Pelo menos um telefone</li>
-              <li>Pelo menos um animal</li>
-            </ul>
+            <!-- 🚀 Botões de ação elegantes -->
+            <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <!-- Informações dos dados obrigatórios -->
+                <div class="text-sm text-gray-600 bg-white p-4 rounded-xl border border-gray-100">
+                  <div class="flex items-center gap-2 mb-2">
+                    <FontAwesomeIcon icon="info-circle" class="text-emerald-500" />
+                    <p class="font-semibold text-gray-700">Dados obrigatórios:</p>
+                  </div>
+                  <ul class="space-y-1 ml-6">
+                    <li class="flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                      Nome completo, CPF e código SimplesVet
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                      Pelo menos um telefone
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                      Pelo menos um animal
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Botões de ação -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                  <button
+                    type="button"
+                    @click="voltar"
+                    :disabled="salvando"
+                    class="group px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl border-2 border-gray-200 hover:border-gray-300 transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div class="flex items-center justify-center gap-2">
+                      <FontAwesomeIcon icon="times" class="group-hover:rotate-90 transition-transform duration-300" />
+                      <span>Cancelar</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="submit"
+                    :disabled="!formularioValido || salvando"
+                    class="group relative flex-1 sm:flex-none px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-2xl transform hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none overflow-hidden min-w-48"
+                  >
+                    <!-- Background animation -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                    <!-- Button content -->
+                    <div class="relative flex items-center justify-center gap-3">
+                      <FontAwesomeIcon
+                        :icon="salvando ? 'spinner' : 'save'"
+                        :class="{ 'animate-spin': salvando, 'animate-pulse': !salvando }"
+                      />
+                      <span>{{ salvando ? 'Salvando cliente...' : 'Salvar Cliente' }}</span>
+                      <FontAwesomeIcon v-if="!salvando" icon="star" class="animate-twinkle" />
+                    </div>
+
+                    <!-- Shine effect -->
+                    <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white to-transparent opacity-20 group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
+    </div>
 
-          <div class="flex gap-4">
-            <BaseButton
-              type="button"
-              variant="outline"
-              @click="voltar"
-              :disabled="salvando"
-            >
-              <FontAwesomeIcon icon="times" class="mr-2" />
-              Cancelar
-            </BaseButton>
-
-            <BaseButton
-              type="submit"
-              variant="primary"
-              :disabled="!formularioValido || salvando"
-              class="min-w-32"
-            >
-              <FontAwesomeIcon
-                :icon="salvando ? 'spinner' : 'save'"
-                :class="{ 'animate-spin': salvando }"
-                class="mr-2"
-              />
-              {{ salvando ? 'Salvando...' : 'Salvar Cliente' }}
-            </BaseButton>
+    <!-- 🎉 Modal de sucesso super bonitinho -->
+    <BaseModal v-model="mostrarSucesso" size="lg">
+      <div class="text-center p-8 bg-gradient-to-br from-emerald-50 to-green-50">
+        <!-- Celebração animada -->
+        <div class="relative mb-8">
+          <div class="w-24 h-24 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-bounce-gentle">
+            <FontAwesomeIcon icon="check" class="text-4xl text-white animate-pulse" />
           </div>
+
+          <!-- Confete animado -->
+          <div class="absolute -inset-4 opacity-70">
+            <div class="absolute top-0 left-4 w-3 h-3 bg-yellow-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="absolute top-2 right-6 w-2 h-2 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+            <div class="absolute bottom-2 left-8 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.5s"></div>
+            <div class="absolute bottom-0 right-4 w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.7s"></div>
+          </div>
+        </div>
+
+        <div class="space-y-4 mb-8">
+          <h3 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+            🎉 Sucesso! 🎉
+          </h3>
+          <p class="text-xl text-gray-700 font-semibold">
+            {{ clienteCriado?.nomeCompleto }} foi cadastrado com sucesso!
+          </p>
+          <div class="bg-white bg-opacity-60 rounded-2xl p-4 inline-block backdrop-blur-sm border border-emerald-200">
+            <p class="text-emerald-700 flex items-center gap-2">
+              <FontAwesomeIcon icon="id-card" class="text-emerald-500" />
+              <span class="font-medium">ID do sistema:</span>
+              <span class="font-bold text-lg">{{ clienteCriado?.codigoClienteSistema }}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Botões estilosos -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <BaseButton
+            @click="adicionarOutroCliente"
+            type="button"
+            class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+          >
+            <FontAwesomeIcon icon="plus" />
+            Cadastrar outro cliente
+          </BaseButton>
+
+          <BaseButton
+            @click="voltarParaLista"
+            type="button"
+            class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+          >
+            <FontAwesomeIcon icon="list" />
+            Ver lista de clientes
+          </BaseButton>
+        </div>
       </div>
-    </BaseCard>
-    </form>
+    </BaseModal>
   </div>
 </template>
 
@@ -381,6 +515,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseCard from '@/components/UI/BaseCard.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
+import BaseModal from '@/components/UI/BaseModal.vue'
 import FormInput from '@/components/UI/FormInput.vue'
 import { clientesService } from '@/services/api'
 import type { FormularioCliente, NovoCliente } from '@/types/api'
@@ -407,6 +542,10 @@ const formStatus = ref<{
   color: string
   message: string
 } | null>(null)
+
+// 🎉 Modal de sucesso
+const mostrarSucesso = ref(false)
+const clienteCriado = ref<any>(null)
 
 // 📋 Dados do formulário
 const formulario = ref<FormularioCliente>({
@@ -650,21 +789,13 @@ const salvarCliente = async (): Promise<void> => {
     console.log('🚀 Enviando dados:', novoCliente)
 
     // Chama a API
-    const clienteCriado = await clientesService.criar(novoCliente)
+    const clienteSalvo = await clientesService.criar(novoCliente)
 
-    console.log('🎉 Cliente criado com sucesso!', clienteCriado)
+    console.log('🎉 Cliente criado com sucesso!', clienteSalvo)
 
-    // Sucesso!
-    formStatus.value = {
-      icon: 'check-circle',
-      color: 'text-green-600',
-      message: 'Cliente cadastrado com sucesso!'
-    }
-
-    // Aguarda um pouco para mostrar o sucesso
-    setTimeout(() => {
-      router.push('/clientes')
-    }, 2000)
+    // Sucesso! Mostra modal de sucesso
+    clienteCriado.value = clienteSalvo
+    mostrarSucesso.value = true
 
   } catch (error) {
     console.error('❌ Erro ao salvar cliente:', error)
@@ -687,8 +818,152 @@ const voltar = (): void => {
   }
 }
 
+// 🎉 Funções do modal de sucesso
+const adicionarOutroCliente = (): void => {
+  // Limpa o formulário para adicionar outro cliente
+  formulario.value = {
+    nomeCompleto: '',
+    cpf: '',
+    codigoSimplesVet: '',
+    telefones: [''], // Inicia com 1 telefone
+    emailClientes: [], // Inicia vazio, email é opcional
+    animais: [
+      {
+        nome: '',
+        codigoSimplesVet: '',
+        tipo: ''
+      }
+    ] // Inicia com 1 animal
+  }
+  erros.value = {}
+  formStatus.value = null
+  mostrarSucesso.value = false
+  clienteCriado.value = null
+}
+
+const voltarParaLista = (): void => {
+  router.push('/clientes')
+}
+
 // 🎬 Lifecycle
 onMounted(() => {
   console.log('🎬 Página de novo cliente carregada!')
 })
 </script>
+
+<style scoped>
+/* 🎨 Animações personalizadas */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 1.5s ease-in-out infinite;
+}
+
+/* 🌊 Wave background pattern */
+.bg-pattern {
+  background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* 🎭 Glassmorphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 💫 Hover effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌈 Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #10b981, #34d399);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #059669, #10b981);
+}
+</style>

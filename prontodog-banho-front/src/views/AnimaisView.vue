@@ -1,218 +1,333 @@
 <template>
-  <div class="p-6 space-y-6">
-    <!-- 🎯 Header da página -->
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-          <FontAwesomeIcon icon="dog" class="text-xl text-primary-600" />
-        </div>
-        <div>
-          <h1 class="text-3xl font-bold text-primary-700">Animais</h1>
-          <p class="text-gray-600">
-            {{ loading ? 'Carregando...' : `${animaisFiltrados.length} ${animaisFiltrados.length === 1 ? 'animal encontrado' : 'animais encontrados'}` }}
-          </p>
-        </div>
-      </div>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
+    <!-- 🌟 Header com gradiente elegante -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
+      <!-- Background pattern -->
+      <div class="absolute inset-0 opacity-10 bg-pattern"></div>
 
-      <div class="flex items-center gap-3">
-        <BaseButton
-          variant="outline"
-          @click="carregarAnimais"
-          :disabled="loading"
-          title="Atualizar lista"
-        >
-          <FontAwesomeIcon
-            :icon="loading ? 'spinner' : 'refresh'"
-            :class="{ 'animate-spin': loading }"
-            class="mr-2"
-          />
-          Atualizar
-        </BaseButton>
-        <BaseButton variant="primary" @click="$router.push('/animais/novo')">
-          <FontAwesomeIcon icon="plus" class="mr-2" />
-          Novo Animal
-        </BaseButton>
-      </div>
-    </div>
+      <div class="relative px-6 py-8 z-20">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div class="flex items-center gap-4 animate-fade-in-up">
+            <!-- Ícone animado -->
+            <div class="relative">
+              <div class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform hover:scale-110 transition-all duration-300 shadow-lg">
+                <FontAwesomeIcon icon="dog" class="text-2xl text-white animate-bounce-gentle" />
+              </div>
+              <div v-if="!loading && animais.length > 0" class="absolute -top-1 -right-1 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
+                <span class="text-xs font-bold text-yellow-800">{{ animais.length }}</span>
+              </div>
+            </div>
 
-    <!-- 🔍 Barra de pesquisa -->
-    <BaseCard class="p-4">
-      <div class="flex flex-col md:flex-row gap-4">
-        <div class="flex-1">
-          <div class="relative">
-            <FontAwesomeIcon
-              icon="search"
-              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            />
-            <input
-              v-model="filtroNome"
-              type="text"
-              placeholder="Buscar por nome do animal..."
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-            />
+            <div class="space-y-1">
+              <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
+                Lista de Animais
+              </h1>
+              <p class="text-white text-lg flex items-center gap-2 font-medium opacity-90">
+                <FontAwesomeIcon icon="star" class="text-yellow-400 animate-twinkle mr-1" />
+                {{ loading ? 'Carregando...' : `${animaisFiltrados.length} ${animaisFiltrados.length === 1 ? 'amiguinho encontrado' : 'amiguinhos encontrados'}` }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Botões de ação elegantes -->
+          <div class="flex items-center gap-3">
+            <button
+              @click="carregarAnimais"
+              :disabled="loading"
+              class="group flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 backdrop-blur-sm text-white rounded-xl hover:bg-opacity-30 transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FontAwesomeIcon
+                :icon="loading ? 'spinner' : 'refresh'"
+                :class="{ 'animate-spin': loading, 'group-hover:rotate-180': !loading }"
+                class="transition-transform duration-300"
+              />
+              <span class="font-medium">{{ loading ? 'Carregando...' : 'Atualizar' }}</span>
+            </button>
+
+            <button
+              @click="$router.push('/animais/novo')"
+              class="group flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-xl hover:from-yellow-500 hover:to-amber-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl font-medium shadow-lg"
+            >
+              <FontAwesomeIcon icon="plus" class="group-hover:rotate-90 transition-transform duration-300" />
+              <span>Novo Animal</span>
+            </button>
           </div>
         </div>
-        <div class="md:w-48">
-          <select
-            v-model="filtroCliente"
-            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-          >
-            <option value="">Todos os clientes</option>
-            <option v-for="cliente in clientesUnicos" :key="cliente" :value="cliente">
-              {{ cliente }}
-            </option>
-          </select>
-        </div>
-        <div class="md:w-40">
-          <select
-            v-model="filtroTipo"
-            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-          >
-            <option value="">Todos os tipos</option>
-            <option v-for="tipo in tiposUnicos" :key="tipo" :value="tipo">
-              {{ tipo }}
-            </option>
-          </select>
-        </div>
       </div>
-    </BaseCard>
 
-    <!-- 💾 Estado de carregamento -->
-    <div v-if="loading" class="flex justify-center py-12">
-      <div class="text-center">
-        <FontAwesomeIcon icon="spinner" class="text-4xl text-primary-500 animate-spin mb-4" />
-        <p class="text-gray-600">Carregando animais...</p>
+      <!-- Wave decoration -->
+      <div class="absolute bottom-0 left-0 right-0 z-10">
+        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-15">
+          <defs>
+            <linearGradient id="animalWaveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+              <stop offset="50%" style="stop-color:#059669;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <path d="M0 60h1440V0c-120 40-240 60-360 60S840 40 720 60s-240 0-360-60S120 40 0 60z" fill="url(#animalWaveGradient)"/>
+        </svg>
       </div>
     </div>
 
-    <!-- ❌ Estado de erro -->
-    <BaseCard v-else-if="error" class="p-8 text-center border-red-200 bg-red-50">
-      <FontAwesomeIcon icon="exclamation-triangle" class="text-4xl text-red-500 mb-4" />
-      <h3 class="text-lg font-semibold text-red-700 mb-2">Erro ao carregar animais</h3>
-      <p class="text-red-600 mb-4">{{ error }}</p>
-      <BaseButton variant="outline" @click="carregarAnimais">
-        <FontAwesomeIcon icon="refresh" class="mr-2" />
-        Tentar novamente
-      </BaseButton>
-    </BaseCard>
+    <!-- Container principal -->
+    <div class="relative -mt-8 px-6 pb-8 z-30">
 
-    <!-- 📋 Tabela de animais -->
-    <BaseCard v-else-if="animais.length > 0" class="overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Animal
-              </th>
-              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tipo
-              </th>
-              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Código SimplesVet
-              </th>
-              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Serviços
-              </th>
-              <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr
-              v-for="animal in animaisFiltrados"
-              :key="animal.id"
-              class="hover:bg-gray-50 transition-colors"
-            >
-              <!-- Nome do Animal -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-3">
-                    <FontAwesomeIcon icon="dog" class="text-primary-600" />
-                  </div>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">{{ animal.nome }}</div>
-                    <div class="text-sm text-gray-500">ID: {{ animal.codigoAnimalSistema }}</div>
-                  </div>
-                </div>
-              </td>
+      <!-- 🔍 Filtros elegantes -->
+      <BaseCard class="mb-6 shadow-lg border-0 bg-white bg-opacity-90 backdrop-blur-sm animate-slide-up">
+        <div class="p-4">
+          <div class="flex flex-col lg:flex-row gap-4 items-center">
+            <!-- Campo de busca principal -->
+            <div class="flex-1 relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FontAwesomeIcon icon="search" class="h-5 w-5 text-blue-400" />
+              </div>
+              <input
+                v-model="filtroNome"
+                type="text"
+                placeholder="Buscar por nome do animal..."
+                class="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-white to-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
+              />
+            </div>
 
-              <!-- Tipo -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                  :class="getCorTipo(animal.tipo)"
+            <!-- Filtros secundários -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative">
+                <select
+                  v-model="filtroCliente"
+                  class="appearance-none bg-gradient-to-r from-white to-indigo-50 border border-indigo-200 text-gray-700 py-3 px-4 pr-8 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm min-w-[180px]"
                 >
-                  {{ animal.tipo }}
-                </span>
-              </td>
+                  <option value="">Todos os donos</option>
+                  <option v-for="cliente in clientesUnicos" :key="cliente" :value="cliente">
+                    {{ cliente }}
+                  </option>
+                </select>
+                <FontAwesomeIcon icon="chevron-down" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-indigo-400 pointer-events-none" />
+              </div>
 
-              <!-- Código SimplesVet -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ animal.codigoSimplesVet || 'N/A' }}</div>
-              </td>
+              <div class="relative">
+                <select
+                  v-model="filtroTipo"
+                  class="appearance-none bg-gradient-to-r from-white to-purple-50 border border-purple-200 text-gray-700 py-3 px-4 pr-8 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm min-w-[150px]"
+                >
+                  <option value="">Todos os tipos</option>
+                  <option v-for="tipo in tiposUnicos" :key="tipo" :value="tipo">
+                    {{ tipo }}
+                  </option>
+                </select>
+                <FontAwesomeIcon icon="chevron-down" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 pointer-events-none" />
+              </div>
+            </div>
 
-              <!-- Serviços -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <FontAwesomeIcon icon="calendar-days" class="text-gray-400 mr-2" />
-                  <span class="text-sm text-gray-900">
-                    {{ animal.servicos?.length || 0 }} serviço{{ (animal.servicos?.length || 0) !== 1 ? 's' : '' }}
-                  </span>
+            <!-- Stats rápidas -->
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
+                <FontAwesomeIcon icon="dog" class="text-blue-600 text-sm" />
+                <span class="text-sm font-medium text-blue-700">{{ animaisFiltrados.length }} encontrados</span>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full">
+                <FontAwesomeIcon icon="users" class="text-green-600 text-sm" />
+                <span class="text-sm font-medium text-green-700">{{ clientesUnicos.length }} donos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </BaseCard>
+
+      <!-- ⏳ Estado de Loading -->
+      <div v-if="loading && animais.length === 0" class="text-center py-12">
+        <div class="relative">
+          <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+            <FontAwesomeIcon icon="dog" class="text-2xl text-white" />
+          </div>
+          <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-blue-200 rounded-2xl animate-ping opacity-20"></div>
+        </div>
+        <h3 class="text-lg font-medium text-gray-700 mb-2">Carregando animais...</h3>
+        <p class="text-gray-500">Buscando seus amiguinhos na API ✨</p>
+      </div>
+
+      <!-- ❌ Estado de Erro -->
+      <BaseCard v-else-if="error" class="p-8 text-center bg-gradient-to-br from-red-50 to-pink-50 border-0 shadow-lg">
+        <div class="relative">
+          <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FontAwesomeIcon icon="exclamation-triangle" class="text-2xl text-white" />
+          </div>
+        </div>
+        <h3 class="text-lg font-semibold text-red-700 mb-2">Erro ao carregar animais</h3>
+        <p class="text-red-600 mb-4">{{ error }}</p>
+        <button
+          @click="carregarAnimais"
+          class="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto"
+        >
+          <FontAwesomeIcon icon="refresh" />
+          <span>Tentar novamente</span>
+        </button>
+      </BaseCard>
+
+      <!-- 🐕 Lista elegante de animais -->
+      <div v-else-if="animais.length > 0" class="space-y-4">
+        <div
+          v-for="(animal, index) in animaisFiltrados"
+          :key="animal.id"
+          class="group relative bg-gradient-to-r from-white via-white to-blue-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden"
+          :style="{ animationDelay: `${index * 100}ms` }"
+          @click="visualizarAnimal(animal)"
+        >
+          <div class="p-6">
+            <div class="flex items-center justify-between">
+              <!-- 🐕 Avatar e informações principais -->
+              <div class="flex items-center gap-4 flex-1">
+                <!-- Avatar circular com gradiente -->
+                <div class="relative">
+                  <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-all duration-300">
+                    <FontAwesomeIcon icon="dog" class="text-2xl text-white" />
+                  </div>
+                  <!-- Badge de tipo -->
+                  <div class="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-md">
+                    <span class="text-xs font-bold text-white">{{ animal.tipo.charAt(0).toUpperCase() }}</span>
+                  </div>
                 </div>
-              </td>
 
-              <!-- Ações -->
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex justify-end space-x-2">
+                <!-- Informações do animal -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-3 mb-1">
+                    <h3 class="text-xl font-bold text-gray-900 truncate group-hover:text-blue-700 transition-colors duration-300">
+                      {{ animal.nome }}
+                    </h3>
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
+                      :class="getCorTipoAnimal(animal.tipo)"
+                    >
+                      {{ animal.tipo }}
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <span class="flex items-center gap-1">
+                      <FontAwesomeIcon icon="hashtag" class="text-gray-400" />
+                      ID: {{ animal.codigoAnimalSistema }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <FontAwesomeIcon icon="code" class="text-gray-400" />
+                      SimplesVet: {{ animal.codigoSimplesVet || 'N/A' }}
+                    </span>
+                  </div>
+
+                  <!-- Dono do animal -->
+                  <div class="flex items-center gap-2 text-sm">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <FontAwesomeIcon icon="user" class="text-green-600 text-xs" />
+                    </div>
+                    <span class="text-gray-700 font-medium">
+                      {{ animal.cliente?.nomeCompleto || 'Dono não informado' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 📅 Seção de serviços -->
+              <div class="flex-shrink-0 ml-4">
+                <div class="text-right">
+                  <p class="text-xs text-gray-500 mb-2 font-medium">Serviços:</p>
+                  <div class="flex items-center gap-2 justify-end">
+                    <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                      <FontAwesomeIcon icon="calendar-days" class="text-amber-600 text-xs" />
+                    </div>
+                    <span class="text-lg font-bold text-gray-800">
+                      {{ animal.servicos?.length || 0 }}
+                    </span>
+                    <span class="text-sm text-gray-600">
+                      {{ (animal.servicos?.length || 0) === 1 ? 'serviço' : 'serviços' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 🔧 Ações -->
+              <div class="flex-shrink-0 ml-4">
+                <div class="flex items-center gap-2">
                   <button
-                    @click="visualizarAnimal(animal)"
-                    class="text-primary-600 hover:text-primary-900 p-2 rounded-lg hover:bg-primary-50 transition-colors"
+                    @click.stop="visualizarAnimal(animal)"
+                    class="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110"
                     title="Ver detalhes"
                   >
-                    <FontAwesomeIcon icon="eye" />
+                    <FontAwesomeIcon icon="eye" class="text-sm" />
                   </button>
                   <button
-                    @click="editarAnimal(animal)"
-                    class="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors"
-                    title="Editar"
+                    @click.stop="editarAnimal(animal)"
+                    class="w-10 h-10 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+                    title="Editar animal"
                   >
-                    <FontAwesomeIcon icon="edit" />
+                    <FontAwesomeIcon icon="edit" class="text-sm" />
                   </button>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </div>
 
-      <!-- 📊 Informações da tabela -->
-      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-        <div class="flex items-center justify-between text-sm text-gray-500">
-          <div>
-            Mostrando {{ animaisFiltrados.length }} de {{ animais.length }} animais
+              <!-- 🔗 Indicador de ação -->
+              <div class="flex-shrink-0 ml-4">
+                <div class="w-10 h-10 bg-gray-100 group-hover:bg-blue-100 rounded-full flex items-center justify-center transition-all duration-300">
+                  <FontAwesomeIcon
+                    icon="chevron-right"
+                    class="text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <div v-if="ultimaAtualizacao" class="flex items-center">
-            <FontAwesomeIcon icon="refresh" class="mr-1" />
-            Atualizado em {{ ultimaAtualizacao }}
-          </div>
+
+          <!-- Borda gradiente no hover -->
+          <div class="absolute inset-0 border-2 border-transparent group-hover:border-blue-200 rounded-xl transition-all duration-300 pointer-events-none"></div>
         </div>
-      </div>
-    </BaseCard>
 
-    <!-- 📭 Estado vazio -->
-    <BaseCard v-else class="p-12 text-center">
-      <FontAwesomeIcon icon="dog" class="text-6xl text-gray-300 mb-6" />
-      <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum animal encontrado</h3>
-      <p class="text-gray-500 mb-6">
-        Não há animais cadastrados no sistema ainda.
-      </p>
-      <BaseButton variant="primary" @click="$router.push('/animais/novo')">
-        <FontAwesomeIcon icon="plus" class="mr-2" />
-        Adicionar primeiro animal
-      </BaseButton>
-    </BaseCard>
+        <!-- 📊 Rodapé elegante com estatísticas -->
+        <BaseCard class="mt-8 bg-gradient-to-r from-gray-50 to-blue-50 border-0 shadow-sm">
+          <div class="p-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
+              <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span class="text-gray-600 font-medium">
+                    <span class="text-blue-600 font-bold">{{ animaisFiltrados.length }}</span> de <span class="text-blue-600 font-bold">{{ animais.length }}</span> animais
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span class="text-gray-600 font-medium">
+                    <span class="text-green-600 font-bold">{{ clientesUnicos.length }}</span> donos únicos
+                  </span>
+                </div>
+              </div>
+
+              <div v-if="ultimaAtualizacao" class="flex items-center gap-2 text-gray-500">
+                <FontAwesomeIcon icon="clock" class="text-xs" />
+                <span>Atualizado às {{ ultimaAtualizacao }}</span>
+              </div>
+            </div>
+          </div>
+        </BaseCard>
+      </div>
+
+      <!-- 📭 Estado vazio -->
+      <BaseCard v-else class="p-12 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
+        <div class="relative">
+          <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
+            <FontAwesomeIcon icon="dog" class="text-3xl text-white" />
+          </div>
+          <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-blue-200 rounded-2xl animate-ping opacity-20"></div>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum amiguinho encontrado</h3>
+        <p class="text-gray-500 mb-6">
+          Que tal cadastrar o primeiro pet no sistema? 🐾
+        </p>
+        <button
+          @click="$router.push('/animais/novo')"
+          class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+        >
+          <FontAwesomeIcon icon="plus" />
+          <span>Adicionar primeiro animal</span>
+        </button>
+      </BaseCard>
+    </div>
   </div>
 </template>
 
@@ -222,8 +337,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseCard from '@/components/UI/BaseCard.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
-import { animaisService } from '@/services/api'
-import type { Animal } from '@/types/api'
+import { clientesService } from '@/services/api'
+import type { Animal, Cliente } from '@/types/api'
+import { formatarHorario, getCorTipoAnimal } from '@/utils/formatters'
 
 // 🎯 Configurações
 const router = useRouter()
@@ -275,10 +391,33 @@ const carregarAnimais = async (): Promise<void> => {
     console.log('🔄 Iniciando carregamento de animais...')
     loading.value = true
     error.value = null
-    const response = await animaisService.buscarTodos()
-    animais.value = response
+
+    // 🔄 Busca clientes com animais (dados completos)
+    const clientes = await clientesService.buscarTodos()
+
+    // 🐕 Extrai todos os animais dos clientes e adiciona referência ao cliente
+    const todosAnimais: Animal[] = []
+    clientes.forEach((cliente: Cliente) => {
+      cliente.animais.forEach((animal: Animal) => {
+        todosAnimais.push({
+          ...animal,
+          cliente: {
+            id: cliente.id,
+            nomeCompleto: cliente.nomeCompleto,
+            cpf: cliente.cpf,
+            codigoSimplesVet: cliente.codigoSimplesVet,
+            codigoClienteSistema: cliente.codigoClienteSistema,
+            telefones: cliente.telefones,
+            emailClientes: cliente.emailClientes,
+            animais: [] // Evita referência circular
+          }
+        })
+      })
+    })
+
+    animais.value = todosAnimais
     ultimaAtualizacao.value = formatarHorario()
-    console.log(`✅ ${response.length} animais carregados com sucesso!`)
+    console.log(`✅ ${todosAnimais.length} animais carregados com sucesso (com dados dos donos)!`)
   } catch (err) {
     console.error('❌ Erro ao carregar animais:', err)
     error.value = err instanceof Error ? err.message : 'Ocorreu um erro inesperado ao carregar os animais'
@@ -287,24 +426,7 @@ const carregarAnimais = async (): Promise<void> => {
   }
 }
 
-const formatarHorario = (): string => {
-  return new Date().toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const getCorTipo = (tipo: string): string => {
-  const cores: Record<string, string> = {
-    'Cachorro': 'bg-blue-100 text-blue-800',
-    'Gato': 'bg-purple-100 text-purple-800',
-    'Pássaro': 'bg-yellow-100 text-yellow-800',
-    'Peixe': 'bg-cyan-100 text-cyan-800',
-    'Hamster': 'bg-pink-100 text-pink-800',
-    'Coelho': 'bg-green-100 text-green-800'
-  }
-  return cores[tipo] || 'bg-gray-100 text-gray-800'
-}
+// Funções movidas para @/utils/formatters
 
 const visualizarAnimal = (animal: Animal): void => {
   console.log('👁️ Visualizar animal:', animal.nome)
@@ -324,3 +446,5 @@ onMounted(() => {
   carregarAnimais()
 })
 </script>
+
+<!-- Estilos movidos para @/assets/styles/animations.css -->
