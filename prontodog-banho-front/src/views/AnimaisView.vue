@@ -167,7 +167,7 @@
       <!-- 🐕 Lista elegante de animais -->
       <div v-else-if="animais.length > 0" class="space-y-4">
         <div
-          v-for="(animal, index) in animaisFiltrados"
+          v-for="(animal, index) in animaisExibidos"
           :key="animal.id"
           class="group relative bg-gradient-to-r from-white via-white to-blue-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden"
           :style="{ animationDelay: `${index * 100}ms` }"
@@ -279,6 +279,18 @@
           <div class="absolute inset-0 border-2 border-transparent group-hover:border-blue-200 rounded-xl transition-all duration-300 pointer-events-none"></div>
         </div>
 
+        <!-- 📄 Botão Carregar Mais -->
+        <div v-if="temMaisItens" class="mt-8 flex justify-center">
+          <BaseButton
+            @click="carregarMais"
+            class="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex items-center gap-3"
+          >
+            <FontAwesomeIcon icon="chevron-down" class="group-hover:translate-y-1 transition-transform duration-300" />
+            <span>Carregar mais {{ Math.min(itensPorPagina, totalItensDisponiveis - itensExibidos) }} animais</span>
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+          </BaseButton>
+        </div>
+
         <!-- 📊 Rodapé elegante com estatísticas -->
         <BaseCard class="mt-8 bg-gradient-to-r from-gray-50 to-blue-50 border-0 shadow-sm">
           <div class="p-4">
@@ -287,7 +299,7 @@
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <span class="text-gray-600 font-medium">
-                    <span class="text-blue-600 font-bold">{{ animaisFiltrados.length }}</span> de <span class="text-blue-600 font-bold">{{ animais.length }}</span> animais
+                    <span class="text-blue-600 font-bold">{{ animaisExibidos.length }}</span> de <span class="text-blue-600 font-bold">{{ totalItensDisponiveis }}</span> encontrados
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -333,7 +345,7 @@
 
 <script setup lang="ts">
 // 📚 Imports
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseCard from '@/components/UI/BaseCard.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
@@ -354,6 +366,10 @@ const ultimaAtualizacao = ref<string>('')
 const filtroNome = ref('')
 const filtroCliente = ref('')
 const filtroTipo = ref('')
+
+// 📄 Estados da paginação
+const itensPorPagina = ref(10)                // Quantos itens mostrar por vez
+const itensExibidos = ref(10)                 // Quantos itens estão sendo exibidos atualmente
 
 // 🎨 Computed Properties
 const animaisFiltrados = computed(() => {
@@ -387,6 +403,20 @@ const animaisFiltrados = computed(() => {
 
     return nomeMatch && clienteMatch && tipoMatch
   })
+})
+
+// 📄 Animais que devem aparecer na tela (paginados)
+const animaisExibidos = computed(() => {
+  return animaisFiltrados.value.slice(0, itensExibidos.value)
+})
+
+// 📊 Controles da paginação
+const temMaisItens = computed(() => {
+  return animaisFiltrados.value.length > itensExibidos.value
+})
+
+const totalItensDisponiveis = computed(() => {
+  return animaisFiltrados.value.length
 })
 
 const clientesUnicos = computed(() => {
@@ -451,6 +481,24 @@ const visualizarAnimal = (animal: Animal): void => {
   // TODO: Implementar modal ou página de detalhes
   alert(`Detalhes do ${animal.nome} serão implementados em breve!`)
 }
+
+// 📄 Funções de Paginação
+const carregarMais = (): void => {
+  console.log('📄 Carregando mais animais...')
+  const proximosItens = Math.min(itensPorPagina.value, totalItensDisponiveis.value - itensExibidos.value)
+  itensExibidos.value += proximosItens
+  console.log(`✅ Mostrando agora ${itensExibidos.value} de ${totalItensDisponiveis.value} animais`)
+}
+
+const resetarPaginacao = (): void => {
+  console.log('🔄 Resetando paginação...')
+  itensExibidos.value = itensPorPagina.value
+}
+
+// 👀 Watchers para resetar paginação quando filtros mudam
+watch([filtroNome, filtroCliente, filtroTipo], () => {
+  resetarPaginacao()
+})
 
 const editarAnimal = (animal: Animal): void => {
   console.log('✏️ Editar animal:', animal.nome)

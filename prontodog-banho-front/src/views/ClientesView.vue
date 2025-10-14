@@ -150,7 +150,7 @@
               <div class="flex items-center gap-3 flex-wrap">
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full">
                   <FontAwesomeIcon icon="users" class="text-emerald-600 text-sm" />
-                  <span class="text-sm font-medium text-emerald-700">{{ clientesFiltrados.length }} encontrados</span>
+                  <span class="text-sm font-medium text-emerald-700">{{ clientesExibidos.length }} de {{ totalItensDisponiveis }} encontrados</span>
                 </div>
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
                   <FontAwesomeIcon icon="dog" class="text-blue-600 text-sm" />
@@ -172,7 +172,7 @@
         <!-- 🎨 Lista elegante de clientes -->
         <div class="space-y-4">
           <div
-            v-for="(cliente, index) in clientesFiltrados"
+            v-for="(cliente, index) in clientesExibidos"
             :key="cliente.id"
             class="group relative bg-gradient-to-r from-white via-white to-emerald-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden"
             :style="{ animationDelay: `${index * 100}ms` }"
@@ -290,6 +290,18 @@
           </div>
         </div>
 
+        <!-- 📄 Botão Carregar Mais -->
+        <div v-if="temMaisItens" class="mt-8 flex justify-center">
+          <BaseButton
+            @click="carregarMais"
+            class="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex items-center gap-3"
+          >
+            <FontAwesomeIcon icon="chevron-down" class="group-hover:translate-y-1 transition-transform duration-300" />
+            <span>Carregar mais {{ Math.min(itensPorPagina, totalItensDisponiveis - itensExibidos) }} clientes</span>
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+          </BaseButton>
+        </div>
+
         <!-- 📊 Rodapé elegante com estatísticas -->
         <BaseCard class="mt-8 bg-gradient-to-r from-gray-50 to-emerald-50 border-0 shadow-sm">
           <div class="p-4">
@@ -332,7 +344,7 @@
 
 <script setup lang="ts">
 // 📚 Imports necessários
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseCard from '@/components/UI/BaseCard.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
@@ -346,11 +358,15 @@ import { formatarCpf, formatarTelefone, formatarHorario } from '@/utils/formatte
 const router = useRouter()
 
 // 📊 Estados reativos da aplicação
-const clientes = ref<Cliente[]>([])           // Lista de clientes
+const clientes = ref<Cliente[]>([])           // Lista completa de clientes
 const loading = ref(false)                    // Estado de carregamento
 const error = ref<string | null>(null)       // Mensagem de erro
 const filtroBusca = ref('')                  // Filtro de busca geral
 const ultimaAtualizacao = ref('')            // Timestamp da última atualização
+
+// 📄 Estados da paginação
+const itensPorPagina = ref(10)                // Quantos itens mostrar por vez
+const itensExibidos = ref(10)                 // Quantos itens estão sendo exibidos atualmente
 
 // 🎭 Modal de perfil
 const modalPerfilAberto = ref(false)
@@ -381,6 +397,20 @@ const clientesFiltrados = computed(() => {
 
     return nomeMatch || cpfMatch || idMatch || simplesVetMatch
   })
+})
+
+// 📄 Clientes que devem aparecer na tela (paginados)
+const clientesExibidos = computed(() => {
+  return clientesFiltrados.value.slice(0, itensExibidos.value)
+})
+
+// 📊 Controles da paginação
+const temMaisItens = computed(() => {
+  return clientesFiltrados.value.length > itensExibidos.value
+})
+
+const totalItensDisponiveis = computed(() => {
+  return clientesFiltrados.value.length
 })
 
 const totalAnimais = computed(() => {
@@ -447,6 +477,24 @@ const onClienteAtualizado = (clienteAtualizado: Cliente): void => {
     console.log(`✅ Cliente ID ${clienteAtualizado.id} atualizado na lista`)
   }
 }
+
+// 📄 Funções de Paginação
+const carregarMais = (): void => {
+  console.log('📄 Carregando mais clientes...')
+  const proximosItens = Math.min(itensPorPagina.value, totalItensDisponiveis.value - itensExibidos.value)
+  itensExibidos.value += proximosItens
+  console.log(`✅ Mostrando agora ${itensExibidos.value} de ${totalItensDisponiveis.value} clientes`)
+}
+
+const resetarPaginacao = (): void => {
+  console.log('🔄 Resetando paginação...')
+  itensExibidos.value = itensPorPagina.value
+}
+
+// 👀 Watcher para resetar paginação quando filtro muda
+watch(filtroBusca, () => {
+  resetarPaginacao()
+})
 
 // 🎬 Lifecycle - carrega dados quando o componente é montado
 onMounted(() => {
