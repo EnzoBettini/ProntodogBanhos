@@ -66,7 +66,10 @@ import {
   faDollarSign,
   faPaw,
   faQrcode,
-  faBarcode
+  faBarcode,
+  faClipboardList,
+  faCalendarAlt,
+  faWrench
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -126,7 +129,10 @@ library.add(
   faDollarSign,
   faPaw,
   faQrcode,
-  faBarcode
+  faBarcode,
+  faClipboardList,
+  faCalendarAlt,
+  faWrench
 )
 
 const app = createApp(App)

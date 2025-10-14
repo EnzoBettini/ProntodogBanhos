@@ -46,6 +46,22 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/animal-servico',
+      name: 'animal-servico',
+      component: () => import('../views/AnimalServicoView.vue'),
+    },
+    {
+      path: '/animal-servico/novo',
+      name: 'animal-servico-novo',
+      component: () => import('../views/AnimalServicoNovoView.vue'),
+    },
+    {
+      path: '/animal-servico/:id',
+      name: 'animal-servico-detalhes',
+      component: () => import('../views/AnimalServicoDetalhesView.vue'),
+      props: true,
+    },
+    {
       path: '/animais/:id/editar',
       name: 'animais-editar',
       component: () => import('../views/AnimaisEditarView.vue'),

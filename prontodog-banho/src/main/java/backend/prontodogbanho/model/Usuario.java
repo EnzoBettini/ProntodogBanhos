@@ -31,4 +31,8 @@ public class Usuario {
     @OneToMany(mappedBy="usuario", cascade=CascadeType.ALL)
     @JsonManagedReference("usuario-servico")
     private List<AnimalServico> animalServicos;
+
+    @OneToMany(mappedBy="usuario", cascade=CascadeType.ALL)
+    @JsonManagedReference("usuario-banho")
+    private List<BanhoIndividual> banhosIndividuais;
 }

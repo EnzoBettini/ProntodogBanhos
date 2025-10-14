@@ -6,8 +6,28 @@ import axios from 'axios'
 import type {
   ClientesResponse, Cliente, NovoCliente,
   Animal, NovoAnimal,
-  ServicosResponse, ServicoCompleto, NovoServico
+  ServicosResponse, ServicoCompleto, NovoServico,
+  AnimalServico, NovoAnimalServico,
+  UsuariosResponse, Usuario
 } from '@/types/api'
+
+// Interface para BanhoIndividual
+export interface BanhoIndividual {
+  id: number
+  animalServico: { id: number }
+  dataBanho: string // formato: "YYYY-MM-DD"
+  numeroBanho: number
+  observacoes?: string
+  usuario?: { id: number }
+  createdAt: string
+}
+
+export interface NovoBanhoIndividual {
+  animalServicoId: number
+  dataBanho: string
+  observacoes?: string | null
+  usuarioId?: number | null
+}
 import { handleApiError, devLog, withErrorHandling, validateId } from '@/utils/apiHelpers'
 
 // 🔧 CONFIGURAÇÃO DO AXIOS
@@ -24,27 +44,38 @@ const api = axios.create({
 // Intercepta requisições para logging em desenvolvimento
 api.interceptors.request.use(
   (config) => {
-    devLog('🚀 Fazendo requisição para:', `${config.baseURL || ''}${config.url || ''}`)
+    const fullUrl = `${config.baseURL || ''}${config.url || ''}`
+    devLog('🚀 Fazendo requisição para:', fullUrl)
+    devLog('📋 Method:', config.method?.toUpperCase())
+    devLog('📦 Data:', config.data)
+    devLog('🔧 Headers:', config.headers)
     return config
   },
-  (error) => Promise.reject(error)
-)
-
-// Intercepta respostas para tratamento global
-api.interceptors.response.use(
-  (response) => {
-    devLog('✅ Resposta recebida:', response.status)
-    return response
-  },
   (error) => {
-    // Tratamento global de erros de autenticação
-    if (error.response?.status === 401) {
-      devLog('🔐 Usuário não autorizado')
-      // TODO: Redirecionar para login quando implementado
-    }
+    console.error('❌ Erro no interceptor REQUEST:', error)
     return Promise.reject(error)
   }
 )
+
+// Intercepta respostas para logging
+api.interceptors.response.use(
+  (response) => {
+    devLog('✅ Resposta recebida:', `${response.status} - ${JSON.stringify(response.data).substring(0, 100)}...`)
+    return response
+  },
+  (error) => {
+    const fullUrl = `${error.config?.baseURL || ''}${error.config?.url || ''}`
+    console.error('❌ Erro na resposta da API:', {
+      url: fullUrl,
+      method: error.config?.method?.toUpperCase(),
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    })
+    return Promise.reject(error)
+  }
+)
+
 
 // 🐕 SERVIÇOS DE ANIMAIS
 // Aqui ficam todos os métodos relacionados aos animais
@@ -280,6 +311,155 @@ export const servicosService = {
       devLog('✅ Serviço atualizado com sucesso!')
       return response.data
     }, 'Não foi possível atualizar o serviço. Tente novamente.')
+  }
+}
+
+// 🛁 SERVIÇOS DE ANIMAL-SERVIÇO
+// Aqui ficam todos os métodos relacionados ao registro de serviços para animais
+export const animalServicoService = {
+
+  // 📖 BUSCAR TODOS OS REGISTROS DE ANIMAL-SERVIÇO
+  async buscarTodos(): Promise<AnimalServico[]> {
+    return withErrorHandling(async () => {
+      devLog('📋 Buscando todos os registros de animal-serviço...')
+      const response = await api.get('/animalservico')
+      devLog(`✅ ${response.data.length} registros encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os registros de animal-serviço.')
+  },
+
+  // 🔍 BUSCAR REGISTRO POR ID
+  async buscarPorId(id: number): Promise<AnimalServico> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando registro de animal-serviço com ID ${id}...`)
+      const response = await api.get(`/animalservico/${id}`)
+      devLog('✅ Registro encontrado!')
+      return response.data
+    }, 'Registro de animal-serviço não encontrado.')
+  },
+
+  // ➕ CRIAR NOVO REGISTRO
+  async criar(animalServico: NovoAnimalServico): Promise<AnimalServico> {
+    return withErrorHandling(async () => {
+      devLog('➕ Criando novo registro de animal-serviço...', animalServico)
+      const response = await api.post('/animalservico', animalServico)
+      devLog('✅ Registro criado com sucesso!')
+      return response.data
+    }, 'Não foi possível criar o registro de animal-serviço. Tente novamente.')
+  },
+
+  // 🗑️ EXCLUIR REGISTRO
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo registro de animal-serviço com ID ${id}...`)
+      await api.delete(`/animalservico/${id}`)
+      devLog('✅ Registro excluído com sucesso!')
+    }, 'Não foi possível excluir o registro de animal-serviço. Tente novamente.')
+  },
+
+  // ✏️ ATUALIZAR REGISTRO
+  async atualizar(id: number, animalServico: Partial<AnimalServico>): Promise<AnimalServico> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando registro de animal-serviço com ID ${id}...`, animalServico)
+      const response = await api.put(`/animalservico/${id}`, animalServico)
+      devLog('✅ Registro atualizado com sucesso!')
+      return response.data
+    }, 'Não foi possível atualizar o registro de animal-serviço. Tente novamente.')
+  }
+}
+
+// 👤 SERVIÇOS DE USUÁRIOS
+// Aqui ficam todos os métodos relacionados aos usuários do sistema
+export const usuariosService = {
+
+  // 📖 BUSCAR TODOS OS USUÁRIOS
+  async buscarTodos(): Promise<Usuario[]> {
+    return withErrorHandling(async () => {
+      devLog('👤 Buscando todos os usuários...')
+      const response = await api.get<UsuariosResponse>('/usuario')
+      devLog(`✅ ${response.data.length} usuários encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os usuários.')
+  },
+
+  // 🔍 BUSCAR USUÁRIO POR ID
+  async buscarPorId(id: number): Promise<Usuario> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando usuário com ID ${id}...`)
+      const response = await api.get<Usuario>(`/usuario/${id}`)
+      devLog('✅ Usuário encontrado!')
+      return response.data
+    }, 'Usuário não encontrado.')
+  },
+
+  // ➕ CRIAR NOVO USUÁRIO
+  async criar(usuario: Omit<Usuario, 'id'>): Promise<Usuario> {
+    return withErrorHandling(async () => {
+      devLog('➕ Criando novo usuário...', usuario)
+      const response = await api.post<Usuario>('/usuario', usuario)
+      devLog('✅ Usuário criado com sucesso!')
+      return response.data
+    }, 'Não foi possível criar o usuário. Tente novamente.')
+  },
+
+  // 🗑️ EXCLUIR USUÁRIO
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo usuário com ID ${id}...`)
+      await api.post(`/usuario/${id}`) // Endpoint usa POST para deletar
+      devLog('✅ Usuário excluído com sucesso!')
+    }, 'Não foi possível excluir o usuário. Tente novamente.')
+  }
+}
+
+// 🛁 SERVIÇOS DE BANHO INDIVIDUAL
+// Aqui ficam todos os métodos relacionados aos banhos individuais
+export const banhosIndividuaisService = {
+
+  // 📖 BUSCAR TODOS OS BANHOS INDIVIDUAIS
+  async buscarTodos(): Promise<BanhoIndividual[]> {
+    return withErrorHandling(async () => {
+      devLog('🛁 Buscando todos os banhos individuais...')
+      const response = await api.get<BanhoIndividual[]>('/banho-individual')
+      devLog(`✅ ${response.data.length} banhos individuais encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os banhos individuais.')
+  },
+
+  // 🔍 BUSCAR BANHOS POR ANIMAL SERVIÇO
+  async buscarPorAnimalServico(animalServicoId: number): Promise<BanhoIndividual[]> {
+    validateId(animalServicoId)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando banhos para animal serviço ID ${animalServicoId}...`)
+      const response = await api.get<BanhoIndividual[]>(`/banho-individual/animal-servico/${animalServicoId}`)
+      devLog(`✅ ${response.data.length} banhos encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os banhos deste serviço.')
+  },
+
+  // ➕ CRIAR NOVO BANHO INDIVIDUAL
+  async criar(banho: NovoBanhoIndividual): Promise<BanhoIndividual> {
+    return withErrorHandling(async () => {
+      devLog('➕ Criando novo banho individual...', banho)
+      const response = await api.post<BanhoIndividual>('/banho-individual', banho)
+      devLog('✅ Banho individual criado com sucesso!')
+      return response.data
+    }, 'Não foi possível registrar o banho. Tente novamente.')
+  },
+
+  // 🗑️ EXCLUIR BANHO INDIVIDUAL
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo banho individual com ID ${id}...`)
+      await api.delete(`/banho-individual/${id}`)
+      devLog('✅ Banho individual excluído com sucesso!')
+    }, 'Não foi possível excluir o banho. Tente novamente.')
   }
 }
 

@@ -65,10 +65,13 @@
         title="Serviços"
         icon="cog"
         basePath="/servicos"
+        :additionalPaths="['/animal-servico']"
         :collapsed="!sidebarStore.isOpen"
       >
         <SidebarItem title="Lista de Serviços" to="/servicos" :collapsed="false" />
         <SidebarItem title="Novo Serviço" to="/servicos/novo" :collapsed="false" />
+        <SidebarItem title="Lista Animal Serviços" to="/animal-servico" :collapsed="false" />
+        <SidebarItem title="Cadastrar Animal Serviço" to="/animal-servico/novo" :collapsed="false" />
         <SidebarItem title="Relatórios" to="/servicos/relatorios" :collapsed="false" />
       </SidebarDropdown>
     </nav>

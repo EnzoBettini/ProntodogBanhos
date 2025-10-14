@@ -1,12 +1,14 @@
 package backend.prontodogbanho.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name="animal_servico", schema="banhoetosa")
@@ -40,4 +42,8 @@ public class AnimalServico {
     @JoinColumn(name="usuario_id", nullable = false)
     @JsonBackReference("usuario-servico")
     private Usuario usuario;
+
+    @OneToMany(mappedBy="animalServico", cascade=CascadeType.ALL)
+    @JsonManagedReference("animalservico-banho")
+    private List<BanhoIndividual> banhosIndividuais;
 }

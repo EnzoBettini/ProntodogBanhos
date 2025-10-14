@@ -65,3 +65,21 @@ ALTER TABLE banhoetosa.animais
 ADD COLUMN status VARCHAR(20) DEFAULT 'vivo' NOT NULL CHECK (
     status IN ('vivo', 'falecido')
 );
+
+-- Tabela para registrar cada banho individual de um pacote
+CREATE TABLE banhoetosa.banhos_individuais (
+    id BIGSERIAL PRIMARY KEY,
+    animal_servico_id BIGINT NOT NULL,
+    data_banho DATE NOT NULL,
+    numero_banho INTEGER NOT NULL,
+    observacoes TEXT,
+    usuario_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_animal_servico FOREIGN KEY (animal_servico_id)
+        REFERENCES banhoetosa.animal_servico (id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuario_banho FOREIGN KEY (usuario_id)
+        REFERENCES banhoetosa.usuarios (id),
+    CONSTRAINT unique_banho_por_servico
+        UNIQUE (animal_servico_id, numero_banho)
+);

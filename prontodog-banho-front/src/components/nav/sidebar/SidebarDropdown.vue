@@ -49,11 +49,13 @@ interface Props {
   title: string
   icon?: string
   basePath?: string
+  additionalPaths?: string[]
   collapsed?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   collapsed: false,
+  additionalPaths: () => []
 })
 
 const route = useRoute()
@@ -62,7 +64,18 @@ const sidebarStore = useSidebarStore()
 
 const active = computed(() => {
   if (!props.basePath) return false
-  return route.path.startsWith(props.basePath)
+
+  // Verifica o basePath principal
+  if (route.path.startsWith(props.basePath)) {
+    return true
+  }
+
+  // Verifica caminhos adicionais
+  if (props.additionalPaths && props.additionalPaths.length > 0) {
+    return props.additionalPaths.some(path => route.path.startsWith(path))
+  }
+
+  return false
 })
 
 // Inicializar dropdown aberto se a rota atual corresponde

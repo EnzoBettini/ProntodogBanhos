@@ -30,8 +30,11 @@ export interface AnimalServico {
   id: number
   dataServico: string // formato: "YYYY-MM-DD"
   banhosUsados: number
-  animal?: Animal
-  servico?: ServicoCompleto
+  animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)
+  servicoId?: number   // ID do serviço (não vem o objeto completo devido ao @JsonBackReference)
+  usuarioId?: number   // ID do usuário (não vem o objeto completo devido ao @JsonBackReference)
+  animal?: Animal      // Para compatibilidade, mas pode ser undefined
+  servico?: ServicoCompleto // Para compatibilidade, mas pode ser undefined
 }
 
 // 💼 Serviço principal (entity Servico)
@@ -42,6 +45,15 @@ export interface ServicoCompleto {
   quantidade: number
   valor: number
   servicosAnimais?: AnimalServico[]
+}
+
+// 👤 Usuário do sistema (vendedores/funcionários)
+export interface Usuario {
+  id: number
+  nome: string
+  email: string
+  role: string
+  animalServicos?: AnimalServico[] // Relacionamento com animal serviços
 }
 
 // 👤 Cliente principal
@@ -61,6 +73,9 @@ export type ClientesResponse = Cliente[]
 
 // 📊 Resposta da API (lista de serviços)
 export type ServicosResponse = ServicoCompleto[]
+
+// 📊 Resposta da API (lista de usuários)
+export type UsuariosResponse = Usuario[]
 
 // 🔄 Estados para controle de loading e erros
 export interface ApiState<T> {
@@ -104,6 +119,15 @@ export interface NovoServico {
   descricao: string
   quantidade: number // Representa banhos por pacote (1 = banho único, 4 = pacote 4 banhos)
   valor: number // Valor total do pacote/serviço
+}
+
+// 🛁 Animal Serviço para criação (sem ID)
+export interface NovoAnimalServico {
+  dataServico: string // formato: "YYYY-MM-DD"
+  banhosUsados: number
+  animal: { id: number } // Referência ao animal
+  servico: { id: number } // Referência ao serviço
+  usuario: { id: number } // Referência ao usuário
 }
 
 // 📋 Dados do formulário (estrutura interna do componente)
