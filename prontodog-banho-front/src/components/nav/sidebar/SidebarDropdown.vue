@@ -24,14 +24,10 @@
     </SidebarItem>
 
     <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0 max-h-0 -translate-y-2"
-      enter-to-class="opacity-100 max-h-96 translate-y-0"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100 max-h-96 translate-y-0"
-      leave-to-class="opacity-0 max-h-0 -translate-y-2"
+      name="slide-down"
+      appear
     >
-      <div v-show="isOpen && !collapsed" class="ml-1 mt-2 space-y-2 overflow-hidden relative">
+      <div v-if="isOpen && !collapsed" class="ml-1 mt-2 space-y-2 overflow-hidden relative">
         <!-- ✨ Linha conectora visual -->
         <div class="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary-300/50 via-primary-200/30 to-transparent ml-1"></div>
 
@@ -44,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSidebarStore } from '@/stores/sidebar'
 import SidebarItem from './SidebarItem.vue'
@@ -69,6 +65,13 @@ const active = computed(() => {
   return route.path.startsWith(props.basePath)
 })
 
+// Inicializar dropdown aberto se a rota atual corresponde
+onMounted(() => {
+  if (active.value && !props.collapsed) {
+    isOpen.value = true
+  }
+})
+
 const toggleOpen = () => {
   // Se a sidebar está colapsada, abrir ela primeiro
   if (props.collapsed) {
@@ -79,3 +82,44 @@ const toggleOpen = () => {
   }
 }
 </script>
+
+<style scoped>
+/* Animações suaves para os dropdowns da sidebar */
+.slide-down-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+  overflow: hidden;
+}
+
+.slide-down-leave-active {
+  transition: all 0.25s cubic-bezier(0.6, 0, 0.8, 1);
+  transform-origin: top;
+  overflow: hidden;
+}
+
+/* Estados das transições */
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-8px) scaleY(0.95);
+  max-height: 0;
+}
+
+.slide-down-enter-to {
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+  max-height: 200px;
+}
+
+.slide-down-leave-from {
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+  max-height: 200px;
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scaleY(0.95);
+  max-height: 0;
+}
+
+</style>
