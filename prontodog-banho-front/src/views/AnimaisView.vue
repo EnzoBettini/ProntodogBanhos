@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
     <!-- 🌟 Header com gradiente elegante -->
-    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
+    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white pt-16">
       <!-- Background pattern -->
       <div class="absolute inset-0 opacity-10 bg-pattern"></div>
 
@@ -165,7 +165,7 @@
       </BaseCard>
 
       <!-- 🐕 Lista elegante de animais -->
-      <div v-else-if="animais.length > 0" class="space-y-4">
+      <div v-else-if="animais.length > 0" ref="listaAnimaisRef" class="space-y-4">
         <div
           v-for="(animal, index) in animaisExibidos"
           :key="animal.id"
@@ -352,6 +352,7 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import { clientesService } from '@/services/api'
 import type { Animal, Cliente } from '@/types/api'
 import { formatarHorario, getCorTipoAnimal } from '@/utils/formatters'
+import { useAutoAnimateList } from '@/composables/useAutoAnimate'
 
 // 🎯 Configurações
 const router = useRouter()
@@ -370,6 +371,10 @@ const filtroTipo = ref('')
 // 📄 Estados da paginação
 const itensPorPagina = ref(10)                // Quantos itens mostrar por vez
 const itensExibidos = ref(10)                 // Quantos itens estão sendo exibidos atualmente
+
+// 🎬 Auto-animate para listas
+const listaAnimaisRef = ref<HTMLElement>()
+useAutoAnimateList(listaAnimaisRef)
 
 // 🎨 Computed Properties
 const animaisFiltrados = computed(() => {

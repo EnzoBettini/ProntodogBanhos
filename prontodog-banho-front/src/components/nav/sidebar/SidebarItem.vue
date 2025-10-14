@@ -6,13 +6,62 @@
     @click="handleClick"
     :title="collapsed ? title : ''"
   >
-    <FontAwesomeIcon v-if="icon" :icon="icon" class="w-5 h-5 flex-shrink-0" />
-    <span v-show="!collapsed" class="truncate">{{ title }}</span>
+    <div
+      v-if="icon"
+      class="relative flex items-center justify-center"
+      :class="collapsed ? 'w-10 h-10' : 'w-8 h-8'"
+    >
+      <FontAwesomeIcon
+        :icon="icon"
+        :class="[
+          'flex-shrink-0 transition-all duration-300 group-hover:scale-110',
+          collapsed ? 'w-6 h-6' : 'w-5 h-5',
+          active ? 'text-white drop-shadow-sm' : 'text-gray-600 group-hover:text-primary-600'
+        ]"
+      />
+      <!-- ✨ Efeito de brilho no ícone ativo -->
+      <div v-if="active" class="absolute inset-0 bg-white/30 rounded-lg blur opacity-50 animate-pulse"></div>
+    </div>
+    <span
+      v-show="!collapsed"
+      class="truncate font-medium transition-all duration-300"
+      :class="active ? 'text-white drop-shadow-sm' : 'text-gray-700 group-hover:text-primary-700'"
+    >
+      {{ title }}
+    </span>
+    <!-- ✨ Indicador ativo -->
+    <div
+      v-if="active && !collapsed"
+      class="ml-auto flex items-center"
+    >
+      <div class="w-2 h-2 bg-white rounded-full shadow-sm animate-pulse"></div>
+    </div>
   </router-link>
 
   <div v-else :class="itemClasses" @click="handleClick" :title="collapsed ? title : ''">
-    <FontAwesomeIcon v-if="icon" :icon="icon" class="w-5 h-5 flex-shrink-0" />
-    <span v-show="!collapsed" class="truncate">{{ title }}</span>
+    <div
+      v-if="icon"
+      class="relative flex items-center justify-center"
+      :class="collapsed ? 'w-10 h-10' : 'w-8 h-8'"
+    >
+      <FontAwesomeIcon
+        :icon="icon"
+        :class="[
+          'flex-shrink-0 transition-all duration-300 group-hover:scale-110',
+          collapsed ? 'w-6 h-6' : 'w-5 h-5',
+          active ? 'text-white drop-shadow-sm' : 'text-gray-600 group-hover:text-primary-600'
+        ]"
+      />
+      <!-- ✨ Efeito de brilho no ícone ativo -->
+      <div v-if="active" class="absolute inset-0 bg-white/30 rounded-lg blur opacity-50 animate-pulse"></div>
+    </div>
+    <span
+      v-show="!collapsed"
+      class="truncate font-medium transition-all duration-300 flex-1"
+      :class="active ? 'text-white drop-shadow-sm' : 'text-gray-700 group-hover:text-primary-700'"
+    >
+      {{ title }}
+    </span>
     <slot name="arrow" />
   </div>
 </template>
@@ -53,14 +102,17 @@ const handleClick = () => {
 }
 
 const itemClasses = computed(() => {
-  const paddingX = props.collapsed ? 'px-3' : 'px-4'
+  const paddingX = props.collapsed ? 'px-2 mx-1' : 'px-4'
   const justifyContent = props.collapsed ? 'justify-center' : 'justify-start'
-  const baseClasses = `flex items-center gap-3 ${paddingX} ${justifyContent} py-3 rounded-lg transition-colors cursor-pointer`
+  const paddingY = props.collapsed ? 'py-3' : 'py-3'
+  const gapClass = props.icon ? 'gap-3' : 'gap-0'
+  const borderRadius = props.collapsed ? 'rounded-2xl' : 'rounded-xl'
+  const baseClasses = `group relative flex items-center ${gapClass} ${paddingX} ${paddingY} ${justifyContent} ${borderRadius} transition-all duration-300 cursor-pointer transform hover:translate-x-1 overflow-hidden focus:outline-none`
 
   if (props.active) {
-    return `${baseClasses} bg-primary-500 text-white`
+    return `${baseClasses} bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg hover:shadow-xl hover:from-primary-600 hover:to-secondary-600`
   }
 
-  return `${baseClasses} text-gray-700 hover:bg-primary-50 hover:text-primary-700`
+  return `${baseClasses} text-gray-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 hover:text-primary-700 hover:shadow-md`
 })
 </script>

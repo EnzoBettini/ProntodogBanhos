@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-100">
     <!-- 🌟 Header com gradiente elegante -->
-    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white">
+    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white pt-16">
       <!-- Background pattern -->
       <div class="absolute inset-0 opacity-10 bg-pattern"></div>
 

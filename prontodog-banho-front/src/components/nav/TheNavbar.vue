@@ -1,11 +1,21 @@
 <template>
-  <nav class="bg-white border-b border-gray-200 shadow-sm w-full">
-    <div class="w-full px-4 sm:px-6 lg:px-8">
+  <nav class="bg-gradient-to-r from-white via-primary-50 to-secondary-50 border-b border-primary-200/30 shadow-lg backdrop-blur-sm w-full relative">
+    <!-- ✨ Efeito de brilho sutil -->
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-50"></div>
+
+    <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="flex justify-between items-center h-16">
         <!-- Logo/Title (lado esquerdo) -->
-        <div class="flex items-center">
-          <FontAwesomeIcon icon="bath" class="text-primary-500 text-xl mr-3" />
-          <h1 class="text-xl font-semibold text-primary-700">
+        <div class="flex items-center group">
+          <div class="relative">
+            <FontAwesomeIcon
+              icon="bath"
+              class="text-primary-500 text-xl mr-3 transform group-hover:scale-110 transition-all duration-300 group-hover:rotate-12 drop-shadow-lg"
+            />
+            <!-- ✨ Efeito de brilho no ícone -->
+            <div class="absolute inset-0 bg-primary-400 rounded-full blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 -z-10"></div>
+          </div>
+          <h1 class="text-xl font-bold bg-gradient-to-r from-primary-700 to-secondary-600 bg-clip-text text-transparent drop-shadow-sm">
             {{ pageTitle }}
           </h1>
         </div>
@@ -14,95 +24,107 @@
         <div class="flex items-center space-x-4">
           <!-- Notificações (placeholder futuro) -->
           <button
-            class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            class="relative p-3 rounded-xl text-gray-500 hover:text-primary-600 hover:bg-gradient-to-br hover:from-primary-50 hover:to-secondary-50 transition-all duration-300 transform hover:scale-105 hover:shadow-lg group"
             title="Notificações (Em breve)"
           >
-            <FontAwesomeIcon icon="bell" class="w-5 h-5" />
+            <FontAwesomeIcon icon="bell" class="w-5 h-5 group-hover:animate-pulse" />
+            <!-- Badge de notificação (exemplo) -->
+            <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-red-400 to-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
 
           <!-- Dropdown do Usuário -->
-          <div class="relative" ref="userMenuRef">
+          <div class="relative z-[50]" ref="userMenuRef">
             <button
               @click="toggleUserMenu"
-              class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              class="flex items-center space-x-3 p-3 rounded-xl hover:bg-gradient-to-br hover:from-primary-50 hover:to-secondary-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 transform hover:scale-105 hover:shadow-lg group"
             >
               <!-- Avatar -->
-              <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                <span class="text-sm font-medium text-white">
+              <div class="relative w-9 h-9 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:rotate-6">
+                <span class="text-sm font-bold text-white drop-shadow-sm">
                   {{ userInitials }}
                 </span>
+                <!-- ✨ Anel de status online -->
+                <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white shadow-sm animate-pulse"></div>
               </div>
 
               <!-- Nome do usuário -->
               <div class="hidden md:block text-left">
-                <p class="text-sm font-medium text-gray-700">{{ currentUser.name }}</p>
-                <p class="text-xs text-gray-500">{{ currentUser.role }}</p>
+                <p class="text-sm font-semibold text-gray-800 group-hover:text-primary-700 transition-colors">{{ currentUser.name }}</p>
+                <p class="text-xs text-gray-600 group-hover:text-secondary-600 transition-colors font-medium">{{ currentUser.role }}</p>
               </div>
 
               <!-- Ícone dropdown -->
               <FontAwesomeIcon
                 :icon="isUserMenuOpen ? 'chevron-up' : 'chevron-down'"
-                class="w-4 h-4 text-gray-500"
+                class="w-4 h-4 text-gray-500 group-hover:text-primary-500 transition-all duration-300 transform group-hover:scale-110"
+                :class="{ 'rotate-180': isUserMenuOpen }"
               />
             </button>
 
             <!-- Menu Dropdown -->
             <Transition
-              enter-active-class="transition ease-out duration-200"
-              enter-from-class="transform opacity-0 scale-95"
-              enter-to-class="transform opacity-100 scale-100"
-              leave-active-class="transition ease-in duration-150"
-              leave-from-class="transform opacity-100 scale-100"
-              leave-to-class="transform opacity-0 scale-95"
+              name="fade-scale"
+              appear
             >
               <div
-                v-show="isUserMenuOpen"
-                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                v-if="isUserMenuOpen"
+                class="absolute right-0 mt-3 w-72 bg-white backdrop-blur-xl rounded-2xl shadow-2xl border border-primary-200/50 py-2 z-[99999] overflow-hidden"
+                style="box-shadow: 0 25px 50px -12px rgba(17, 153, 142, 0.25), 0 20px 25px -5px rgba(17, 153, 142, 0.1)"
               >
+                <!-- ✨ Gradiente de fundo sutil -->
+                <div class="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-secondary-50/50 opacity-60"></div>
                 <!-- Informações do usuário -->
-                <div class="px-4 py-3 border-b border-gray-200">
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
-                      <span class="text-base font-medium text-white">
+                <div class="relative px-6 py-4 border-b border-primary-200/50">
+                  <div class="flex items-center space-x-4">
+                    <div class="relative w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform duration-300">
+                      <span class="text-base font-bold text-white drop-shadow-sm">
                         {{ userInitials }}
                       </span>
+                      <!-- ✨ Status indicator -->
+                      <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white shadow-sm animate-pulse"></div>
                     </div>
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">{{ currentUser.name }}</p>
-                      <p class="text-xs text-gray-500">{{ currentUser.email }}</p>
-                      <BaseBadge :variant="currentUser.status === 'online' ? 'success' : 'gray'" size="sm" class="mt-1">
-                        {{ currentUser.status === 'online' ? 'Online' : 'Offline' }}
-                      </BaseBadge>
+                    <div class="flex-1">
+                      <p class="text-base font-bold text-gray-900 mb-1">{{ currentUser.name }}</p>
+                      <p class="text-sm text-gray-600 mb-2">{{ currentUser.email }}</p>
+                      <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full">
+                          <div class="w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse"></div>
+                          <span class="text-xs font-medium text-green-700">{{ currentUser.status === 'online' ? 'Online' : 'Offline' }}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Menu Items -->
-                <div class="py-1">
+                <div class="relative py-2 space-y-1">
                   <button
                     @click="goToProfile"
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    class="flex items-center w-full px-6 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 hover:text-primary-700 transition-all duration-300 group transform hover:translate-x-1"
                   >
-                    <FontAwesomeIcon icon="user" class="w-4 h-4 mr-3 text-gray-400" />
-                    Meu Perfil
+                    <FontAwesomeIcon icon="user" class="w-4 h-4 mr-4 text-gray-500 group-hover:text-primary-500 transition-colors" />
+                    <span class="font-medium">Meu Perfil</span>
+                    <FontAwesomeIcon icon="chevron-right" class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
                   </button>
 
                   <button
                     @click="goToSettings"
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    class="flex items-center w-full px-6 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 hover:text-primary-700 transition-all duration-300 group transform hover:translate-x-1"
                   >
-                    <FontAwesomeIcon icon="cog" class="w-4 h-4 mr-3 text-gray-400" />
-                    Configurações
+                    <FontAwesomeIcon icon="cog" class="w-4 h-4 mr-4 text-gray-500 group-hover:text-primary-500 transition-colors group-hover:rotate-90" />
+                    <span class="font-medium">Configurações</span>
+                    <FontAwesomeIcon icon="chevron-right" class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
                   </button>
 
-                  <div class="border-t border-gray-200 my-1"></div>
+                  <div class="border-t border-primary-200/50 my-2 mx-4"></div>
 
                   <button
                     @click="logout"
-                    class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    class="flex items-center w-full px-6 py-3 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-700 transition-all duration-300 group transform hover:translate-x-1"
                   >
-                    <FontAwesomeIcon icon="sign-out-alt" class="w-4 h-4 mr-3 text-red-500" />
-                    Sair
+                    <FontAwesomeIcon icon="sign-out-alt" class="w-4 h-4 mr-4 text-red-500 group-hover:text-red-600 transition-colors" />
+                    <span class="font-medium">Sair</span>
+                    <FontAwesomeIcon icon="chevron-right" class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
                   </button>
                 </div>
               </div>
@@ -216,3 +238,36 @@ watch(route, () => {
   closeUserMenu()
 })
 </script>
+
+<style scoped>
+/* Garantir que as transições funcionem suavemente */
+.fade-scale-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top right;
+}
+
+.fade-scale-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+  transform-origin: top right;
+}
+
+.fade-scale-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(8px);
+}
+
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(8px);
+}
+
+.fade-scale-enter-to {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.fade-scale-leave-from {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+</style>

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
     <!-- 🌟 Header com gradiente animado -->
-    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
+    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white pt-16">
       <!-- Background pattern -->
       <div class="absolute inset-0 opacity-10 bg-pattern"></div>
 
@@ -376,7 +376,7 @@
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1)'
       }"
     >
-      <div class="p-2">
+      <div ref="dropdownRef" class="p-2">
         <div
           v-for="cliente in clientesFiltrados"
           :key="cliente.id"
@@ -435,6 +435,7 @@ import { animaisService, clientesService } from '@/services/api'
 import { TIPOS_ANIMAIS } from '@/types/api'
 import type { Cliente, Animal } from '@/types/api'
 import { formatarCpf, getIconeTipoAnimal } from '@/utils/formatters'
+import { useAutoAnimateModal } from '@/composables/useAutoAnimate'
 
 // 🎯 Configurações
 const router = useRouter()
@@ -461,6 +462,10 @@ const dropdownAberto = ref(false)
 const clienteSelecionado = ref<any>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
 const dropdownPosition = ref({ top: 0, left: 0, width: 0 })
+
+// 🎬 Auto-animate para dropdown
+const dropdownRef = ref<HTMLElement>()
+useAutoAnimateModal(dropdownRef)
 
 // 🔍 Filtro de clientes para autocomplete
 const clientesFiltrados = computed(() => {

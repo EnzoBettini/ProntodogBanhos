@@ -8,15 +8,15 @@ const sidebarStore = useSidebarStore()
 
 const mainContentClasses = computed(() => {
   // Margem esquerda baseada no estado da sidebar
-  const marginLeft = sidebarStore.isOpen ? 'ml-64' : 'ml-16'
-  return `${marginLeft} pt-16`
+  const marginLeft = sidebarStore.isOpen ? 'ml-64' : 'ml-20'
+  return `${marginLeft}`
 })
 </script>
 
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
     <!-- Navbar fixa no topo -->
-    <TheNavbar class="fixed top-0 left-0 right-0 z-50" />
+    <TheNavbar class="fixed top-0 left-0 right-0 z-[100]" />
 
     <!-- Sidebar -->
     <TheSidebar />

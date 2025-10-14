@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-100">
     <!-- 🌟 Header com gradiente elegante -->
-    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white">
+    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white pt-16">
       <!-- Background pattern -->
       <div class="absolute inset-0 opacity-10 bg-pattern"></div>
 
@@ -170,7 +170,7 @@
         </BaseCard>
 
         <!-- 🎨 Lista elegante de clientes -->
-        <div class="space-y-4">
+        <div ref="listaClientesRef" class="space-y-4">
           <div
             v-for="(cliente, index) in clientesExibidos"
             :key="cliente.id"
@@ -353,6 +353,7 @@ import { clientesService } from '@/services/api'
 import type { Cliente } from '@/types/api'
 import ClienteProfileModal from '@/components/UI/ClienteProfileModal.vue'
 import { formatarCpf, formatarTelefone, formatarHorario } from '@/utils/formatters'
+import { useAutoAnimateList } from '@/composables/useAutoAnimate'
 
 // 🎯 Configuração do router
 const router = useRouter()
@@ -371,6 +372,10 @@ const itensExibidos = ref(10)                 // Quantos itens estão sendo exib
 // 🎭 Modal de perfil
 const modalPerfilAberto = ref(false)
 const clienteSelecionadoId = ref<number | null>(null)
+
+// 🎬 Auto-animate para listas
+const listaClientesRef = ref<HTMLElement>()
+useAutoAnimateList(listaClientesRef)
 
 // 💻 Computadas (dados derivados)
 const clientesFiltrados = computed(() => {
