@@ -1,10 +1,34 @@
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4 pb-32">
-    <!-- 🎨 Background decorativo -->
+  <div class="relative min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 p-4 pb-8">
+    <!-- 🎨 Background decorativo premium -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <div class="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-20 right-10 w-96 h-96 bg-green-200/20 rounded-full blur-3xl"></div>
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-100/10 to-green-100/10 rounded-full blur-3xl"></div>
+      <!-- Elementos geométricos principais -->
+      <div class="absolute top-10 left-10 w-96 h-96 bg-gradient-to-br from-indigo-500/8 to-purple-500/8 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-br from-emerald-500/8 to-teal-500/8 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div class="absolute top-1/3 right-1/4 w-64 h-64 bg-gradient-to-br from-rose-500/4 to-pink-500/4 rounded-full blur-2xl"></div>
+
+      <!-- Formas geométricas adicionais -->
+      <div class="absolute top-1/4 left-1/3 w-32 h-32 bg-gradient-to-br from-yellow-400/5 to-orange-400/5 rounded-full blur-xl animate-pulse delay-500"></div>
+      <div class="absolute bottom-1/4 left-1/4 w-48 h-48 bg-gradient-to-br from-blue-400/6 to-cyan-400/6 rounded-full blur-2xl animate-pulse delay-2000"></div>
+
+      <!-- Pattern overlay sofisticado -->
+      <div class="absolute inset-0 opacity-20">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="1.5" fill="#64748b" opacity="0.3"/>
+            </pattern>
+            <pattern id="lines" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M0 60 L60 0" stroke="#64748b" stroke-width="0.5" opacity="0.2"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots)"/>
+          <rect width="100%" height="100%" fill="url(#lines)"/>
+        </svg>
+      </div>
+
+      <!-- Mesh gradient overlay -->
+      <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/30 via-transparent via-purple-50/20 to-emerald-50/30"></div>
     </div>
 
     <div class="relative z-20 max-w-7xl mx-auto pt-8">
@@ -36,295 +60,437 @@
       <!-- 📊 Dashboard Principal -->
       <div v-else>
 
-        <!-- 🎯 Header Dashboard -->
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-blue-700 to-green-600 text-white p-8 mb-8 shadow-2xl">
-          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-32 -translate-y-32"></div>
-          <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl transform -translate-x-24 translate-y-24"></div>
+        <!-- 🎯 Header Dashboard Moderno -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-gray-900 to-zinc-900 text-white p-8 mb-10 shadow-2xl border border-white/10">
+          <!-- Elementos decorativos glassmorphism -->
+          <div class="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-violet-400/20 to-purple-600/20 rounded-full blur-3xl transform translate-x-32 -translate-y-32"></div>
+          <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-400/15 to-teal-600/15 rounded-full blur-2xl transform -translate-x-24 translate-y-24"></div>
+
+          <!-- Pattern overlay -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
 
           <div class="relative z-10">
             <div class="flex items-center justify-between">
-              <div>
-                <h1 class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-                  🐕 ProntoDog Dashboard
-                </h1>
-                <p class="text-xl opacity-90">{{ saudacao }}, administrador!</p>
-                <p class="text-lg opacity-75 mt-1">{{ dataAtual }}</p>
+              <div class="space-y-2">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <span class="text-2xl">🐕</span>
+                  </div>
+                  <h1 class="text-4xl font-black tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    ProntoDog
+                  </h1>
+                </div>
+                <p class="text-xl text-gray-300 font-medium">{{ saudacao }}, administrador!</p>
+                <div class="flex items-center gap-2 text-gray-400">
+                  <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="w-4 h-4" />
+                  <p class="text-sm font-medium">{{ dataAtual }}</p>
+                </div>
               </div>
 
-              <!-- Botão Refresh -->
+              <!-- Botão Refresh Moderno -->
               <button
                 @click="carregarDados"
                 :disabled="loading"
-                class="group flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-all duration-300 border border-white/20 hover:border-white/40 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-50"
+                class="group relative flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-xl rounded-2xl hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/30 transform hover:-translate-y-1 hover:shadow-2xl disabled:opacity-50 overflow-hidden"
               >
+                <!-- Efeito shimmer -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
                 <FontAwesomeIcon
                   :icon="['fas', 'refresh']"
                   :class="{ 'animate-spin': loading, 'group-hover:rotate-180': !loading }"
-                  class="transition-transform duration-300"
+                  class="w-5 h-5 transition-transform duration-500"
                 />
-                <span class="font-medium">{{ loading ? 'Carregando...' : 'Atualizar' }}</span>
+                <span class="font-semibold tracking-wide">{{ loading ? 'Carregando...' : 'Atualizar' }}</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- 💰 Métricas Financeiras -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- 💰 Métricas Financeiras Modernas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
 
           <!-- Total de Receita -->
-          <BaseCard class="shadow-xl border-0 bg-gradient-to-br from-green-50 to-emerald-100">
-            <div class="p-6">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <FontAwesomeIcon :icon="['fas', 'dollar-sign']" class="text-white text-xl" />
+          <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50/80 to-green-100/80 backdrop-blur-sm border border-emerald-200/50 p-8 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 hover:-translate-y-2">
+            <!-- Background pattern -->
+            <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/5 to-green-600/5"></div>
+
+            <div class="relative">
+              <div class="flex items-start justify-between mb-6">
+                <div class="p-4 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <FontAwesomeIcon :icon="['fas', 'dollar-sign']" class="text-white text-2xl" />
                 </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-600 mb-1">Receita do Mês</p>
-                  <p class="text-2xl font-bold text-gray-900">{{ formatarValor(metricas.receitaTotal) }}</p>
-                  <p class="text-xs text-green-600 font-medium">💰 Pagamentos de {{ new Date().toLocaleDateString('pt-BR', { month: 'long' }) }}</p>
+                <div class="w-2 h-2 bg-emerald-400 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+
+              <div class="space-y-2">
+                <p class="text-sm font-semibold text-emerald-700/80 uppercase tracking-wider">Receita do Mês</p>
+                <p class="text-3xl font-black text-gray-900 tracking-tight">{{ formatarValor(metricas.receitaTotal) }}</p>
+                <div class="flex items-center gap-2 text-emerald-600">
+                  <div class="w-1 h-1 bg-emerald-500 rounded-full"></div>
+                  <p class="text-xs font-medium">Pagamentos de {{ new Date().toLocaleDateString('pt-BR', { month: 'long' }) }}</p>
                 </div>
               </div>
             </div>
-          </BaseCard>
+          </div>
 
           <!-- Serviços em Aberto -->
-          <BaseCard class="shadow-xl border-0 bg-gradient-to-br from-orange-50 to-amber-100">
-            <div class="p-6">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center animate-pulse">
-                  <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white text-xl" />
+          <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50/80 to-orange-100/80 backdrop-blur-sm border border-amber-200/50 p-8 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-400/5 to-orange-600/5"></div>
+
+            <div class="relative">
+              <div class="flex items-start justify-between mb-6">
+                <div class="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white text-2xl animate-pulse" />
                 </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-600 mb-1">Em Aberto (Mês)</p>
-                  <p class="text-2xl font-bold text-gray-900">{{ formatarValor(metricas.valorEmAberto) }}</p>
-                  <p class="text-xs text-orange-600 font-medium">📅 Cadastrados em {{ new Date().toLocaleDateString('pt-BR', { month: 'long' }) }}</p>
+                <div class="w-2 h-2 bg-amber-400 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+
+              <div class="space-y-2">
+                <p class="text-sm font-semibold text-amber-700/80 uppercase tracking-wider">Em Aberto</p>
+                <p class="text-3xl font-black text-gray-900 tracking-tight">{{ formatarValor(metricas.valorEmAberto) }}</p>
+                <div class="flex items-center gap-2 text-amber-600">
+                  <div class="w-1 h-1 bg-amber-500 rounded-full"></div>
+                  <p class="text-xs font-medium">Cadastrados em {{ new Date().toLocaleDateString('pt-BR', { month: 'long' }) }}</p>
                 </div>
               </div>
             </div>
-          </BaseCard>
+          </div>
 
           <!-- Pacotes Vencidos -->
-          <BaseCard class="shadow-xl border-0 bg-gradient-to-br from-red-50 to-pink-100">
-            <div class="p-6">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
-                  <FontAwesomeIcon :icon="['fas', 'exclamation-triangle']" class="text-white text-xl" />
+          <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-50/80 to-red-100/80 backdrop-blur-sm border border-rose-200/50 p-8 hover:shadow-2xl hover:shadow-rose-500/10 transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute inset-0 bg-gradient-to-br from-rose-400/5 to-red-600/5"></div>
+
+            <div class="relative">
+              <div class="flex items-start justify-between mb-6">
+                <div class="p-4 bg-gradient-to-br from-rose-500 to-red-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <FontAwesomeIcon :icon="['fas', 'exclamation-triangle']" class="text-white text-2xl" />
                 </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-600 mb-1">Pacotes Vencidos</p>
-                  <p class="text-2xl font-bold text-gray-900">{{ metricas.pacotesVencidos }}</p>
-                  <p class="text-xs text-red-600 font-medium">🚨 Atenção necessária</p>
-                </div>
+                <div class="w-2 h-2 bg-rose-400 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
               </div>
-        </div>
-      </BaseCard>
 
-          <!-- Banhos Realizados -->
-          <BaseCard class="shadow-xl border-0 bg-gradient-to-br from-blue-50 to-cyan-100">
-            <div class="p-6">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                  <FontAwesomeIcon :icon="['fas', 'bath']" class="text-white text-xl" />
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-600 mb-1">Banhos do Mês</p>
-                  <p class="text-2xl font-bold text-gray-900">{{ metricas.banhosRealizados }}</p>
-                  <p class="text-xs text-blue-600 font-medium">🛁 {{ new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) }}</p>
-                </div>
-              </div>
-          </div>
-          </BaseCard>
-        </div>
-
-        <!-- 📊 Informações Gerais -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-          <!-- Resumo de Clientes/Animais -->
-          <BaseCard class="shadow-xl border-0 lg:col-span-1">
-            <div class="p-6">
-              <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <FontAwesomeIcon :icon="['fas', 'users']" class="text-blue-600" />
-                Base de Clientes
-              </h3>
-
-              <div class="space-y-4">
-                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <FontAwesomeIcon :icon="['fas', 'user']" class="text-white text-sm" />
-                    </div>
-                    <span class="font-medium text-gray-700">Clientes</span>
-                  </div>
-                  <span class="text-xl font-bold text-gray-900">{{ metricas.totalClientes }}</span>
-                </div>
-
-                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <FontAwesomeIcon :icon="['fas', 'paw']" class="text-white text-sm" />
-                    </div>
-                    <span class="font-medium text-gray-700">Animais</span>
-                  </div>
-                  <span class="text-xl font-bold text-gray-900">{{ metricas.totalAnimais }}</span>
-                </div>
-
-                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                      <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-white text-sm" />
-                    </div>
-                    <span class="font-medium text-gray-700">Serviços</span>
-                  </div>
-                  <span class="text-xl font-bold text-gray-900">{{ metricas.totalServicos }}</span>
+              <div class="space-y-2">
+                <p class="text-sm font-semibold text-rose-700/80 uppercase tracking-wider">Pacotes Vencidos</p>
+                <p class="text-3xl font-black text-gray-900 tracking-tight">{{ metricas.pacotesVencidos }}</p>
+                <div class="flex items-center gap-2 text-rose-600">
+                  <div class="w-1 h-1 bg-rose-500 rounded-full"></div>
+                  <p class="text-xs font-medium">Atenção necessária</p>
                 </div>
               </div>
             </div>
-          </BaseCard>
+          </div>
 
-          <!-- Status de Pacotes -->
-          <BaseCard class="shadow-xl border-0 lg:col-span-2">
-            <div class="p-6">
-              <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <FontAwesomeIcon :icon="['fas', 'box']" class="text-violet-600" />
-                Status dos Pacotes
-              </h3>
+          <!-- Banhos Realizados -->
+          <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-50/80 to-blue-100/80 backdrop-blur-sm border border-sky-200/50 p-8 hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute inset-0 bg-gradient-to-br from-sky-400/5 to-blue-600/5"></div>
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Pacotes Válidos -->
-                <div class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                  <div class="text-center">
-                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-white" />
+            <div class="relative">
+              <div class="flex items-start justify-between mb-6">
+                <div class="p-4 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <FontAwesomeIcon :icon="['fas', 'bath']" class="text-white text-2xl" />
+                </div>
+                <div class="w-2 h-2 bg-sky-400 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+
+              <div class="space-y-2">
+                <p class="text-sm font-semibold text-sky-700/80 uppercase tracking-wider">Banhos do Mês</p>
+                <p class="text-3xl font-black text-gray-900 tracking-tight">{{ metricas.banhosRealizados }}</p>
+                <div class="flex items-center gap-2 text-sky-600">
+                  <div class="w-1 h-1 bg-sky-500 rounded-full"></div>
+                  <p class="text-xs font-medium">{{ new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 📊 Informações Gerais Modernas -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+
+          <!-- Resumo de Clientes/Animais -->
+          <div class="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-sm border border-gray-200/50 p-8 shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/30 to-purple-50/30"></div>
+
+            <div class="relative">
+              <div class="flex items-center gap-3 mb-8">
+                <div class="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
+                  <FontAwesomeIcon :icon="['fas', 'users']" class="text-white text-xl" />
+                </div>
+                <h3 class="text-xl font-black text-gray-900 tracking-tight">Base de Clientes</h3>
+              </div>
+
+              <div class="space-y-6">
+                <div class="group flex items-center justify-between p-5 bg-gradient-to-r from-indigo-50/80 to-blue-50/80 rounded-2xl border border-indigo-100/50 hover:shadow-lg transition-all duration-300">
+                  <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <FontAwesomeIcon :icon="['fas', 'user']" class="text-white text-lg" />
                     </div>
-                    <p class="text-2xl font-bold text-green-800">{{ metricas.pacotesValidos }}</p>
-                    <p class="text-sm text-green-600 font-medium">Válidos</p>
+                    <span class="font-semibold text-gray-800">Clientes</span>
                   </div>
+                  <span class="text-2xl font-black text-gray-900">{{ metricas.totalClientes }}</span>
                 </div>
 
-                <!-- Pacotes Vencendo -->
-                <div class="p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl border border-yellow-200">
-                  <div class="text-center">
-                    <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-2 animate-pulse">
-                      <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white" />
+                <div class="group flex items-center justify-between p-5 bg-gradient-to-r from-emerald-50/80 to-green-50/80 rounded-2xl border border-emerald-100/50 hover:shadow-lg transition-all duration-300">
+                  <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <FontAwesomeIcon :icon="['fas', 'paw']" class="text-white text-lg" />
                     </div>
-                    <p class="text-2xl font-bold text-yellow-800">{{ metricas.pacotesVencendo }}</p>
-                    <p class="text-sm text-yellow-600 font-medium">Vencendo</p>
+                    <span class="font-semibold text-gray-800">Animais</span>
+                  </div>
+                  <span class="text-2xl font-black text-gray-900">{{ metricas.totalAnimais }}</span>
+                </div>
+
+                <div class="group flex items-center justify-between p-5 bg-gradient-to-r from-violet-50/80 to-purple-50/80 rounded-2xl border border-violet-100/50 hover:shadow-lg transition-all duration-300">
+                  <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-white text-lg" />
+                    </div>
+                    <span class="font-semibold text-gray-800">Serviços</span>
+                  </div>
+                  <span class="text-2xl font-black text-gray-900">{{ metricas.totalServicos }}</span>
+                </div>
+              </div>
+            </div>
+    </div>
+
+          <!-- Status de Pacotes -->
+          <div class="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-sm border border-gray-200/50 p-8 shadow-2xl lg:col-span-2">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50/20 to-pink-50/20"></div>
+
+            <div class="relative">
+              <div class="flex items-center gap-3 mb-8">
+                <div class="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg">
+                  <FontAwesomeIcon :icon="['fas', 'box']" class="text-white text-xl" />
+                </div>
+                <h3 class="text-xl font-black text-gray-900 tracking-tight">Status dos Pacotes</h3>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Pacotes Válidos -->
+                <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50/80 to-green-50/80 border border-emerald-200/50 p-6 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                  <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/5 to-green-600/5"></div>
+                  <div class="relative text-center">
+                    <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-white text-xl" />
+                    </div>
+                    <p class="text-3xl font-black text-emerald-800 mb-2">{{ metricas.pacotesValidos }}</p>
+                    <p class="text-sm font-semibold text-emerald-600 uppercase tracking-wider">Válidos</p>
+                  </div>
+      </div>
+
+                <!-- Pacotes Vencendo -->
+                <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50/80 to-yellow-50/80 border border-amber-200/50 p-6 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                  <div class="absolute inset-0 bg-gradient-to-br from-amber-400/5 to-yellow-600/5"></div>
+                  <div class="relative text-center">
+                    <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300 animate-pulse">
+                      <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white text-xl" />
+                    </div>
+                    <p class="text-3xl font-black text-amber-800 mb-2">{{ metricas.pacotesVencendo }}</p>
+                    <p class="text-sm font-semibold text-amber-600 uppercase tracking-wider">Vencendo</p>
                   </div>
                 </div>
 
                 <!-- Pacotes Vencidos -->
-                <div class="p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border border-red-200">
-                  <div class="text-center">
-                    <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <FontAwesomeIcon :icon="['fas', 'exclamation-triangle']" class="text-white" />
+                <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50/80 to-red-50/80 border border-rose-200/50 p-6 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                  <div class="absolute inset-0 bg-gradient-to-br from-rose-400/5 to-red-600/5"></div>
+                  <div class="relative text-center">
+                    <div class="w-14 h-14 bg-gradient-to-br from-rose-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <FontAwesomeIcon :icon="['fas', 'exclamation-triangle']" class="text-white text-xl" />
                     </div>
-                    <p class="text-2xl font-bold text-red-800">{{ metricas.pacotesVencidos }}</p>
-                    <p class="text-sm text-red-600 font-medium">Vencidos</p>
+                    <p class="text-3xl font-black text-rose-800 mb-2">{{ metricas.pacotesVencidos }}</p>
+                    <p class="text-sm font-semibold text-rose-600 uppercase tracking-wider">Vencidos</p>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
         </div>
-      </BaseCard>
-    </div>
 
-        <!-- 🚀 Ações Rápidas -->
-        <BaseCard class="shadow-xl border-0 mb-8">
-          <div class="p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <FontAwesomeIcon :icon="['fas', 'bolt']" class="text-amber-600" />
-              Ações Rápidas
-            </h3>
+        <!-- 🚀 Ações Rápidas Modernas -->
+        <div class="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-sm border border-gray-200/50 p-8 shadow-2xl mb-12">
+          <div class="absolute inset-0 bg-gradient-to-br from-yellow-50/20 to-orange-50/20"></div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="relative">
+            <div class="flex items-center gap-3 mb-8">
+              <div class="p-3 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl shadow-lg">
+                <FontAwesomeIcon :icon="['fas', 'zap']" class="text-white text-xl" />
+              </div>
+              <h3 class="text-xl font-black text-gray-900 tracking-tight">Ações Rápidas</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <!-- Novo Serviço -->
               <button
                 @click="$router.push('/animal-servico/novo')"
-                class="group p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50/80 to-indigo-50/80 border border-blue-200/50 p-6 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 active:scale-95"
               >
-                <div class="text-center">
-                  <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon :icon="['fas', 'plus']" class="text-white text-xl" />
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                <div class="relative text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FontAwesomeIcon :icon="['fas', 'plus']" class="text-white text-2xl" />
                   </div>
-                  <p class="font-medium text-gray-800">Novo Serviço</p>
-                  <p class="text-xs text-gray-600">Registrar atendimento</p>
+                  <p class="font-black text-gray-900 text-lg mb-1">Novo Serviço</p>
+                  <p class="text-sm text-gray-600 font-medium">Registrar atendimento</p>
                 </div>
               </button>
 
+              <!-- Novo Cliente -->
               <button
                 @click="$router.push('/clientes/novo')"
-                class="group p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50/80 to-green-50/80 border border-emerald-200/50 p-6 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 hover:-translate-y-2 active:scale-95"
               >
-                <div class="text-center">
-                  <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon :icon="['fas', 'user-plus']" class="text-white text-xl" />
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                <div class="relative text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FontAwesomeIcon :icon="['fas', 'user-plus']" class="text-white text-2xl" />
                   </div>
-                  <p class="font-medium text-gray-800">Novo Cliente</p>
-                  <p class="text-xs text-gray-600">Cadastrar pessoa</p>
+                  <p class="font-black text-gray-900 text-lg mb-1">Novo Cliente</p>
+                  <p class="text-sm text-gray-600 font-medium">Cadastrar pessoa</p>
                 </div>
               </button>
 
+              <!-- Novo Animal -->
               <button
-          @click="$router.push('/animais/novo')"
-                class="group p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:from-purple-100 hover:to-purple-200 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                @click="$router.push('/animais/novo')"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-50/80 to-purple-50/80 border border-violet-200/50 p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-500 hover:-translate-y-2 active:scale-95"
               >
-                <div class="text-center">
-                  <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon :icon="['fas', 'paw']" class="text-white text-xl" />
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                <div class="relative text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FontAwesomeIcon :icon="['fas', 'paw']" class="text-white text-2xl" />
                   </div>
-                  <p class="font-medium text-gray-800">Novo Animal</p>
-                  <p class="text-xs text-gray-600">Cadastrar pet</p>
+                  <p class="font-black text-gray-900 text-lg mb-1">Novo Animal</p>
+                  <p class="text-sm text-gray-600 font-medium">Cadastrar pet</p>
                 </div>
               </button>
 
+              <!-- Visualizar Serviços -->
               <button
                 @click="$router.push('/animal-servico')"
-                class="group p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:from-orange-100 hover:to-orange-200 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-50/80 to-amber-50/80 border border-orange-200/50 p-6 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-500 hover:-translate-y-2 active:scale-95"
               >
-                <div class="text-center">
-                  <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon :icon="['fas', 'list']" class="text-white text-xl" />
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                <div class="relative text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FontAwesomeIcon :icon="['fas', 'list']" class="text-white text-2xl" />
                   </div>
-                  <p class="font-medium text-gray-800">Ver Serviços</p>
-                  <p class="text-xs text-gray-600">Gerenciar lista</p>
+                  <p class="font-black text-gray-900 text-lg mb-1">Ver Serviços</p>
+                  <p class="text-sm text-gray-600 font-medium">Gerenciar lista</p>
                 </div>
               </button>
             </div>
-      </div>
-    </BaseCard>
+          </div>
+        </div>
 
-        <!-- 📋 Atividade Recente (se houver dados) -->
-        <BaseCard v-if="atividadeRecente.length > 0" class="shadow-xl border-0">
-          <div class="p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <FontAwesomeIcon :icon="['fas', 'history']" class="text-cyan-600" />
-              Atividade Recente
-            </h3>
+        <!-- 📋 Atividade Recente Moderna -->
+        <div v-if="atividadeRecente.length > 0" class="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-sm border border-gray-200/50 p-8 shadow-2xl">
+          <div class="absolute inset-0 bg-gradient-to-br from-cyan-50/20 to-blue-50/20"></div>
 
-            <div class="space-y-3">
+          <div class="relative">
+            <div class="flex items-center gap-3 mb-8">
+              <div class="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-lg">
+                <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white text-xl" />
+              </div>
+              <h3 class="text-xl font-black text-gray-900 tracking-tight">Atividade Recente</h3>
+        </div>
+
+            <div class="space-y-4">
               <div
                 v-for="(atividade, index) in atividadeRecente.slice(0, 5)"
                 :key="index"
-                class="flex items-center gap-4 p-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg hover:from-gray-100 hover:to-slate-100 transition-colors"
+                class="group flex items-center gap-4 p-5 bg-gradient-to-r from-gray-50/80 to-slate-50/80 rounded-2xl border border-gray-200/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
-                <div class="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <FontAwesomeIcon :icon="['fas', 'bath']" class="text-white text-sm" />
+                <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                  <FontAwesomeIcon :icon="['fas', 'bath']" class="text-white text-lg" />
                 </div>
                 <div class="flex-1">
-                  <p class="font-medium text-gray-800">{{ atividade.descricao }}</p>
-                  <p class="text-xs text-gray-500">{{ atividade.tempo }}</p>
+                  <p class="font-semibold text-gray-900 text-lg">{{ atividade.descricao }}</p>
+                  <p class="text-sm text-gray-600 font-medium">{{ atividade.tempo }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        </div>
-        </div>
-      </div>
-    </BaseCard>
-
       </div>
     </div>
+
+    <!-- 🦶 Footer Discreto -->
+    <footer class="relative z-10 mt-16 border-t border-gray-200/50 bg-gradient-to-r from-white/40 via-gray-50/40 to-white/40 backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+
+          <!-- Logo e Branding -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+              <span class="text-white text-lg font-bold">🐕</span>
+            </div>
+            <div>
+              <p class="font-black text-gray-900 text-lg tracking-tight">ProntoDog</p>
+              <p class="text-xs text-gray-500 font-medium">Sistema de Gestão Pet</p>
+            </div>
+          </div>
+
+          <!-- Links úteis -->
+          <div class="flex items-center gap-8 text-sm">
+            <button
+              @click="$router.push('/animal-servico')"
+              class="text-gray-600 hover:text-indigo-600 font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="w-4 h-4" />
+              Serviços
+            </button>
+            <button
+              @click="$router.push('/clientes')"
+              class="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <FontAwesomeIcon :icon="['fas', 'users']" class="w-4 h-4" />
+              Clientes
+            </button>
+            <button
+              @click="$router.push('/animais')"
+              class="text-gray-600 hover:text-purple-600 font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <FontAwesomeIcon :icon="['fas', 'paw']" class="w-4 h-4" />
+              Animais
+            </button>
+          </div>
+
+          <!-- Info e Copyright -->
+          <div class="text-center md:text-right">
+            <p class="text-xs text-gray-500 font-medium">
+              Desenvolvido com ❤️ para o cuidado dos pets
+            </p>
+            <p class="text-xs text-gray-400 mt-1 flex items-center justify-center md:justify-end gap-1">
+              <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="w-3 h-3" />
+              © {{ new Date().getFullYear() }} ProntoDog - Todos os direitos reservados
+            </p>
+          </div>
+        </div>
+
+        <!-- Linha decorativa sutil -->
+        <div class="mt-6 pt-4 border-t border-gray-200/30">
+          <div class="flex items-center justify-center">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <div class="w-1 h-1 bg-indigo-400 rounded-full opacity-60"></div>
+              <span>Dashboard v2.0</span>
+              <div class="w-1 h-1 bg-emerald-400 rounded-full opacity-60"></div>
+              <span>Sistema Integrado</span>
+              <div class="w-1 h-1 bg-purple-400 rounded-full opacity-60"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <!-- Botão de Configurações (canto inferior direito) -->
     <div class="fixed bottom-6 right-6 z-50">
       <button
         @click="$router.push('/configuracoes')"
-        class="group w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300"
+        class="group w-14 h-14 bg-gradient-to-r from-slate-700 to-gray-800 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border border-white/20"
         title="Configurações"
       >
         <FontAwesomeIcon :icon="['fas', 'cog']" class="text-white text-xl group-hover:rotate-180 transition-transform duration-300" />

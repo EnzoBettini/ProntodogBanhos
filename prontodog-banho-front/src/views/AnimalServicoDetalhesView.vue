@@ -62,6 +62,7 @@
               {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
             </BaseBadge>
 
+
             <!-- Menu de Ações de Pagamento -->
             <div class="relative">
               <BaseButton
@@ -472,6 +473,26 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Botão Gerar Relatório PDF -->
+              <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                <div class="flex items-center gap-3 mb-3">
+                  <FontAwesomeIcon :icon="['fas', 'file-pdf']" class="text-blue-600" />
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-blue-700">Relatório do Serviço</p>
+                    <p class="text-xs text-blue-600">Gere um PDF completo com todos os detalhes</p>
+                  </div>
+                </div>
+                <BaseButton
+                  @click="gerarRelatorioPDF"
+                  :disabled="gerandoPDF"
+                  variant="primary"
+                  class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                >
+                  <FontAwesomeIcon :icon="gerandoPDF ? ['fas', 'spinner'] : ['fas', 'file-pdf']" :class="{ 'animate-spin': gerandoPDF }" class="mr-2" />
+                  {{ gerandoPDF ? 'Gerando PDF...' : 'Gerar Relatório PDF' }}
+                </BaseButton>
+              </div>
             </div>
           </BaseCard>
 
@@ -750,6 +771,9 @@ const formularioBanho = ref({
   dataBanho: '',
   observacoes: ''
 })
+
+// Estados do relatório PDF
+const gerandoPDF = ref(false)
 
 // Computadas
 const totalBanhos = computed(() => servico.value?.quantidade || 1)
@@ -1247,6 +1271,136 @@ const excluirBanho = async (banho: BanhoIndividual): Promise<void> => {
   } catch (err) {
     console.error('❌ Erro ao excluir banho:', err)
     alert('Erro ao excluir banho. Tente novamente.')
+  }
+}
+
+// 📄 Função para gerar relatório PDF (versão simplificada)
+const gerarRelatorioPDF = async (): Promise<void> => {
+  if (!animalServico.value || !animal.value || !cliente.value || !servico.value) {
+    alert('Dados do serviço não carregados completamente. Tente novamente.')
+    return
+  }
+
+  try {
+    gerandoPDF.value = true
+
+    // Criar conteúdo HTML simplificado
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Relatório ProntoDog</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+            color: black;
+            line-height: 1.6;
+          }
+          h1 { color: #333; text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+          h2 { color: #333; margin-top: 25px; }
+          p { margin: 8px 0; }
+          .section { margin-bottom: 20px; padding: 15px; border-left: 4px solid #007acc; background: #f9f9f9; }
+          .footer { border-top: 1px solid #ccc; padding-top: 15px; margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>🐕 ProntoDog - Relatório de Serviço</h1>
+
+        <div class="section">
+          <h2>📋 Informações do Serviço</h2>
+          <p><strong>ID:</strong> #${animalServico.value.id}</p>
+          <p><strong>Data do Serviço:</strong> ${formatarData(animalServico.value.dataServico)}</p>
+          <p><strong>Data de Geração:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+        </div>
+
+        <div class="section">
+          <h2>👤 Cliente</h2>
+          <p><strong>Nome:</strong> ${cliente.value.nomeCompleto}</p>
+          <p><strong>CPF:</strong> ${formatarCpf(cliente.value.cpf)}</p>
+          ${cliente.value.telefones?.[0] ? `<p><strong>Telefone:</strong> ${formatarTelefone(cliente.value.telefones[0].telefone)}</p>` : ''}
+          ${cliente.value.emailClientes?.[0] ? `<p><strong>Email:</strong> ${cliente.value.emailClientes[0].email}</p>` : ''}
+        </div>
+
+        <div class="section">
+          <h2>🐾 Animal</h2>
+          <p><strong>Nome:</strong> ${animal.value.nome}</p>
+          <p><strong>Tipo:</strong> ${animal.value.tipo}</p>
+          ${animal.value.raca ? `<p><strong>Raça:</strong> ${animal.value.raca}</p>` : ''}
+          ${animal.value.peso ? `<p><strong>Peso:</strong> ${animal.value.peso}kg</p>` : ''}
+          <p><strong>Código:</strong> ${animal.value.codigoSimplesVet}</p>
+        </div>
+
+        <div class="section">
+          <h2>💼 Serviço</h2>
+          <p><strong>Serviço:</strong> ${servico.value.nome}</p>
+          <p><strong>Valor:</strong> R$ ${servico.value.valor.toFixed(2).replace('.', ',')}</p>
+          <p><strong>Quantidade de Banhos:</strong> ${servico.value.quantidade}</p>
+          <p><strong>Banhos Utilizados:</strong> ${animalServico.value.banhosUsados}</p>
+          <p><strong>Banhos Restantes:</strong> ${Math.max(0, servico.value.quantidade - animalServico.value.banhosUsados)}</p>
+          <p><strong>Status:</strong> ${isServicoCompleto.value ? 'COMPLETO' : 'EM ANDAMENTO'}</p>
+        </div>
+
+        <div class="section">
+          <h2>💳 Pagamento</h2>
+          <p><strong>Status:</strong> ${getStatusPagamentoTexto(animalServico.value.statusPagamento).toUpperCase()}</p>
+          ${animalServico.value.dataPagamento ? `<p><strong>Data do Pagamento:</strong> ${formatarData(animalServico.value.dataPagamento)}</p>` : ''}
+          ${animalServico.value.dataExpiracao ? `<p><strong>Data de Expiração:</strong> ${formatarData(animalServico.value.dataExpiracao)}</p>` : ''}
+        </div>
+
+        ${banhosIndividuais.value.length > 0 ? `
+          <div class="section">
+            <h2>🛁 Histórico de Banhos</h2>
+            ${banhosIndividuais.value.map(banho => `
+              <p><strong>Banho #${banho.numeroBanho}:</strong> ${formatarData(banho.dataBanho)}${banho.observacoes ? ` - ${banho.observacoes}` : ''}</p>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        <div class="footer">
+          <p>Relatório gerado automaticamente pelo Sistema ProntoDog</p>
+          <p>© ${new Date().getFullYear()} ProntoDog - Sistema de Gestão Pet</p>
+        </div>
+
+        <div class="no-print" style="margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 8px; text-align: center;">
+          <h3 style="color: #1976d2; margin-top: 0;">📄 Para salvar como PDF:</h3>
+          <p><strong>1.</strong> Pressione <kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; border: 1px solid #ccc;">Ctrl+P</kbd> (Windows) ou <kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; border: 1px solid #ccc;">Cmd+P</kbd> (Mac)</p>
+          <p><strong>2.</strong> Na tela de impressão, escolha <strong>"Salvar como PDF"</strong></p>
+          <p><strong>3.</strong> Escolha o local e clique em <strong>"Salvar"</strong></p>
+        </div>
+      </body>
+      </html>
+    `
+
+    // Abrir nova janela com o relatório
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
+    if (printWindow) {
+      printWindow.document.write(htmlContent)
+      printWindow.document.close()
+
+      // Aguardar carregar e abrir impressão
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print()
+        }, 500)
+      }
+
+      console.log('✅ Relatório aberto em nova janela')
+
+    } else {
+      alert('❌ Não foi possível abrir o relatório. Verifique se pop-ups estão bloqueados no navegador.')
+    }
+
+  } catch (err) {
+    console.error('❌ Erro ao gerar relatório:', err)
+    alert('❌ Erro ao gerar o relatório. Tente novamente.')
+  } finally {
+    gerandoPDF.value = false
   }
 }
 
