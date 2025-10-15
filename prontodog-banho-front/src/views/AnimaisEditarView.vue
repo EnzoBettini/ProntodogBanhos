@@ -198,6 +198,47 @@
                   </span>
                 </div>
               </div>
+
+              <!-- Raça do Animal -->
+              <div class="animate-slide-up">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <FontAwesomeIcon :icon="['fas', 'paw']" class="text-purple-600 mr-2" />
+                  Raça (Opcional)
+                </label>
+                <input
+                  v-model="formulario.raca"
+                  type="text"
+                  placeholder="Ex: Labrador, Persa, SRD..."
+                  class="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 bg-white"
+                  :class="{ 'border-red-300 focus:border-red-500': erros.raca }"
+                >
+                <div class="flex justify-between items-center mt-1">
+                  <span v-if="erros.raca" class="text-sm text-red-600">{{ erros.raca }}</span>
+                  <span class="text-xs text-gray-500 ml-auto">Raça ou linhagem do pet</span>
+                </div>
+              </div>
+
+              <!-- Peso do Animal -->
+              <div class="animate-slide-up">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <FontAwesomeIcon :icon="['fas', 'calculator']" class="text-orange-600 mr-2" />
+                  Peso em kg (Opcional)
+                </label>
+                <input
+                  v-model="formulario.peso"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="999.99"
+                  placeholder="Ex: 5.5, 12.8, 0.8..."
+                  class="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 bg-white"
+                  :class="{ 'border-red-300 focus:border-red-500': erros.peso }"
+                >
+                <div class="flex justify-between items-center mt-1">
+                  <span v-if="erros.peso" class="text-sm text-red-600">{{ erros.peso }}</span>
+                  <span class="text-xs text-gray-500 ml-auto">Peso atual do animal</span>
+                </div>
+              </div>
             </div>
 
             <!-- Código SimplesVet -->
@@ -543,6 +584,14 @@
               <span class="text-sm font-medium text-gray-600">SimplesVet:</span>
               <span class="font-semibold text-purple-600">{{ animalAtualizado.codigoSimplesVet || 'Não informado' }}</span>
             </div>
+            <div v-if="animalAtualizado.raca" class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-600">Raça:</span>
+              <span class="font-semibold text-purple-600">{{ animalAtualizado.raca }}</span>
+            </div>
+            <div v-if="animalAtualizado.peso" class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-600">Peso:</span>
+              <span class="font-semibold text-orange-600">{{ animalAtualizado.peso }}kg</span>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium text-gray-600">ID do Animal:</span>
               <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">#{{ animalAtualizado.id }}</span>
@@ -639,6 +688,8 @@ const excluindo = ref(false)
 const formulario = reactive({
   nome: '',
   tipo: '',
+  raca: '',
+  peso: '',
   codigoSimplesVet: 0
 })
 
@@ -646,6 +697,8 @@ const formulario = reactive({
 const erros = reactive({
   nome: '',
   tipo: '',
+  raca: '',
+  peso: '',
   codigoSimplesVet: ''
 })
 
@@ -679,7 +732,7 @@ const validarFormulario = (): boolean => {
   if (!formulario.nome.trim()) {
     erros.nome = 'Nome do animal é obrigatório'
     valido = false
-  } else if (formulario.nome.length < 2) {
+  } else if (formulario.nome.trim().length < 2) {
     erros.nome = 'Nome deve ter pelo menos 2 caracteres'
     valido = false
   }
@@ -688,6 +741,25 @@ const validarFormulario = (): boolean => {
   if (!formulario.tipo) {
     erros.tipo = 'Tipo do animal é obrigatório'
     valido = false
+  }
+
+  // Validar raça (opcional, mas se preenchida deve ter pelo menos 2 caracteres)
+  if (formulario.raca && formulario.raca.trim().length > 0) {
+    if (formulario.raca.trim().length < 2) {
+      erros.raca = 'Raça deve ter pelo menos 2 caracteres'
+      valido = false
+    }
+  }
+
+  // Validar peso (opcional, mas se preenchido deve ser válido)
+  if (formulario.peso !== '' && formulario.peso != null && formulario.peso !== undefined) {
+    // Converter para string primeiro, depois para número
+    const pesoStr = String(formulario.peso).trim()
+    const peso = parseFloat(pesoStr)
+    if (pesoStr === '' || isNaN(peso) || peso <= 0 || peso > 999.99) {
+      erros.peso = 'Peso deve ser um número positivo até 999.99 kg'
+      valido = false
+    }
   }
 
   // Validar código SimplesVet (opcional, mas se informado deve ser válido)
@@ -718,6 +790,8 @@ const carregarAnimal = async () => {
     // Preenche o formulário com os dados existentes
     formulario.nome = animal.nome
     formulario.tipo = animal.tipo
+    formulario.raca = animal.raca || ''
+    formulario.peso = animal.peso ? String(animal.peso) : ''
     formulario.codigoSimplesVet = animal.codigoSimplesVet || 0
 
     animalOriginal.value = animal
@@ -778,13 +852,15 @@ const submeterFormulario = async () => {
       id: animalId.value,
       nome: formulario.nome.trim(),
       tipo: formulario.tipo,
+      raca: formulario.raca && formulario.raca.trim() ? formulario.raca.trim() : null,
+      peso: formulario.peso !== '' && formulario.peso != null && formulario.peso !== undefined ? parseFloat(String(formulario.peso)) : null,
       codigoSimplesVet: formulario.codigoSimplesVet || 0,
       // Manter dados do cliente original
       cliente: animalOriginal.value?.cliente
     }
 
-    // Usando criar() que chama POST / - o JPA fará update se ID existir
-    const resultado = await animaisService.criar(dadosAnimal as any)
+    // Usando atualizar() que chama PUT /animal/atualizarcompleto/{id}
+    const resultado = await animaisService.atualizar(animalId.value, dadosAnimal)
 
     animalAtualizado.value = resultado
     mostrarSucesso.value = true

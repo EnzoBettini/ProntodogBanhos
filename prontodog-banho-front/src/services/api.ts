@@ -115,16 +115,42 @@ export const animaisService = {
       const dadosParaAPI = {
         nome: novoAnimal.nome,
         tipo: novoAnimal.tipo,
+        raca: novoAnimal.raca || null,
+        peso: novoAnimal.peso || null,
         codigoSimplesVet: novoAnimal.codigoSimplesVet,
         cliente: {
           id: novoAnimal.clienteId
         }
       }
 
+      devLog('📤 Dados enviados para API:', dadosParaAPI)
       const response = await api.post<Animal>('/animal', dadosParaAPI)
       devLog('✅ Animal criado com sucesso! ID:', response.data.id)
       return response.data
     }, 'Não foi possível cadastrar o animal. Tente novamente.')
+  },
+
+  // ✏️ ATUALIZAR ANIMAL POR ID
+  // PUT /animal/atualizarcompleto/{id}
+  async atualizar(id: number, dadosAtualizados: Partial<Animal>): Promise<Animal> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando animal com ID ${id}...`, dadosAtualizados)
+
+      // Prepara os dados para enviar para API
+      const dadosParaAPI = {
+        nome: dadosAtualizados.nome,
+        tipo: dadosAtualizados.tipo,
+        raca: dadosAtualizados.raca || null,
+        peso: dadosAtualizados.peso || null,
+        codigoSimplesVet: dadosAtualizados.codigoSimplesVet
+      }
+
+      devLog('📤 Dados de atualização enviados para API:', dadosParaAPI)
+      const response = await api.put<Animal>(`/animal/atualizarcompleto/${id}`, dadosParaAPI)
+      devLog('✅ Animal atualizado com sucesso!')
+      return response.data
+    }, 'Não foi possível atualizar o animal. Tente novamente.')
   },
 
   // 🗑️ EXCLUIR ANIMAL POR ID

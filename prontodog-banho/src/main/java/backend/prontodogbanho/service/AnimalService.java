@@ -59,4 +59,57 @@ public class AnimalService {
             throw new RuntimeException("Animal não encontrado");
         }
     }
+
+    @Transactional
+    public Animal atualizarRaca(Long id, Animal novosDados) {
+        Optional<Animal> animalOptional = this.animalRepository.findById(id);
+        if (animalOptional.isPresent()) {
+            Animal animalExistente = animalOptional.get();
+            animalExistente.setRaca(novosDados.getRaca());
+            return animalRepository.save(animalExistente);
+        } else {
+            throw new RuntimeException("Animal não encontrado com id: " + id);
+        }
+    }
+
+    @Transactional
+    public Animal atualizarPeso(Long id, Animal novosDados) {
+        Optional<Animal> animalOptional = this.animalRepository.findById(id);
+        if (animalOptional.isPresent()) {
+            Animal animalExistente = animalOptional.get();
+            animalExistente.setPeso(novosDados.getPeso());
+            return animalRepository.save(animalExistente);
+        } else {
+            throw new RuntimeException("Animal não encontrado com id: " + id);
+        }
+    }
+
+    @Transactional
+    public Animal atualizarCompleto(Long id, Animal novosDados) {
+        Optional<Animal> animalOptional = this.animalRepository.findById(id);
+        if (animalOptional.isPresent()) {
+            Animal animalExistente = animalOptional.get();
+
+            // Atualizar apenas os campos que não são chaves ou referências
+            if (novosDados.getNome() != null) {
+                animalExistente.setNome(novosDados.getNome());
+            }
+            if (novosDados.getTipo() != null) {
+                animalExistente.setTipo(novosDados.getTipo());
+            }
+            if (novosDados.getRaca() != null) {
+                animalExistente.setRaca(novosDados.getRaca());
+            }
+            if (novosDados.getPeso() != null) {
+                animalExistente.setPeso(novosDados.getPeso());
+            }
+            if (novosDados.getCodigoSimplesVet() != null) {
+                animalExistente.setCodigoSimplesVet(novosDados.getCodigoSimplesVet());
+            }
+
+            return animalRepository.save(animalExistente);
+        } else {
+            throw new RuntimeException("Animal não encontrado com id: " + id);
+        }
+    }
 }

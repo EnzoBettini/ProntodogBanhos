@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -32,6 +33,12 @@ public class Animal {
 
     @Column(name="tipo")
     private String tipo;
+
+    @Column(name="raca")
+    private String raca;
+
+    @Column(name="peso", precision = 5, scale = 2)
+    private BigDecimal peso;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="cliente_id", nullable = false)

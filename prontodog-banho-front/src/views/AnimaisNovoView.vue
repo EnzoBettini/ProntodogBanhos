@@ -140,6 +140,63 @@
                     {{ erros.tipo }}
                   </p>
                 </div>
+
+                <!-- Raça do animal -->
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <FontAwesomeIcon icon="paw" class="text-purple-500" />
+                    Raça
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">opcional</span>
+                  </label>
+                  <div class="relative group">
+                    <input
+                      v-model="formulario.raca"
+                      :class="[
+                        'w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 placeholder-gray-400 bg-white group-hover:shadow-md',
+                        erros.raca ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-gray-200 hover:border-purple-300'
+                      ]"
+                      type="text"
+                      placeholder="Ex: Labrador, Persa, SRD..."
+                    />
+                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors">
+                      <FontAwesomeIcon icon="paw" class="animate-pulse-gentle" />
+                    </div>
+                  </div>
+                  <p v-if="erros.raca" class="text-red-500 text-sm flex items-center gap-1">
+                    <FontAwesomeIcon icon="exclamation-circle" />
+                    {{ erros.raca }}
+                  </p>
+                </div>
+
+                <!-- Peso do animal -->
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <FontAwesomeIcon icon="calculator" class="text-orange-500" />
+                    Peso (kg)
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">opcional</span>
+                  </label>
+                  <div class="relative group">
+                    <input
+                      v-model="formulario.peso"
+                      :class="[
+                        'w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-300 placeholder-gray-400 bg-white group-hover:shadow-md',
+                        erros.peso ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-gray-200 hover:border-orange-300'
+                      ]"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="999.99"
+                      placeholder="Ex: 5.5, 12.8, 0.8..."
+                    />
+                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors">
+                      <FontAwesomeIcon icon="calculator" class="animate-pulse-gentle" />
+                    </div>
+                  </div>
+                  <p v-if="erros.peso" class="text-red-500 text-sm flex items-center gap-1">
+                    <FontAwesomeIcon icon="exclamation-circle" />
+                    {{ erros.peso }}
+                  </p>
+                </div>
               </div>
 
               <!-- Código SimplesVet -->
@@ -383,6 +440,8 @@ const animalCriado = ref<Animal | null>(null)
 const formulario = reactive({
   nome: '',
   tipo: '',
+  raca: '',
+  peso: '',
   codigoSimplesVet: '',
   clienteId: ''
 })
@@ -399,6 +458,8 @@ const clientesFormatados = computed(() => {
 const erros = reactive({
   nome: '',
   tipo: '',
+  raca: '',
+  peso: '',
   codigoSimplesVet: '',
   clienteId: ''
 })
@@ -451,6 +512,21 @@ const validarFormulario = (): boolean => {
     valido = false
   }
 
+  // Raça (opcional, mas se preenchida deve ter pelo menos 2 caracteres)
+  if (formulario.raca && formulario.raca.length < 2) {
+    erros.raca = 'Raça deve ter pelo menos 2 caracteres'
+    valido = false
+  }
+
+  // Peso (opcional, mas se preenchido deve ser válido)
+  if (formulario.peso) {
+    const peso = parseFloat(formulario.peso)
+    if (isNaN(peso) || peso <= 0 || peso > 999.99) {
+      erros.peso = 'Peso deve ser um número positivo até 999.99 kg'
+      valido = false
+    }
+  }
+
   // Código SimplesVet (se preenchido, deve ser válido)
   if (formulario.codigoSimplesVet) {
     const codigo = parseInt(formulario.codigoSimplesVet)
@@ -476,6 +552,8 @@ const salvarAnimal = async (): Promise<void> => {
     const novoAnimal = {
       nome: formulario.nome.trim(),
       tipo: formulario.tipo,
+      raca: formulario.raca.trim() || null,
+      peso: formulario.peso ? parseFloat(formulario.peso) : null,
       codigoSimplesVet: formulario.codigoSimplesVet ? parseInt(formulario.codigoSimplesVet) : 0,
       clienteId: parseInt(formulario.clienteId)
     }

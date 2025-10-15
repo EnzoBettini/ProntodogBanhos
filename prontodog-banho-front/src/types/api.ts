@@ -21,6 +21,8 @@ export interface Animal {
   nome: string
   codigoSimplesVet: number
   tipo: string
+  raca?: string | null
+  peso?: number | null
   cliente?: Cliente // Relacionamento com cliente (opcional para evitar referência circular)
   servicos: AnimalServico[]
 }
@@ -101,6 +103,8 @@ export interface NovoAnimal {
   nome: string
   codigoSimplesVet: number
   tipo: string
+  raca?: string | null
+  peso?: number | null
 }
 
 // 👤 Cliente para criação (sem ID, sem emails por enquanto)
@@ -154,6 +158,8 @@ export interface FormularioCliente {
     nome: string
     codigoSimplesVet: string // String no form, convertido para number na API
     tipo: string
+    raca?: string | null
+    peso?: string | null // String no form, convertido para number na API
   }[]
 }
 

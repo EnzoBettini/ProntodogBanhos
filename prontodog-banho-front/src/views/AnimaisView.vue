@@ -247,6 +247,21 @@
                     </span>
                   </div>
 
+                  <!-- 🐾 Informações adicionais: Raça e Peso -->
+                  <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <span v-if="animal.raca" class="flex items-center gap-1">
+                      <FontAwesomeIcon icon="paw" class="text-purple-500" />
+                      <span class="font-medium text-purple-700">{{ animal.raca }}</span>
+                    </span>
+                    <span v-if="animal.peso" class="flex items-center gap-1">
+                      <FontAwesomeIcon icon="calculator" class="text-orange-500" />
+                      <span class="font-medium text-orange-700">{{ animal.peso }}kg</span>
+                    </span>
+                    <span v-if="!animal.raca && !animal.peso" class="text-gray-400 italic">
+                      Raça e peso não informados
+                    </span>
+                  </div>
+
                   <!-- Dono do animal -->
                   <div class="flex items-center gap-2 text-sm">
                     <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">

@@ -53,4 +53,22 @@ public class AnimalController {
         Animal animalAtualizado = this.animalService.atualizarCodigoSimplesVet(id, novoAnimal);
         return ResponseEntity.ok(animalAtualizado);
     }
+
+    @PutMapping("/atualizarraca/{id}")
+    public ResponseEntity<Animal> atualizarRaca(@PathVariable Long id, @RequestBody Animal novoAnimal) {
+        Animal animalAtualizado = this.animalService.atualizarRaca(id, novoAnimal);
+        return ResponseEntity.ok(animalAtualizado);
+    }
+
+    @PutMapping("/atualizarpeso/{id}")
+    public ResponseEntity<Animal> atualizarPeso(@PathVariable Long id, @RequestBody Animal novoAnimal) {
+        Animal animalAtualizado = this.animalService.atualizarPeso(id, novoAnimal);
+        return ResponseEntity.ok(animalAtualizado);
+    }
+
+    @PutMapping("/atualizarcompleto/{id}")
+    public ResponseEntity<Animal> atualizarCompleto(@PathVariable Long id, @RequestBody Animal novoAnimal) {
+        Animal animalAtualizado = this.animalService.atualizarCompleto(id, novoAnimal);
+        return ResponseEntity.ok(animalAtualizado);
+    }
 }

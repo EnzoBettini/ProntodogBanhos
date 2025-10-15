@@ -83,3 +83,10 @@ CREATE TABLE banhoetosa.banhos_individuais (
     CONSTRAINT unique_banho_por_servico
         UNIQUE (animal_servico_id, numero_banho)
 );
+
+-- Adicionar novos atributos na tabela de animais
+ALTER TABLE banhoetosa.animais
+ADD COLUMN raca VARCHAR(100);
+
+ALTER TABLE banhoetosa.animais
+ADD COLUMN peso NUMERIC(5, 2);
