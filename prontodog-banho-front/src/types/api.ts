@@ -130,6 +130,19 @@ export interface NovoAnimalServico {
   usuario: { id: number } // Referência ao usuário
 }
 
+// 🛁 Animal Serviço completo para criação (com banhos individuais)
+export interface CriarAnimalServicoCompleto {
+  dataServico: string // formato: "YYYY-MM-DD"
+  banhosUsados: number
+  animalId: number
+  servicoId: number
+  usuarioId: number
+  // Datas dos banhos já realizados (se banhosUsados > 0)
+  datasBanhosRealizados?: string[] // formato: "YYYY-MM-DD"
+  // Observações para cada banho (opcional)
+  observacoesBanhos?: string[]
+}
+
 // 📋 Dados do formulário (estrutura interna do componente)
 export interface FormularioCliente {
   nomeCompleto: string

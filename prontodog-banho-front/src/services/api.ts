@@ -7,7 +7,7 @@ import type {
   ClientesResponse, Cliente, NovoCliente,
   Animal, NovoAnimal,
   ServicosResponse, ServicoCompleto, NovoServico,
-  AnimalServico, NovoAnimalServico,
+  AnimalServico, NovoAnimalServico, CriarAnimalServicoCompleto,
   UsuariosResponse, Usuario
 } from '@/types/api'
 
@@ -347,6 +347,40 @@ export const animalServicoService = {
       devLog('✅ Registro criado com sucesso!')
       return response.data
     }, 'Não foi possível criar o registro de animal-serviço. Tente novamente.')
+  },
+
+  // ➕ CRIAR REGISTRO COMPLETO (com banhos individuais)
+  async criarCompleto(dadosCompletos: CriarAnimalServicoCompleto): Promise<AnimalServico> {
+    return withErrorHandling(async () => {
+      devLog('➕ Criando registro completo de animal-serviço com banhos individuais...', dadosCompletos)
+
+      try {
+        const response = await api.post('/animalservico/criar-completo', dadosCompletos)
+        devLog('✅ Registro completo criado com sucesso!')
+        return response.data
+      } catch (error: any) {
+        // Log detalhado do erro para debug
+        console.error('❌ Erro detalhado na API completa:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.response?.data,
+          headers: error.response?.headers,
+          message: error.message
+        })
+
+        // Re-throw o erro para o withErrorHandling processar
+        throw error
+      }
+    }, `Não foi possível criar o registro completo de animal-serviço.
+
+Possíveis causas:
+- O backend não foi atualizado com a nova funcionalidade
+- Erro de validação nos dados enviados
+- Problemas de conexão com o servidor
+
+Por favor, verifique se o backend Spring Boot está rodando com as últimas alterações.`)
   },
 
   // 🗑️ EXCLUIR REGISTRO

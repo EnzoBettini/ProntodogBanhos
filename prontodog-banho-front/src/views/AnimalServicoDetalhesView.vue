@@ -431,7 +431,17 @@ const podeAdicionarBanho = computed(() => {
 
 // Funções
 const formatarData = (data: string): string => {
-  return new Date(data).toLocaleDateString('pt-BR')
+  if (!data) return ''
+
+  try {
+    // Parse seguro: evitar timezone UTC
+    const [ano, mes, dia] = data.split('-')
+    const dataLocal = new Date(Number(ano), Number(mes) - 1, Number(dia))
+    return dataLocal.toLocaleDateString('pt-BR')
+  } catch (error) {
+    console.warn('⚠️ Erro ao formatar data:', data, error)
+    return data
+  }
 }
 
 const getAnimalIcon = (tipo: string) => {

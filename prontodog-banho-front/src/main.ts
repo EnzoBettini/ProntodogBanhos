@@ -69,7 +69,9 @@ import {
   faBarcode,
   faClipboardList,
   faCalendarAlt,
-  faWrench
+  faWrench,
+  faHistory,
+  faExternalLinkAlt
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -132,7 +134,9 @@ library.add(
   faBarcode,
   faClipboardList,
   faCalendarAlt,
-  faWrench
+  faWrench,
+  faHistory,
+  faExternalLinkAlt
 )
 
 const app = createApp(App)

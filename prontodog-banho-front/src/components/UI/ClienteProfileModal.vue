@@ -356,6 +356,8 @@ const formatarData = (id: number): string => {
   // Simula uma data baseada no ID (apenas para demonstração)
   const dataBase = new Date('2024-01-01')
   dataBase.setDate(dataBase.getDate() + id)
+
+  // Usar formatação local para evitar timezone issues
   return dataBase.toLocaleDateString('pt-BR')
 }
 
