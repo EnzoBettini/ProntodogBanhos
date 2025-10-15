@@ -21,6 +21,9 @@ public class CriarAnimalServicoDTO {
     private Long servicoId;
     private Long usuarioId;
 
+    // Data de expiração do pacote (opcional)
+    private String dataExpiracao;
+
     // Lista de datas dos banhos já realizados (como String)
     // Se banhosUsados > 0, deve ter as datas correspondentes
     private List<String> datasBanhosRealizados;
@@ -37,6 +40,18 @@ public class CriarAnimalServicoDTO {
             return LocalDate.parse(dataServico, DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
             System.err.println("❌ Erro ao parsear dataServico: " + dataServico + " - " + e.getMessage());
+            return null;
+        }
+    }
+
+    public LocalDate getDataExpiracaoAsLocalDate() {
+        if (dataExpiracao == null || dataExpiracao.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(dataExpiracao, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao parsear dataExpiracao: " + dataExpiracao + " - " + e.getMessage());
             return null;
         }
     }

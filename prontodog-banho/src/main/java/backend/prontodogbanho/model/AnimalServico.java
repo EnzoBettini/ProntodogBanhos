@@ -28,6 +28,9 @@ public class AnimalServico {
     @Column(name="banhos_usados", nullable = false)
     private Integer banhosUsados;
 
+    @Column(name="data_expiracao")
+    private LocalDate dataExpiracao;
+
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="animal_id", nullable = false)
     @JsonBackReference("animal-servico")

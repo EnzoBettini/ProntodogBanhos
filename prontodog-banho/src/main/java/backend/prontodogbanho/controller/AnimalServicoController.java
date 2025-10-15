@@ -78,4 +78,47 @@ public class AnimalServicoController {
         AnimalServico servicoAtualizado = this.animalServicoService.atualizarTudo(id, animalServico);
         return ResponseEntity.ok(servicoAtualizado);
     }
+
+    // Endpoints para controle de expiração de pacotes
+
+    /**
+     * Busca pacotes que vão vencer em X dias
+     * GET /animalservico/expiracao/vao-vencer?dias=7
+     */
+    @GetMapping("/expiracao/vao-vencer")
+    public ResponseEntity<List<AnimalServico>> buscarPacotesQueVaoVencer(
+            @RequestParam(defaultValue = "7") int dias) {
+        List<AnimalServico> pacotes = animalServicoService.buscarPacotesQueVaoVencer(dias);
+        return ResponseEntity.ok(pacotes);
+    }
+
+    /**
+     * Busca pacotes já vencidos
+     * GET /animalservico/expiracao/vencidos
+     */
+    @GetMapping("/expiracao/vencidos")
+    public ResponseEntity<List<AnimalServico>> buscarPacotesVencidos() {
+        List<AnimalServico> pacotes = animalServicoService.buscarPacotesVencidos();
+        return ResponseEntity.ok(pacotes);
+    }
+
+    /**
+     * Busca pacotes válidos (não vencidos ou sem data de expiração)
+     * GET /animalservico/expiracao/validos
+     */
+    @GetMapping("/expiracao/validos")
+    public ResponseEntity<List<AnimalServico>> buscarPacotesValidos() {
+        List<AnimalServico> pacotes = animalServicoService.buscarPacotesValidos();
+        return ResponseEntity.ok(pacotes);
+    }
+
+    /**
+     * Busca pacotes que expiram hoje
+     * GET /animalservico/expiracao/hoje
+     */
+    @GetMapping("/expiracao/hoje")
+    public ResponseEntity<List<AnimalServico>> buscarPacotesQueExpiramHoje() {
+        List<AnimalServico> pacotes = animalServicoService.buscarPacotesQueExpiramHoje();
+        return ResponseEntity.ok(pacotes);
+    }
 }

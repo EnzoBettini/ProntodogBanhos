@@ -90,3 +90,7 @@ ADD COLUMN raca VARCHAR(100);
 
 ALTER TABLE banhoetosa.animais
 ADD COLUMN peso NUMERIC(5, 2);
+
+-- Adicionar data de expiração na tabela animal_servico para controle de pacotes
+ALTER TABLE banhoetosa.animal_servico
+ADD COLUMN data_expiracao DATE;

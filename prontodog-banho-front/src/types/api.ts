@@ -31,6 +31,7 @@ export interface Animal {
 export interface AnimalServico {
   id: number
   dataServico: string // formato: "YYYY-MM-DD"
+  dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
   animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)
   servicoId?: number   // ID do serviço (não vem o objeto completo devido ao @JsonBackReference)
@@ -128,6 +129,7 @@ export interface NovoServico {
 // 🛁 Animal Serviço para criação (sem ID)
 export interface NovoAnimalServico {
   dataServico: string // formato: "YYYY-MM-DD"
+  dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
   animal: { id: number } // Referência ao animal
   servico: { id: number } // Referência ao serviço
@@ -137,6 +139,7 @@ export interface NovoAnimalServico {
 // 🛁 Animal Serviço completo para criação (com banhos individuais)
 export interface CriarAnimalServicoCompleto {
   dataServico: string // formato: "YYYY-MM-DD"
+  dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
   animalId: number
   servicoId: number

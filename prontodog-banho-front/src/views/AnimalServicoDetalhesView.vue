@@ -79,6 +79,36 @@
             </div>
 
             <div class="space-y-6">
+              <!-- Alerta de Expiração (se vencido) -->
+              <div v-if="isPackageExpired" class="relative overflow-hidden p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border-2 border-red-200 animate-pulse">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-red-200/30 rounded-full blur-2xl"></div>
+                <div class="relative flex items-center gap-3">
+                  <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
+                    <FontAwesomeIcon :icon="['fas', 'exclamation-triangle']" class="text-white text-sm" />
+                  </div>
+                  <div>
+                    <p class="text-red-800 font-bold text-sm">⚠️ PACOTE VENCIDO</p>
+                    <p class="text-red-600 text-sm">
+                      Expirou em {{ formatarData(animalServico.dataExpiracao!) }}
+                      <span class="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                        {{ diasVencido }} dia{{ diasVencido !== 1 ? 's' : '' }} atrás
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ID do Animal Serviço -->
+              <div class="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+                <div class="flex items-center gap-3">
+                  <FontAwesomeIcon :icon="['fas', 'hashtag']" class="text-gray-600" />
+                  <div>
+                    <p class="text-sm font-medium text-gray-600">ID do Registro</p>
+                    <p class="text-lg font-mono font-bold text-gray-800 tracking-wider">#{{ animalServico.id }}</p>
+                  </div>
+                </div>
+              </div>
+
               <!-- Data do serviço -->
               <div class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-green-50 rounded-xl border border-amber-200">
                 <div class="flex items-center gap-3">
@@ -92,6 +122,59 @@
                   <FontAwesomeIcon :icon="['fas', 'edit']" class="mr-1" />
                   Editar
                 </BaseButton>
+              </div>
+
+              <!-- Data de Expiração (se existir) -->
+              <div v-if="animalServico.dataExpiracao" class="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200"
+                   :class="{
+                     'border-red-300 bg-gradient-to-r from-red-50 to-orange-50': isPackageExpired,
+                     'border-yellow-300 bg-gradient-to-r from-yellow-50 to-amber-50': isPackageExpiringSoon && !isPackageExpired,
+                     'border-green-300 bg-gradient-to-r from-green-50 to-emerald-50': !isPackageExpired && !isPackageExpiringSoon
+                   }">
+                <div class="flex items-center gap-3">
+                  <FontAwesomeIcon
+                    :icon="['fas', 'clock']"
+                    :class="{
+                      'text-red-600': isPackageExpired,
+                      'text-yellow-600': isPackageExpiringSoon && !isPackageExpired,
+                      'text-violet-600': !isPackageExpired && !isPackageExpiringSoon
+                    }"
+                  />
+                  <div class="flex-1">
+                    <p class="text-sm font-medium"
+                       :class="{
+                         'text-red-700': isPackageExpired,
+                         'text-yellow-700': isPackageExpiringSoon && !isPackageExpired,
+                         'text-gray-600': !isPackageExpired && !isPackageExpiringSoon
+                       }">
+                      Data de Expiração
+                    </p>
+                    <p class="text-lg font-semibold"
+                       :class="{
+                         'text-red-800': isPackageExpired,
+                         'text-yellow-800': isPackageExpiringSoon && !isPackageExpired,
+                         'text-gray-800': !isPackageExpired && !isPackageExpiringSoon
+                       }">
+                      {{ formatarData(animalServico.dataExpiracao) }}
+                    </p>
+                  </div>
+                  <div v-if="!isPackageExpired" class="text-right">
+                    <p class="text-xs font-medium"
+                       :class="{
+                         'text-yellow-700': isPackageExpiringSoon,
+                         'text-green-700': !isPackageExpiringSoon
+                       }">
+                      {{ isPackageExpiringSoon ? 'Expira em' : 'Válido por mais' }}
+                    </p>
+                    <p class="text-sm font-bold"
+                       :class="{
+                         'text-yellow-800': isPackageExpiringSoon,
+                         'text-green-800': !isPackageExpiringSoon
+                       }">
+                      {{ diasParaExpirar }} dia{{ diasParaExpirar !== 1 ? 's' : '' }}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <!-- Progresso dos banhos -->
@@ -446,6 +529,48 @@ const isServicoCompleto = computed(() => {
 
 const podeAdicionarBanho = computed(() => {
   return !isServicoCompleto.value && servico.value && servico.value.quantidade > 1
+})
+
+// Computadas para controle de expiração
+const isPackageExpired = computed(() => {
+  if (!animalServico.value?.dataExpiracao) return false
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.value.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  return hoje > dataExpiracao
+})
+
+const isPackageExpiringSoon = computed(() => {
+  if (!animalServico.value?.dataExpiracao || isPackageExpired.value) return false
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.value.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  const diasParaExpirar = Math.ceil((dataExpiracao.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+  return diasParaExpirar <= 7 // Considera "expirando em breve" se for em 7 dias ou menos
+})
+
+const diasParaExpirar = computed(() => {
+  if (!animalServico.value?.dataExpiracao) return 0
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.value.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  return Math.ceil((dataExpiracao.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+})
+
+const diasVencido = computed(() => {
+  if (!animalServico.value?.dataExpiracao || !isPackageExpired.value) return 0
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.value.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  return Math.abs(Math.ceil((hoje.getTime() - dataExpiracao.getTime()) / (1000 * 60 * 60 * 24)))
 })
 
 // Funções

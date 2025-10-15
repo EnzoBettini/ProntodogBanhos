@@ -97,10 +97,17 @@ public class AnimalServicoService {
             System.out.println("📅 Datas dos banhos convertidas: " + datasBanhosLocal);
         }
 
+        // Converter data de expiração se fornecida
+        LocalDate dataExpiracaoLocal = dto.getDataExpiracaoAsLocalDate();
+        if (dataExpiracaoLocal != null) {
+            System.out.println("📅 Data de expiração convertida: " + dto.getDataExpiracao() + " -> " + dataExpiracaoLocal);
+        }
+
         // Criar AnimalServico
         AnimalServico animalServico = new AnimalServico();
         animalServico.setDataServico(dataServicoLocal);
         animalServico.setBanhosUsados(dto.getBanhosUsados());
+        animalServico.setDataExpiracao(dataExpiracaoLocal);
         animalServico.setAnimal(animal);
         animalServico.setServico(servico);
         animalServico.setUsuario(usuario);
@@ -147,6 +154,7 @@ public class AnimalServicoService {
 
             animalServicoExistente.setDataServico(novosDados.getDataServico());
             animalServicoExistente.setBanhosUsados(novosDados.getBanhosUsados());
+            animalServicoExistente.setDataExpiracao(novosDados.getDataExpiracao());
             animalServicoExistente.setAnimal(novosDados.getAnimal());
             animalServicoExistente.setServico(novosDados.getServico());
             animalServicoExistente.setUsuario(novosDados.getUsuario());
@@ -155,5 +163,58 @@ public class AnimalServicoService {
         } else {
             throw new RuntimeException("AnimalServico não encontrado com id: " + id);
         }
+    }
+
+    // Métodos para controle de expiração de pacotes
+
+    /**
+     * Busca pacotes que vão vencer em até X dias
+     * @param dias número de dias para considerar como "vai vencer"
+     * @return lista de pacotes que vão vencer
+     */
+    public List<AnimalServico> buscarPacotesQueVaoVencer(int dias) {
+        LocalDate dataLimite = LocalDate.now().plusDays(dias);
+        return animalServicoRepository.findAll().stream()
+                .filter(as -> as.getDataExpiracao() != null)
+                .filter(as -> as.getDataExpiracao().isAfter(LocalDate.now()))
+                .filter(as -> as.getDataExpiracao().isBefore(dataLimite) || as.getDataExpiracao().isEqual(dataLimite))
+                .toList();
+    }
+
+    /**
+     * Busca pacotes já vencidos
+     * @return lista de pacotes vencidos
+     */
+    public List<AnimalServico> buscarPacotesVencidos() {
+        LocalDate hoje = LocalDate.now();
+        return animalServicoRepository.findAll().stream()
+                .filter(as -> as.getDataExpiracao() != null)
+                .filter(as -> as.getDataExpiracao().isBefore(hoje))
+                .toList();
+    }
+
+    /**
+     * Busca pacotes válidos (não vencidos ou sem data de expiração)
+     * @return lista de pacotes válidos
+     */
+    public List<AnimalServico> buscarPacotesValidos() {
+        LocalDate hoje = LocalDate.now();
+        return animalServicoRepository.findAll().stream()
+                .filter(as -> as.getDataExpiracao() == null ||
+                            as.getDataExpiracao().isAfter(hoje) ||
+                            as.getDataExpiracao().isEqual(hoje))
+                .toList();
+    }
+
+    /**
+     * Busca pacotes que expiram exatamente hoje
+     * @return lista de pacotes que expiram hoje
+     */
+    public List<AnimalServico> buscarPacotesQueExpiramHoje() {
+        LocalDate hoje = LocalDate.now();
+        return animalServicoRepository.findAll().stream()
+                .filter(as -> as.getDataExpiracao() != null)
+                .filter(as -> as.getDataExpiracao().isEqual(hoje))
+                .toList();
     }
 }

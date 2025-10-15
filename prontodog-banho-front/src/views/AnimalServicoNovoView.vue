@@ -159,6 +159,36 @@
             </p>
           </div>
 
+          <!-- ⏰ Data de Expiração (opcional) -->
+          <div class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-violet-50/50 to-purple-50/50 border border-violet-200/50 hover:border-violet-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center text-lg font-bold text-gray-800 group-hover:text-violet-700 transition-colors">
+                <div class="p-2 bg-gradient-to-r from-violet-500 to-purple-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
+                  <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white text-sm" />
+                </div>
+                Data de Expiração
+                <span class="ml-2 px-2 py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-medium">
+                  Opcional
+                </span>
+              </label>
+              <div class="flex items-center gap-1">
+                <div class="w-2 h-2 bg-violet-500 rounded-full animate-pulse"></div>
+                <div class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-1 h-1 bg-indigo-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+              </div>
+            </div>
+            <input
+              v-model="formulario.dataExpiracao"
+              type="date"
+              :disabled="loading"
+              class="w-full px-6 py-4 bg-white/80 border-2 border-violet-200/50 rounded-2xl focus:border-violet-500 focus:ring-4 focus:ring-violet-100 transition-all duration-300 text-lg font-medium hover:border-violet-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:shadow-lg focus:shadow-lg backdrop-blur-sm"
+            />
+            <p class="text-sm text-gray-500 flex items-center gap-2">
+              <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-violet-500" />
+              Data limite para usar o pacote. Deixe vazio se não há expiração.
+            </p>
+          </div>
+
           <!-- 🛁 Banhos Usados -->
           <div class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-cyan-50/50 to-teal-50/50 border border-cyan-200/50 hover:border-cyan-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
@@ -637,6 +667,7 @@ const formulario = ref({
   animalId: '',
   servicoId: '',
   dataServico: '',
+  dataExpiracao: '',
   banhosUsados: 0,
   usuarioId: ''
 })
@@ -947,6 +978,7 @@ const cadastrarAnimalServico = async (): Promise<void> => {
 
       const dadosCompletos: CriarAnimalServicoCompleto = {
         dataServico: formulario.value.dataServico,
+        dataExpiracao: formulario.value.dataExpiracao || undefined,
         banhosUsados: formulario.value.banhosUsados,
         animalId: Number(formulario.value.animalId),
         servicoId: Number(formulario.value.servicoId),
@@ -970,6 +1002,7 @@ const cadastrarAnimalServico = async (): Promise<void> => {
         // Fallback: usar API simples e avisar o usuário
         const novoAnimalServico: NovoAnimalServico = {
           dataServico: formulario.value.dataServico,
+          dataExpiracao: formulario.value.dataExpiracao || undefined,
           banhosUsados: formulario.value.banhosUsados,
           animal: { id: Number(formulario.value.animalId) },
           servico: { id: Number(formulario.value.servicoId) },
@@ -986,6 +1019,7 @@ const cadastrarAnimalServico = async (): Promise<void> => {
       // Usar API simples se não há banhos realizados
       const novoAnimalServico: NovoAnimalServico = {
         dataServico: formulario.value.dataServico,
+        dataExpiracao: formulario.value.dataExpiracao || undefined,
         banhosUsados: formulario.value.banhosUsados,
         animal: { id: Number(formulario.value.animalId) },
         servico: { id: Number(formulario.value.servicoId) },
@@ -1028,6 +1062,7 @@ const cadastrarOutroServico = (): void => {
     animalId: '',
     servicoId: '',
     dataServico: obterDataLocal(),
+    dataExpiracao: '',
     banhosUsados: 0,
     usuarioId: ''
   }
@@ -1063,6 +1098,7 @@ onMounted(async () => {
 
   // Definir data padrão como hoje (usando data local para evitar problema de timezone)
   formulario.value.dataServico = obterDataLocal()
+  // dataExpiracao fica vazia por padrão (opcional)
 })
 </script>
 
