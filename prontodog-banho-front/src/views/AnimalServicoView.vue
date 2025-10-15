@@ -152,7 +152,54 @@
                 class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
               >
                 <FontAwesomeIcon icon="times" />
-                <span>Limpar filtro</span>
+                <span>Limpar filtro de busca</span>
+              </button>
+            </template>
+
+            <!-- Mensagem para filtro de expiração sem resultados -->
+            <template v-else-if="filtroExpiracao !== 'todos'">
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">
+                Nenhum pacote {{ getFiltroExpiracaoTexto() }}
+              </h3>
+              <p class="text-gray-600 mb-4">
+                Não há pacotes que correspondam ao filtro selecionado no momento.
+              </p>
+              <div class="flex items-center justify-center gap-2 px-4 py-2 bg-violet-100 rounded-lg mb-6 max-w-md mx-auto">
+                <FontAwesomeIcon :icon="['fas', 'filter']" class="text-violet-600" />
+                <span class="text-violet-800 font-medium">Filtro: {{ getFiltroExpiracaoTexto() }}</span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  @click="filtroExpiracao = 'todos'"
+                  class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-xl hover:from-violet-600 hover:to-purple-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg font-medium"
+                >
+                  <FontAwesomeIcon icon="times" />
+                  <span>Remover filtro</span>
+                </button>
+                <button
+                  @click="$router.push('/animal-servico/novo')"
+                  class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg font-medium"
+                >
+                  <FontAwesomeIcon icon="plus" />
+                  <span>Cadastrar novo</span>
+                </button>
+              </div>
+            </template>
+
+            <!-- Mensagem genérica para outros casos -->
+            <template v-else>
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">
+                Nenhum resultado encontrado
+              </h3>
+              <p class="text-gray-600 mb-4">
+                Nenhum animal serviço corresponde aos filtros aplicados.
+              </p>
+              <button
+                @click="limparTodosFiltros"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-500 to-slate-500 text-white rounded-xl hover:from-gray-600 hover:to-slate-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+              >
+                <FontAwesomeIcon icon="refresh" />
+                <span>Limpar todos os filtros</span>
               </button>
             </template>
           </div>
@@ -197,6 +244,34 @@
                       <FontAwesomeIcon icon="user" class="mr-1" /><code>Maria</code> = Dono
                     </span>
                   </div>
+                </div>
+              </div>
+
+              <!-- 🗓️ Filtro de Expiração -->
+              <div class="relative">
+                <select
+                  v-model="filtroExpiracao"
+                  class="px-4 py-3 bg-white border-2 border-violet-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-300 text-gray-700 font-medium shadow-sm appearance-none pr-10"
+                  :class="{
+                    'border-red-300 bg-red-50 text-red-700': filtroExpiracao === 'vencidos',
+                    'border-yellow-300 bg-yellow-50 text-yellow-700': filtroExpiracao === 'vencendo',
+                    'border-green-300 bg-green-50 text-green-700': filtroExpiracao === 'validos',
+                    'border-gray-300 bg-gray-50 text-gray-700': filtroExpiracao === 'sem-expiracao'
+                  }"
+                >
+                  <option value="todos">📋 Todos ({{ contadoresExpiracao.total }})</option>
+                  <option value="vencidos" :class="{ 'text-red-700 font-bold': contadoresExpiracao.vencidos > 0 }">
+                    🚨 Vencidos ({{ contadoresExpiracao.vencidos }})
+                  </option>
+                  <option value="vencendo" :class="{ 'text-yellow-700 font-bold': contadoresExpiracao.vencendo > 0 }">
+                    ⏰ Vencendo ({{ contadoresExpiracao.vencendo }})
+                  </option>
+                  <option value="validos">🟢 Válidos ({{ contadoresExpiracao.validos }})</option>
+                  <option value="sem-expiracao">📅 Sem Expiração ({{ contadoresExpiracao.semExpiracao }})</option>
+                </select>
+                <!-- Ícone dropdown customizado -->
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-gray-400 text-sm" />
                 </div>
               </div>
 
@@ -260,13 +335,35 @@
                       <h3 class="text-xl font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors duration-300">
                         {{ getAnimalNome(animalServico) }}
                       </h3>
-                      <BaseBadge
-                        :variant="animalServico.banhosUsados > 0 ? 'success' : 'warning'"
-                        size="sm"
-                        class="flex-shrink-0"
-                      >
-                        {{ getServicoDescricao(animalServico) }}
-                      </BaseBadge>
+                      <div class="flex items-center gap-2 flex-shrink-0">
+                        <BaseBadge
+                          :variant="animalServico.banhosUsados > 0 ? 'success' : 'warning'"
+                          size="sm"
+                        >
+                          {{ getServicoDescricao(animalServico) }}
+                        </BaseBadge>
+
+                        <!-- 🗓️ Badge de Status de Expiração -->
+                        <div
+                          v-if="animalServico.dataExpiracao"
+                          class="px-2 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
+                          :class="{
+                            'bg-red-100 border-red-300 text-red-800 animate-pulse': getExpirationStatus(animalServico) === 'vencido',
+                            'bg-yellow-100 border-yellow-300 text-yellow-800': getExpirationStatus(animalServico) === 'vencendo',
+                            'bg-green-100 border-green-300 text-green-800': getExpirationStatus(animalServico) === 'valido'
+                          }"
+                        >
+                          <span v-if="getExpirationStatus(animalServico) === 'vencido'">
+                            🚨 VENCIDO há {{ getDaysExpired(animalServico) }}d
+                          </span>
+                          <span v-else-if="getExpirationStatus(animalServico) === 'vencendo'">
+                            ⏰ {{ getDaysUntilExpiration(animalServico) }}d restantes
+                          </span>
+                          <span v-else>
+                            🟢 {{ getDaysUntilExpiration(animalServico) }}d restantes
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     <div class="flex items-center gap-4 text-sm text-gray-600 mb-2 flex-wrap">
@@ -589,12 +686,63 @@ const formularioBanho = ref({
 
 // 🔍 Filtros
 const filtroTexto = ref('')
+const filtroExpiracao = ref('todos') // 'todos', 'vencidos', 'vencendo', 'validos', 'sem-expiracao'
 const itensPorPagina = ref(10)
 const itensExibidos = ref(10)
+
+// 🗓️ Funções para determinar status de expiração
+const getExpirationStatus = (animalServico: AnimalServico): 'vencido' | 'vencendo' | 'valido' | 'sem-expiracao' => {
+  if (!animalServico.dataExpiracao) return 'sem-expiracao'
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  if (hoje > dataExpiracao) {
+    return 'vencido'
+  }
+
+  const diasParaExpirar = Math.ceil((dataExpiracao.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+  if (diasParaExpirar <= 7) {
+    return 'vencendo'
+  }
+
+  return 'valido'
+}
+
+const getDaysUntilExpiration = (animalServico: AnimalServico): number => {
+  if (!animalServico.dataExpiracao) return 0
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  return Math.ceil((dataExpiracao.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+const getDaysExpired = (animalServico: AnimalServico): number => {
+  if (!animalServico.dataExpiracao) return 0
+
+  const hoje = new Date()
+  const [ano, mes, dia] = animalServico.dataExpiracao.split('-')
+  const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+  return Math.abs(Math.ceil((hoje.getTime() - dataExpiracao.getTime()) / (1000 * 60 * 60 * 24)))
+}
 
 // 📄 Lista com filtros inteligentes aplicados
 const animalServicosFiltrados = computed(() => {
   return animalServicos.value.filter(animalServico => {
+    // 🗓️ FILTRO DE EXPIRAÇÃO
+    if (filtroExpiracao.value !== 'todos') {
+      const status = getExpirationStatus(animalServico)
+      if (filtroExpiracao.value === 'vencidos' && status !== 'vencido') return false
+      if (filtroExpiracao.value === 'vencendo' && status !== 'vencendo') return false
+      if (filtroExpiracao.value === 'validos' && status !== 'valido') return false
+      if (filtroExpiracao.value === 'sem-expiracao' && status !== 'sem-expiracao') return false
+    }
+
+    // 🔍 FILTRO DE TEXTO
     if (!filtroTexto.value) return true
 
     // 🧠 FILTROS INTELIGENTES com prefixos especiais
@@ -644,6 +792,16 @@ const animalServicosFiltrados = computed(() => {
 // 📊 Controle de paginação
 const totalItensDisponiveis = computed(() => {
   return animalServicos.value.filter(animalServico => {
+    // 🗓️ FILTRO DE EXPIRAÇÃO
+    if (filtroExpiracao.value !== 'todos') {
+      const status = getExpirationStatus(animalServico)
+      if (filtroExpiracao.value === 'vencidos' && status !== 'vencido') return false
+      if (filtroExpiracao.value === 'vencendo' && status !== 'vencendo') return false
+      if (filtroExpiracao.value === 'validos' && status !== 'valido') return false
+      if (filtroExpiracao.value === 'sem-expiracao' && status !== 'sem-expiracao') return false
+    }
+
+    // 🔍 FILTRO DE TEXTO
     if (!filtroTexto.value) return true
 
     const termoBusca = filtroTexto.value.trim()
@@ -679,6 +837,37 @@ const totalItensDisponiveis = computed(() => {
       return clienteNome.includes(termoBuscaLower)
     }
   }).length
+})
+
+// 📊 Contadores por status de expiração
+const contadoresExpiracao = computed(() => {
+  const contadores = {
+    total: animalServicos.value.length,
+    vencidos: 0,
+    vencendo: 0,
+    validos: 0,
+    semExpiracao: 0
+  }
+
+  animalServicos.value.forEach(animalServico => {
+    const status = getExpirationStatus(animalServico)
+    switch (status) {
+      case 'vencido':
+        contadores.vencidos++
+        break
+      case 'vencendo':
+        contadores.vencendo++
+        break
+      case 'valido':
+        contadores.validos++
+        break
+      case 'sem-expiracao':
+        contadores.semExpiracao++
+        break
+    }
+  })
+
+  return contadores
 })
 
 const temMaisItens = computed(() => {
@@ -737,6 +926,28 @@ const infoFiltroAtivo = computed(() => {
 const totalServicosAtivos = computed(() => {
   return animalServicos.value.filter(animalServico => !isServicoCompleto(animalServico)).length
 })
+
+// 🗓️ Função para obter texto descritivo do filtro de expiração
+const getFiltroExpiracaoTexto = (): string => {
+  switch (filtroExpiracao.value) {
+    case 'vencidos':
+      return 'vencidos'
+    case 'vencendo':
+      return 'vencendo em breve'
+    case 'validos':
+      return 'válidos'
+    case 'sem-expiracao':
+      return 'sem data de expiração'
+    default:
+      return ''
+  }
+}
+
+// 🧹 Função para limpar todos os filtros
+const limparTodosFiltros = (): void => {
+  filtroTexto.value = ''
+  filtroExpiracao.value = 'todos'
+}
 
 // 🔧 Funções auxiliares - Busca reversa devido ao @JsonBackReference
 const getAnimalNome = (animalServico: AnimalServico): string => {
