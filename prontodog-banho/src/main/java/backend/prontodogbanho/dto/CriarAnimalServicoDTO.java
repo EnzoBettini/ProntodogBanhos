@@ -24,6 +24,10 @@ public class CriarAnimalServicoDTO {
     // Data de expiração do pacote (opcional)
     private String dataExpiracao;
 
+    // Campos de pagamento (opcionais)
+    private String statusPagamento; // "pago", "em_aberto", "cancelado"
+    private String dataPagamento;   // Data do pagamento (se pago)
+
     // Lista de datas dos banhos já realizados (como String)
     // Se banhosUsados > 0, deve ter as datas correspondentes
     private List<String> datasBanhosRealizados;
@@ -52,6 +56,18 @@ public class CriarAnimalServicoDTO {
             return LocalDate.parse(dataExpiracao, DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
             System.err.println("❌ Erro ao parsear dataExpiracao: " + dataExpiracao + " - " + e.getMessage());
+            return null;
+        }
+    }
+
+    public LocalDate getDataPagamentoAsLocalDate() {
+        if (dataPagamento == null || dataPagamento.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(dataPagamento, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao parsear dataPagamento: " + dataPagamento + " - " + e.getMessage());
             return null;
         }
     }

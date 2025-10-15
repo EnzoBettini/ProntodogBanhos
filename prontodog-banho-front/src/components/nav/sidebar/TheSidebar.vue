@@ -45,9 +45,9 @@
         basePath="/animais"
         :collapsed="!sidebarStore.isOpen"
       >
-        <SidebarItem title="Lista de Animais" to="/animais" :collapsed="false" />
-        <SidebarItem title="Novo Animal" to="/animais/novo" :collapsed="false" />
-        <SidebarItem title="Histórico" to="/animais/historico" :collapsed="false" />
+        <SidebarItem title="Lista" icon="list" to="/animais" :collapsed="false" />
+        <SidebarItem title="Novo" icon="plus" to="/animais/novo" :collapsed="false" />
+        <SidebarItem title="Histórico" icon="clock" to="/animais/historico" :collapsed="false" />
       </SidebarDropdown>
 
       <SidebarDropdown
@@ -56,9 +56,9 @@
         basePath="/clientes"
         :collapsed="!sidebarStore.isOpen"
       >
-        <SidebarItem title="Lista de Clientes" to="/clientes" :collapsed="false" />
-        <SidebarItem title="Novo Cliente" to="/clientes/novo" :collapsed="false" />
-        <SidebarItem title="Relatórios" to="/clientes/relatorios" :collapsed="false" />
+        <SidebarItem title="Lista" icon="users" to="/clientes" :collapsed="false" />
+        <SidebarItem title="Novo" icon="user-plus" to="/clientes/novo" :collapsed="false" />
+        <SidebarItem title="Relatórios" icon="chart-bar" to="/clientes/relatorios" :collapsed="false" />
       </SidebarDropdown>
 
       <SidebarDropdown
@@ -68,11 +68,11 @@
         :additionalPaths="['/animal-servico']"
         :collapsed="!sidebarStore.isOpen"
       >
-        <SidebarItem title="Lista de Serviços" to="/servicos" :collapsed="false" />
-        <SidebarItem title="Novo Serviço" to="/servicos/novo" :collapsed="false" />
-        <SidebarItem title="Lista Animal Serviços" to="/animal-servico" :collapsed="false" />
-        <SidebarItem title="Cadastrar Animal Serviço" to="/animal-servico/novo" :collapsed="false" />
-        <SidebarItem title="Relatórios" to="/servicos/relatorios" :collapsed="false" />
+        <SidebarItem title="Lista" icon="list" to="/servicos" :collapsed="false" />
+        <SidebarItem title="Novo" icon="cog" to="/servicos/novo" :collapsed="false" />
+        <SidebarItem title="Cadastrados" icon="clipboard-list" to="/animal-servico" :collapsed="false" />
+        <SidebarItem title="Novo" icon="plus" to="/animal-servico/novo" :collapsed="false" />
+        <SidebarItem title="Relatórios" icon="chart-bar" to="/servicos/relatorios" :collapsed="false" />
       </SidebarDropdown>
     </nav>
 

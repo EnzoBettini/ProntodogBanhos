@@ -44,12 +44,86 @@
           </div>
 
           <div class="flex items-center gap-4">
+            <!-- Status do Serviço -->
             <BaseBadge
               :variant="isServicoCompleto ? 'success' : 'warning'"
               size="lg"
             >
               {{ isServicoCompleto ? 'Completo' : 'Em Andamento' }}
             </BaseBadge>
+
+            <!-- Status de Pagamento -->
+            <BaseBadge
+              :variant="getStatusPagamentoBadgeVariant(animalServico.statusPagamento)"
+              size="lg"
+              class="flex items-center gap-2"
+            >
+              <FontAwesomeIcon :icon="getStatusPagamentoIcon(animalServico.statusPagamento)" />
+              {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
+            </BaseBadge>
+
+            <!-- Menu de Ações de Pagamento -->
+            <div class="relative">
+              <BaseButton
+                @click="mostrarMenuPagamento = !mostrarMenuPagamento"
+                variant="secondary"
+                class="flex items-center gap-2"
+              >
+                <FontAwesomeIcon :icon="['fas', 'dollar-sign']" />
+                <span class="hidden sm:inline">Pagamento</span>
+                <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-xs" />
+              </BaseButton>
+
+              <!-- Dropdown de Pagamento -->
+              <div
+                v-if="mostrarMenuPagamento"
+                class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
+                @click.stop
+              >
+                <div class="px-4 py-2 border-b border-gray-100">
+                  <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Alterar Status</p>
+                </div>
+
+                <!-- Marcar como Pago -->
+                <button
+                  v-if="animalServico.statusPagamento !== 'pago'"
+                  @click="alterarStatusPagamento('pago')"
+                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3"
+                >
+                  <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-emerald-500" />
+                  <div>
+                    <p class="font-medium">Marcar como Pago</p>
+                    <p class="text-xs text-gray-500">Define data de pagamento para hoje</p>
+                  </div>
+                </button>
+
+                <!-- Marcar como Em Aberto -->
+                <button
+                  v-if="animalServico.statusPagamento !== 'em_aberto'"
+                  @click="alterarStatusPagamento('em_aberto')"
+                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-3"
+                >
+                  <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-500" />
+                  <div>
+                    <p class="font-medium">Marcar como Em Aberto</p>
+                    <p class="text-xs text-gray-500">Remove data de pagamento</p>
+                  </div>
+                </button>
+
+                <!-- Marcar como Cancelado -->
+                <button
+                  v-if="animalServico.statusPagamento !== 'cancelado'"
+                  @click="alterarStatusPagamento('cancelado')"
+                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
+                >
+                  <FontAwesomeIcon :icon="['fas', 'times-circle']" class="text-red-500" />
+                  <div>
+                    <p class="font-medium">Marcar como Cancelado</p>
+                    <p class="text-xs text-gray-500">Cancela o pagamento</p>
+                  </div>
+                </button>
+              </div>
+            </div>
 
             <!-- Botão Excluir -->
             <BaseButton
@@ -64,21 +138,22 @@
           </div>
         </div>
 
-        <!-- Grid principal -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- 📊 Informações do Serviço -->
-          <BaseCard class="shadow-xl border-0">
-            <div class="flex items-center gap-3 mb-6">
+        <!-- Grid principal reorganizado -->
+        <div class="flex flex-col xl:flex-row lg:flex-row gap-6 items-start xl:items-stretch">
+
+          <!-- 📊 Coluna 1: Informações Principais -->
+          <BaseCard class="shadow-xl border-0 w-full xl:w-1/3 lg:w-1/2 flex-shrink-0">
+            <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-green-500 rounded-xl flex items-center justify-center">
                 <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-white text-xl" />
               </div>
               <div>
-                <h2 class="text-xl font-bold text-gray-800">Informações do Serviço</h2>
-                <p class="text-gray-600">Dados e progresso do atendimento</p>
+                <h2 class="text-xl font-bold text-gray-800">Informações Básicas</h2>
+                <p class="text-gray-600">Dados essenciais do serviço</p>
               </div>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-3">
               <!-- Alerta de Expiração (se vencido) -->
               <div v-if="isPackageExpired" class="relative overflow-hidden p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border-2 border-red-200 animate-pulse">
                 <div class="absolute top-0 right-0 w-16 h-16 bg-red-200/30 rounded-full blur-2xl"></div>
@@ -124,58 +199,7 @@
                 </BaseButton>
               </div>
 
-              <!-- Data de Expiração (se existir) -->
-              <div v-if="animalServico.dataExpiracao" class="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200"
-                   :class="{
-                     'border-red-300 bg-gradient-to-r from-red-50 to-orange-50': isPackageExpired,
-                     'border-yellow-300 bg-gradient-to-r from-yellow-50 to-amber-50': isPackageExpiringSoon && !isPackageExpired,
-                     'border-green-300 bg-gradient-to-r from-green-50 to-emerald-50': !isPackageExpired && !isPackageExpiringSoon
-                   }">
-                <div class="flex items-center gap-3">
-                  <FontAwesomeIcon
-                    :icon="['fas', 'clock']"
-                    :class="{
-                      'text-red-600': isPackageExpired,
-                      'text-yellow-600': isPackageExpiringSoon && !isPackageExpired,
-                      'text-violet-600': !isPackageExpired && !isPackageExpiringSoon
-                    }"
-                  />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium"
-                       :class="{
-                         'text-red-700': isPackageExpired,
-                         'text-yellow-700': isPackageExpiringSoon && !isPackageExpired,
-                         'text-gray-600': !isPackageExpired && !isPackageExpiringSoon
-                       }">
-                      Data de Expiração
-                    </p>
-                    <p class="text-lg font-semibold"
-                       :class="{
-                         'text-red-800': isPackageExpired,
-                         'text-yellow-800': isPackageExpiringSoon && !isPackageExpired,
-                         'text-gray-800': !isPackageExpired && !isPackageExpiringSoon
-                       }">
-                      {{ formatarData(animalServico.dataExpiracao) }}
-                    </p>
-                  </div>
-                  <div v-if="!isPackageExpired" class="text-right">
-                    <p class="text-xs font-medium"
-                       :class="{
-                         'text-yellow-700': isPackageExpiringSoon,
-                         'text-green-700': !isPackageExpiringSoon
-                       }">
-                      {{ isPackageExpiringSoon ? 'Expira em' : 'Válido por mais' }}
-                    </p>
-                    <p class="text-sm font-bold"
-                       :class="{
-                         'text-yellow-800': isPackageExpiringSoon,
-                         'text-green-800': !isPackageExpiringSoon
-                       }">
-                      {{ diasParaExpirar }} dia{{ diasParaExpirar !== 1 ? 's' : '' }}
-                    </p>
-                  </div>
-                </div>
-              </div>
+
 
               <!-- Progresso dos banhos -->
               <div class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
@@ -248,9 +272,212 @@
             </div>
           </BaseCard>
 
-          <!-- 🐕 Informações do Animal -->
-          <BaseCard class="shadow-xl border-0">
-            <div class="flex items-center gap-3 mb-6">
+          <!-- 💳 Coluna 2: Pagamento & Expiração -->
+          <BaseCard class="shadow-xl border-0 w-full xl:w-1/3 lg:w-1/2 flex-shrink-0">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-xl flex items-center justify-center">
+                <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-white text-xl" />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Controle & Status</h2>
+                <p class="text-gray-600">Pagamento e expiração</p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <!-- 💳 Informações de Pagamento (movido para cá) -->
+              <div class="p-4 rounded-xl border"
+                   :class="{
+                     'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200': animalServico.statusPagamento === 'pago',
+                     'bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200': animalServico.statusPagamento === 'em_aberto',
+                     'bg-gradient-to-r from-red-50 to-pink-50 border-red-200': animalServico.statusPagamento === 'cancelado'
+                   }">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <FontAwesomeIcon
+                      :icon="getStatusPagamentoIcon(animalServico.statusPagamento)"
+                      :class="{
+                        'text-emerald-600': animalServico.statusPagamento === 'pago',
+                        'text-orange-600': animalServico.statusPagamento === 'em_aberto',
+                        'text-red-600': animalServico.statusPagamento === 'cancelado'
+                      }"
+                    />
+                    <div>
+                      <p class="text-sm font-medium"
+                         :class="{
+                           'text-emerald-700': animalServico.statusPagamento === 'pago',
+                           'text-orange-700': animalServico.statusPagamento === 'em_aberto',
+                           'text-red-700': animalServico.statusPagamento === 'cancelado'
+                         }">
+                        Status do Pagamento
+                      </p>
+                      <p class="text-lg font-semibold"
+                         :class="{
+                           'text-emerald-800': animalServico.statusPagamento === 'pago',
+                           'text-orange-800': animalServico.statusPagamento === 'em_aberto',
+                           'text-red-800': animalServico.statusPagamento === 'cancelado'
+                         }">
+                        {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Data de Pagamento (se existe) -->
+                  <div v-if="animalServico.dataPagamento" class="text-right">
+                    <div class="flex items-center gap-2">
+                      <div>
+                        <p class="text-xs font-medium text-gray-600">Data do Pagamento</p>
+
+                        <!-- Modo Visualização -->
+                        <div v-if="!editandoDataPagamento" class="flex items-center gap-2">
+                          <p class="text-sm font-semibold text-gray-800">
+                            {{ formatarData(animalServico.dataPagamento) }}
+                          </p>
+                          <button
+                            @click="iniciarEdicaoDataPagamento"
+                            class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all duration-200"
+                            title="Editar data de pagamento"
+                          >
+                            <FontAwesomeIcon :icon="['fas', 'edit']" class="text-xs" />
+                          </button>
+                        </div>
+
+                        <!-- Modo Edição -->
+                        <div v-else class="space-y-2">
+                          <input
+                            v-model="novaDataPagamento"
+                            type="date"
+                            class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+                            :disabled="salvandoDataPagamento"
+                          />
+                          <div class="flex items-center gap-1">
+                            <button
+                              @click="salvarDataPagamento"
+                              :disabled="salvandoDataPagamento || !novaDataPagamento"
+                              class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <FontAwesomeIcon v-if="salvandoDataPagamento" :icon="['fas', 'spinner']" class="animate-spin" />
+                              <FontAwesomeIcon v-else :icon="['fas', 'check']" />
+                            </button>
+                            <button
+                              @click="cancelarEdicaoDataPagamento"
+                              :disabled="salvandoDataPagamento"
+                              class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
+                            >
+                              <FontAwesomeIcon :icon="['fas', 'times']" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Opção para definir data (se não existe) -->
+                  <div v-else-if="animalServico.statusPagamento === 'pago'" class="text-right">
+                    <div v-if="!editandoDataPagamento" class="flex items-center gap-2">
+                      <div>
+                        <p class="text-xs font-medium text-gray-600">Data do Pagamento</p>
+                        <p class="text-sm text-gray-500 italic">Não definida</p>
+                      </div>
+                      <button
+                        @click="iniciarDefinicaoDataPagamento"
+                        class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        title="Definir data de pagamento"
+                      >
+                        <FontAwesomeIcon :icon="['fas', 'calendar-plus']" class="mr-1" />
+                        Definir
+                      </button>
+                    </div>
+
+                    <!-- Modo Definição -->
+                    <div v-else class="space-y-2">
+                      <p class="text-xs font-medium text-gray-600">Definir Data do Pagamento</p>
+                      <input
+                        v-model="novaDataPagamento"
+                        type="date"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+                        :disabled="salvandoDataPagamento"
+                        placeholder="Selecione a data"
+                      />
+                      <div class="flex items-center gap-1">
+                        <button
+                          @click="salvarDataPagamento"
+                          :disabled="salvandoDataPagamento || !novaDataPagamento"
+                          class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <FontAwesomeIcon v-if="salvandoDataPagamento" :icon="['fas', 'spinner']" class="animate-spin" />
+                          <FontAwesomeIcon v-else :icon="['fas', 'check']" />
+                        </button>
+                        <button
+                          @click="cancelarEdicaoDataPagamento"
+                          :disabled="salvandoDataPagamento"
+                          class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
+                        >
+                          <FontAwesomeIcon :icon="['fas', 'times']" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Data de Expiração (movido para cá) -->
+              <div v-if="animalServico.dataExpiracao" class="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200"
+                   :class="{
+                     'border-red-300 bg-gradient-to-r from-red-50 to-orange-50': isPackageExpired,
+                     'border-yellow-300 bg-gradient-to-r from-yellow-50 to-amber-50': isPackageExpiringSoon && !isPackageExpired,
+                     'border-green-300 bg-gradient-to-r from-green-50 to-emerald-50': !isPackageExpired && !isPackageExpiringSoon
+                   }">
+                <div class="flex items-center gap-3">
+                  <FontAwesomeIcon :icon="['fas', 'clock']"
+                    :class="{
+                      'text-red-600': isPackageExpired,
+                      'text-yellow-600': isPackageExpiringSoon && !isPackageExpired,
+                      'text-violet-600': !isPackageExpired && !isPackageExpiringSoon
+                    }"
+                  />
+                  <div class="flex-1">
+                    <p class="text-sm font-medium"
+                       :class="{
+                         'text-red-700': isPackageExpired,
+                         'text-yellow-700': isPackageExpiringSoon && !isPackageExpired,
+                         'text-gray-600': !isPackageExpired && !isPackageExpiringSoon
+                       }">
+                      Data de Expiração
+                    </p>
+                    <p class="text-lg font-semibold"
+                       :class="{
+                         'text-red-800': isPackageExpired,
+                         'text-yellow-800': isPackageExpiringSoon && !isPackageExpired,
+                         'text-gray-800': !isPackageExpired && !isPackageExpiringSoon
+                       }">
+                      {{ formatarData(animalServico.dataExpiracao) }}
+                    </p>
+                  </div>
+                  <div v-if="!isPackageExpired" class="text-right">
+                    <p class="text-xs font-medium"
+                       :class="{
+                         'text-yellow-700': isPackageExpiringSoon,
+                         'text-green-700': !isPackageExpiringSoon
+                       }">
+                      {{ isPackageExpiringSoon ? 'Expira em' : 'Válido por mais' }}
+                    </p>
+                    <p class="text-sm font-bold"
+                       :class="{
+                         'text-yellow-800': isPackageExpiringSoon,
+                         'text-green-800': !isPackageExpiringSoon
+                       }">
+                      {{ diasParaExpirar }} dia{{ diasParaExpirar !== 1 ? 's' : '' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </BaseCard>
+
+          <!-- 🐕 Coluna 3: Informações do Animal -->
+          <BaseCard class="shadow-xl border-0 w-full xl:w-1/3 lg:w-full flex-shrink-0">
+            <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center">
                 <FontAwesomeIcon :icon="['fas', 'paw']" class="text-white text-xl" />
               </div>
@@ -260,7 +487,7 @@
               </div>
             </div>
 
-            <div v-if="animal" class="space-y-6">
+            <div v-if="animal" class="space-y-4">
               <!-- Info principal do animal -->
               <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center text-white text-2xl">
@@ -313,12 +540,13 @@
               <p class="text-gray-500">Animal não encontrado</p>
             </div>
           </BaseCard>
+
         </div>
 
         <!-- 🛁 Histórico de Banhos (se for pacote) -->
-        <div v-if="servico && servico.quantidade > 1" class="mt-8">
+        <div v-if="servico && servico.quantidade > 1" class="mt-6 w-full">
           <BaseCard class="shadow-xl border-0">
-            <div class="flex items-center gap-3 mb-6">
+            <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
                 <FontAwesomeIcon :icon="['fas', 'history']" class="text-white text-xl" />
               </div>
@@ -506,6 +734,15 @@ const editarData = ref(false)
 const novaData = ref('')
 const salvandoData = ref(false)
 
+// Estados de pagamento
+const mostrarMenuPagamento = ref(false)
+const alterandoPagamento = ref(false)
+
+// Estados de edição de data de pagamento
+const editandoDataPagamento = ref(false)
+const novaDataPagamento = ref('')
+const salvandoDataPagamento = ref(false)
+
 // Modal de banho
 const mostrarModalBanho = ref(false)
 const salvandoBanho = ref(false)
@@ -603,6 +840,167 @@ const getAnimalFontAwesomeIcon = (tipo: string): string[] => {
     'Tartaruga': ['fas', 'paw']
   }
   return icones[tipo] || ['fas', 'paw']
+}
+
+// 💳 Funções para status de pagamento
+const getStatusPagamentoIcon = (status: string): string => {
+  switch (status) {
+    case 'pago':
+      return 'check-circle'
+    case 'em_aberto':
+      return 'clock'
+    case 'cancelado':
+      return 'times-circle'
+    default:
+      return 'question-circle'
+  }
+}
+
+const getStatusPagamentoTexto = (status: string): string => {
+  switch (status) {
+    case 'pago':
+      return 'Pago'
+    case 'em_aberto':
+      return 'Em Aberto'
+    case 'cancelado':
+      return 'Cancelado'
+    default:
+      return 'Indefinido'
+  }
+}
+
+const getStatusPagamentoBadgeVariant = (status: string): 'success' | 'warning' | 'danger' | 'secondary' => {
+  switch (status) {
+    case 'pago':
+      return 'success'
+    case 'em_aberto':
+      return 'warning'
+    case 'cancelado':
+      return 'danger'
+    default:
+      return 'secondary'
+  }
+}
+
+// 🎯 Função para alterar status de pagamento
+const alterarStatusPagamento = async (novoStatus: 'pago' | 'em_aberto' | 'cancelado'): Promise<void> => {
+  if (!animalServico.value) return
+
+  try {
+    alterandoPagamento.value = true
+    mostrarMenuPagamento.value = false
+
+    console.log(`💳 Alterando status de pagamento para: ${novoStatus}`)
+
+    let animalServicoAtualizado: AnimalServico
+
+    switch (novoStatus) {
+      case 'pago':
+        const dataAtual = new Date().toISOString().split('T')[0]
+        animalServicoAtualizado = await animalServicoService.marcarComoPago(animalServico.value.id, dataAtual as string)
+        break
+      case 'em_aberto':
+        animalServicoAtualizado = await animalServicoService.reativarServico(animalServico.value.id)
+        break
+      case 'cancelado':
+        if (!confirm(`Tem certeza de que deseja CANCELAR o pagamento deste serviço?`)) {
+          return
+        }
+        animalServicoAtualizado = await animalServicoService.marcarComoCancelado(animalServico.value.id)
+        break
+    }
+
+    // Atualizar o objeto local
+    animalServico.value = animalServicoAtualizado
+
+    console.log(`✅ Status de pagamento alterado para: ${getStatusPagamentoTexto(novoStatus)}`)
+  } catch (error) {
+    console.error('❌ Erro ao alterar status de pagamento:', error)
+    alert('Erro ao alterar status de pagamento. Tente novamente.')
+  } finally {
+    alterandoPagamento.value = false
+  }
+}
+
+// 📅 Funções para edição de data de pagamento
+const iniciarEdicaoDataPagamento = (): void => {
+  if (!animalServico.value?.dataPagamento) return
+
+  editandoDataPagamento.value = true
+  novaDataPagamento.value = animalServico.value.dataPagamento
+  mostrarMenuPagamento.value = false // Fechar menu se estiver aberto
+
+  console.log('📅 Iniciando edição da data de pagamento:', animalServico.value.dataPagamento)
+}
+
+const iniciarDefinicaoDataPagamento = (): void => {
+  editandoDataPagamento.value = true
+  novaDataPagamento.value = new Date().toISOString().split('T')[0] as string // Data atual como padrão
+  mostrarMenuPagamento.value = false // Fechar menu se estiver aberto
+
+  console.log('📅 Iniciando definição da data de pagamento')
+}
+
+const cancelarEdicaoDataPagamento = (): void => {
+  editandoDataPagamento.value = false
+  novaDataPagamento.value = ''
+
+  console.log('❌ Cancelando edição da data de pagamento')
+}
+
+const salvarDataPagamento = async (): Promise<void> => {
+  if (!animalServico.value || !novaDataPagamento.value) {
+    console.log('❌ Validação falhou:', {
+      animalServico: !!animalServico.value,
+      novaDataPagamento: novaDataPagamento.value
+    })
+    return
+  }
+
+  try {
+    salvandoDataPagamento.value = true
+
+    console.log('📋 Estado antes da chamada:', {
+      id: animalServico.value.id,
+      novaData: novaDataPagamento.value,
+      dataAtual: animalServico.value.dataPagamento,
+      statusAtual: animalServico.value.statusPagamento
+    })
+
+    console.log(`💾 Salvando nova data de pagamento: ${novaDataPagamento.value}`)
+
+    // Usar o endpoint de marcarComoPago com a nova data
+    const animalServicoAtualizado = await animalServicoService.marcarComoPago(
+      animalServico.value.id,
+      novaDataPagamento.value
+    )
+
+    console.log('📋 Resposta do servidor:', animalServicoAtualizado)
+
+    // Atualizar o objeto local
+    animalServico.value = animalServicoAtualizado
+
+    // Sair do modo de edição
+    editandoDataPagamento.value = false
+    novaDataPagamento.value = ''
+
+    console.log('✅ Data de pagamento atualizada com sucesso!', {
+      novaDataPagamento: animalServicoAtualizado.dataPagamento
+    })
+
+    // Feedback visual para o usuário
+    alert('✅ Data de pagamento atualizada com sucesso!')
+
+  } catch (error) {
+    console.error('❌ Erro detalhado ao atualizar data de pagamento:', {
+      error,
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
+      stack: error instanceof Error ? error.stack : undefined
+    })
+    alert(`❌ Erro ao atualizar data de pagamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+  } finally {
+    salvandoDataPagamento.value = false
+  }
 }
 
 const carregarDados = async (): Promise<void> => {

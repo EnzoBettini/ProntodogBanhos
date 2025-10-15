@@ -31,6 +31,12 @@ public class AnimalServico {
     @Column(name="data_expiracao")
     private LocalDate dataExpiracao;
 
+    @Column(name="status_pagamento", nullable = false)
+    private String statusPagamento = "em_aberto";
+
+    @Column(name="data_pagamento")
+    private LocalDate dataPagamento;
+
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="animal_id", nullable = false)
     @JsonBackReference("animal-servico")

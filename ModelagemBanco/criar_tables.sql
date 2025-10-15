@@ -94,3 +94,12 @@ ADD COLUMN peso NUMERIC(5, 2);
 -- Adicionar data de expiração na tabela animal_servico para controle de pacotes
 ALTER TABLE banhoetosa.animal_servico
 ADD COLUMN data_expiracao DATE;
+
+-- Adicionar controle de pagamento na tabela animal_servico
+ALTER TABLE banhoetosa.animal_servico
+ADD COLUMN status_pagamento VARCHAR(20) DEFAULT 'em_aberto' NOT NULL CHECK (
+    status_pagamento IN ('pago', 'em_aberto', 'cancelado')
+);
+
+ALTER TABLE banhoetosa.animal_servico
+ADD COLUMN data_pagamento DATE;

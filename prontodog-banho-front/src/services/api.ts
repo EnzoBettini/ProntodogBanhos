@@ -428,6 +428,39 @@ Por favor, verifique se o backend Spring Boot está rodando com as últimas alte
       devLog('✅ Registro atualizado com sucesso!')
       return response.data
     }, 'Não foi possível atualizar o registro de animal-serviço. Tente novamente.')
+  },
+
+  // 💳 MARCAR COMO PAGO
+  async marcarComoPago(id: number, dataPagamento: string): Promise<AnimalServico> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`💳 Marcando serviço ${id} como pago na data ${dataPagamento}...`)
+      const response = await api.put(`/animalservico/${id}/marcar-pago?dataPagamento=${dataPagamento}`)
+      devLog('✅ Serviço marcado como pago com sucesso!')
+      return response.data
+    }, 'Não foi possível marcar o serviço como pago. Tente novamente.')
+  },
+
+  // 🔄 REATIVAR SERVIÇO (marcar como em aberto)
+  async reativarServico(id: number): Promise<AnimalServico> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔄 Reativando serviço ${id} (em aberto)...`)
+      const response = await api.put(`/animalservico/${id}/reativar`)
+      devLog('✅ Serviço reativado (em aberto) com sucesso!')
+      return response.data
+    }, 'Não foi possível reativar o serviço. Tente novamente.')
+  },
+
+  // ❌ MARCAR COMO CANCELADO
+  async marcarComoCancelado(id: number): Promise<AnimalServico> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`❌ Marcando serviço ${id} como cancelado...`)
+      const response = await api.put(`/animalservico/${id}/marcar-cancelado`)
+      devLog('✅ Serviço marcado como cancelado com sucesso!')
+      return response.data
+    }, 'Não foi possível marcar o serviço como cancelado. Tente novamente.')
   }
 }
 

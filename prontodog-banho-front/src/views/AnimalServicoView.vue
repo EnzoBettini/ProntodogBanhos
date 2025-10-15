@@ -311,7 +311,7 @@
           <div
             v-for="(animalServico, index) in animalServicosFiltrados"
             :key="animalServico.id"
-            class="group relative rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden border-2"
+            class="group relative rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden border-2"
             :class="{
               // 🚨 Card urgente - vencido (apenas para pacotes)
               'bg-gradient-to-r from-red-50 via-red-50 to-red-100 border-red-200 animate-pulse animate-urgent-glow':
@@ -336,7 +336,6 @@
               'bg-gradient-to-r from-slate-50 via-slate-50 to-gray-100 border-slate-200':
                 getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'sem-expiracao'
             }"
-            :style="{ animationDelay: `${index * 100}ms` }"
           >
             <div class="p-6">
               <div class="flex items-center justify-between">
@@ -344,7 +343,7 @@
                 <div class="flex items-center gap-4 flex-1">
                   <!-- Avatar com gradiente -->
                   <div class="relative">
-                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-all duration-300">
+                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200">
                       <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-2xl text-white" />
                     </div>
                     <!-- Badge de banhos usados -->
@@ -362,38 +361,38 @@
                       <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
                         <!-- 🎯 Badge de Status do Pacote (Completo vs Em Andamento) -->
                         <div
-                          class="px-3 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
+                          class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
                           :class="{
-                            'bg-green-100 border-green-300 text-green-800': isServicoCompleto(animalServico),
-                            'bg-blue-100 border-blue-300 text-blue-800': !isServicoCompleto(animalServico)
+                            'bg-green-50 border-green-200 text-green-700': isServicoCompleto(animalServico),
+                            'bg-blue-50 border-blue-200 text-blue-700': !isServicoCompleto(animalServico)
                           }"
                         >
                           <FontAwesomeIcon
                             :icon="isServicoCompleto(animalServico) ? 'check-circle' : 'clock'"
-                            class="mr-1"
+                            class="mr-1 opacity-60"
                           />
-                          {{ isServicoCompleto(animalServico) ? 'COMPLETO' : 'EM ANDAMENTO' }}
+                          {{ isServicoCompleto(animalServico) ? 'Completo' : 'Em Andamento' }}
                         </div>
 
                         <!-- 🛁 Badge de Banhos Restantes -->
                         <div
                           v-if="!isServicoCompleto(animalServico)"
-                          class="px-2 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
+                          class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
                           :class="{
-                            'bg-red-100 border-red-300 text-red-800 animate-pulse': getBanhosRestantes(animalServico) <= 1,
-                            'bg-yellow-100 border-yellow-300 text-yellow-800': getBanhosRestantes(animalServico) === 2,
-                            'bg-emerald-100 border-emerald-300 text-emerald-800': getBanhosRestantes(animalServico) > 2
+                            'bg-red-50 border-red-200 text-red-600 animate-pulse': getBanhosRestantes(animalServico) <= 1,
+                            'bg-yellow-50 border-yellow-200 text-yellow-700': getBanhosRestantes(animalServico) === 2,
+                            'bg-blue-50 border-blue-200 text-blue-600': getBanhosRestantes(animalServico) > 2
                           }"
                         >
-                          <FontAwesomeIcon icon="bath" class="mr-1" />
+                          <FontAwesomeIcon icon="bath" class="mr-1 opacity-60" />
                           {{ getBanhosRestantes(animalServico) }} restante{{ getBanhosRestantes(animalServico) !== 1 ? 's' : '' }}
                         </div>
 
                         <!-- 📦 Badge de Tipo de Serviço -->
-                        <div class="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 border-2 border-gray-300 text-gray-700 shadow-sm">
+                        <div class="px-2 py-1 rounded-lg text-xs font-medium bg-gray-50 border border-gray-200 text-gray-600 shadow-sm">
                           <FontAwesomeIcon
                             :icon="getTotalBanhos(animalServico) > 1 ? 'box' : 'droplet'"
-                            class="mr-1"
+                            class="mr-1 opacity-60"
                           />
                           {{ getServicoDescricao(animalServico) }}
                         </div>
@@ -401,22 +400,38 @@
                         <!-- 🗓️ Badge de Status de Expiração (apenas para pacotes) -->
                         <div
                           v-if="animalServico.dataExpiracao && getTotalBanhos(animalServico) > 1"
-                          class="px-2 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
+                          class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
                           :class="{
-                            'bg-red-100 border-red-300 text-red-800 animate-bounce': getExpirationStatus(animalServico) === 'vencido',
-                            'bg-yellow-100 border-yellow-300 text-yellow-800 animate-pulse': getExpirationStatus(animalServico) === 'vencendo',
-                            'bg-green-100 border-green-300 text-green-800': getExpirationStatus(animalServico) === 'valido'
+                            'bg-red-50 border-red-200 text-red-600 animate-bounce': getExpirationStatus(animalServico) === 'vencido',
+                            'bg-yellow-50 border-yellow-200 text-yellow-600 animate-pulse': getExpirationStatus(animalServico) === 'vencendo',
+                            'bg-green-50 border-green-200 text-green-600': getExpirationStatus(animalServico) === 'valido'
                           }"
                         >
                           <span v-if="getExpirationStatus(animalServico) === 'vencido'">
-                            🚨 VENCIDO há {{ getDaysExpired(animalServico) }}d
+                            🚨 Vencido há {{ getDaysExpired(animalServico) }}d
                           </span>
                           <span v-else-if="getExpirationStatus(animalServico) === 'vencendo'">
                             ⏰ {{ getDaysUntilExpiration(animalServico) }}d restantes
                           </span>
                           <span v-else>
-                            🟢 {{ getDaysUntilExpiration(animalServico) }}d restantes
+                            ✅ {{ getDaysUntilExpiration(animalServico) }}d restantes
                           </span>
+                        </div>
+
+                        <!-- 💳 Badge de Status de Pagamento -->
+                        <div
+                          class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
+                          :class="{
+                            'bg-emerald-50 border-emerald-200 text-emerald-700': animalServico.statusPagamento === 'pago',
+                            'bg-orange-50 border-orange-200 text-orange-700 animate-pulse': animalServico.statusPagamento === 'em_aberto',
+                            'bg-red-50 border-red-200 text-red-700': animalServico.statusPagamento === 'cancelado'
+                          }"
+                        >
+                          <FontAwesomeIcon
+                            :icon="getStatusPagamentoIcon(animalServico.statusPagamento)"
+                            class="mr-1 opacity-60"
+                          />
+                          {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
                         </div>
                       </div>
                     </div>
@@ -434,18 +449,22 @@
                         <FontAwesomeIcon icon="user" class="text-emerald-500" />
                         <span class="text-emerald-700 font-medium">{{ getClienteNome(animalServico) }}</span>
                       </span>
+                      <span class="flex items-center gap-1">
+                        <FontAwesomeIcon icon="dollar-sign" class="text-blue-500" />
+                        <span class="text-blue-700 font-bold">R$ {{ formatarValor(getServicoValor(animalServico)) }}</span>
+                      </span>
                     </div>
 
                     <!-- Progress bar de banhos com cores dinâmicas -->
                     <div class="flex items-center gap-3">
                       <div class="flex-1 bg-gray-200 rounded-full h-3 shadow-inner">
                         <div
-                          class="h-3 rounded-full transition-all duration-700 ease-out"
+                          class="h-3 rounded-full transition-all duration-300 ease-out"
                           :class="{
                             'bg-gradient-to-r from-green-400 to-emerald-500': isServicoCompleto(animalServico),
                             'bg-gradient-to-r from-red-400 to-red-500 animate-pulse': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1,
                             'bg-gradient-to-r from-yellow-400 to-orange-500': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) === 2,
-                            'bg-gradient-to-r from-blue-400 to-indigo-500': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) > 2
+                            'bg-gradient-to-r from-indigo-400 to-purple-500': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) > 2
                           }"
                           :style="{ width: `${getProgressoBanhos(animalServico)}%` }"
                         >
@@ -463,7 +482,7 @@
                           :class="{
                             'text-red-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1,
                             'text-yellow-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) === 2,
-                            'text-blue-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) > 2,
+                            'text-purple-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) > 2,
                             'text-green-600': isServicoCompleto(animalServico)
                           }"
                         >
@@ -484,27 +503,113 @@
                     {{ isServicoCompleto(animalServico) ? 'Completo' : 'Em Andamento' }}
                   </BaseBadge>
 
-                  <!-- Ações -->
-                  <div class="flex items-center gap-3">
+                  <!-- 🚀 Ações Rápidas -->
+                  <div class="flex items-center gap-2">
+                    <!-- Registrar Banho (só aparece se não estiver completo) -->
+                    <button
+                      v-if="!isServicoCompleto(animalServico)"
+                      @click.stop="abrirModalBanhoRapido(animalServico)"
+                      class="group/btn flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg hover:from-violet-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+                      :title="getTotalBanhos(animalServico) === 1 ? 'Registrar banho único' : 'Registrar banho do pacote'"
+                    >
+                      <FontAwesomeIcon :icon="['fas', 'bath']" class="text-sm" />
+                      <span class="text-xs font-bold hidden sm:inline">
+                        {{ getTotalBanhos(animalServico) === 1 ? 'Registrar' : 'Banho' }}
+                      </span>
+                    </button>
+
                     <!-- Ver detalhes -->
                     <button
                       @click.stop="verDetalhesAnimalServico(animalServico)"
-                      class="group/btn flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105"
-                      title="Ver detalhes do animal serviço"
+                      class="group/btn flex items-center gap-1 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105"
+                      title="Ver detalhes"
                     >
                       <FontAwesomeIcon :icon="['fas', 'eye']" class="text-sm" />
-                      <span class="text-xs font-medium hidden sm:inline">Ver</span>
                     </button>
 
-                    <!-- Excluir -->
-                    <button
-                      @click.stop="confirmarExclusao(animalServico)"
-                      class="group/btn flex items-center gap-2 px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105"
-                      title="Excluir animal serviço"
-                    >
-                      <FontAwesomeIcon :icon="['fas', 'trash']" class="text-sm" />
-                      <span class="text-xs font-medium hidden sm:inline">Excluir</span>
-                    </button>
+                    <!-- Menu de ações (⋮) -->
+                    <div class="relative">
+                      <button
+                        @click.stop="toggleMenuAcoes(animalServico.id)"
+                        class="group/btn flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 transform hover:scale-105"
+                        title="Mais ações"
+                      >
+                        <FontAwesomeIcon :icon="['fas', 'ellipsis-vertical']" class="text-sm" />
+                      </button>
+
+                      <!-- Dropdown Menu -->
+                      <div
+                        v-if="menuAcoesAberto === animalServico.id"
+                        class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-1"
+                        @click.stop
+                      >
+                        <!-- Editar Expiração (só para pacotes) -->
+                        <button
+                          v-if="getTotalBanhos(animalServico) > 1"
+                          @click="editarExpiracao(animalServico)"
+                          class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-3"
+                        >
+                          <FontAwesomeIcon :icon="['fas', 'clock']" class="text-violet-500" />
+                          Editar Expiração
+                        </button>
+
+                          <!-- Duplicar Serviço -->
+                          <button
+                            @click="duplicarServico(animalServico)"
+                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors flex items-center gap-3"
+                          >
+                            <FontAwesomeIcon :icon="['fas', 'copy']" class="text-blue-500" />
+                            Duplicar Serviço
+                          </button>
+
+                          <!-- Opções de Pagamento -->
+                          <hr class="my-1 border-gray-100">
+                          <div class="px-3 py-1">
+                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pagamento</p>
+                          </div>
+
+                          <!-- Marcar como Pago -->
+                          <button
+                            v-if="animalServico.statusPagamento !== 'pago'"
+                            @click="marcarComoPago(animalServico)"
+                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3"
+                          >
+                            <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-emerald-500" />
+                            Marcar como Pago
+                          </button>
+
+                          <!-- Marcar como Em Aberto -->
+                          <button
+                            v-if="animalServico.statusPagamento !== 'em_aberto'"
+                            @click="marcarComoEmAberto(animalServico)"
+                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-3"
+                          >
+                            <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-500" />
+                            Marcar como Em Aberto
+                          </button>
+
+                          <!-- Marcar como Cancelado -->
+                          <button
+                            v-if="animalServico.statusPagamento !== 'cancelado'"
+                            @click="marcarComoCancelado(animalServico)"
+                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
+                          >
+                            <FontAwesomeIcon :icon="['fas', 'times-circle']" class="text-red-500" />
+                            Marcar como Cancelado
+                          </button>
+
+                          <hr class="my-1 border-gray-100">
+
+                        <!-- Excluir -->
+                        <button
+                          @click="confirmarExclusao(animalServico)"
+                          class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
+                        >
+                          <FontAwesomeIcon :icon="['fas', 'trash']" class="text-red-500" />
+                          Excluir Serviço
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -551,7 +656,13 @@
     </div>
 
     <!-- 🛁 Modal para adicionar banho individual -->
-    <BaseModal v-model="mostrarModalBanho" size="md" title="Adicionar Banho Individual">
+    <BaseModal
+      v-model="mostrarModalBanho"
+      size="md"
+      :title="animalServicoSelecionado && getTotalBanhos(animalServicoSelecionado) === 1
+        ? 'Registrar Banho Único'
+        : 'Registrar Banho do Pacote'"
+    >
       <div v-if="animalServicoSelecionado" class="space-y-6">
         <!-- Informações do serviço -->
         <div class="bg-gradient-to-r from-amber-50 to-green-50 rounded-xl p-4 border border-amber-200">
@@ -664,22 +775,20 @@
 </template>
 
 <style scoped>
-/* 🎨 Animações personalizadas */
-@keyframes fade-in-up {
+/* 🎨 Animações otimizadas para performance */
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -692,18 +801,16 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
   }
 }
 
 @keyframes twinkle {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(0.9);
+    opacity: 0.6;
   }
 }
 
@@ -718,19 +825,20 @@
 
 @keyframes urgent-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
   }
   50% {
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
   }
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out;
+/* Classes de animação otimizadas */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
 }
 
 .animate-slide-up {
-  animation: slide-up 0.8s ease-out;
+  animation: slide-up 0.4s ease-out;
 }
 
 .animate-bounce-gentle {
@@ -738,15 +846,15 @@
 }
 
 .animate-twinkle {
-  animation: twinkle 1.5s ease-in-out infinite;
+  animation: twinkle 1.2s ease-in-out infinite;
 }
 
 .animate-shimmer {
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 .animate-urgent-glow {
-  animation: urgent-glow 2s ease-in-out infinite;
+  animation: urgent-glow 1.8s ease-in-out infinite;
 }
 
 /* 🌊 Wave background pattern */
@@ -758,7 +866,7 @@
 </style>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import BaseCard from '@/components/UI/BaseCard.vue'
@@ -787,6 +895,9 @@ const formularioBanho = ref({
   dataBanho: '',
   observacoes: ''
 })
+
+// 🚀 Estados das ações rápidas
+const menuAcoesAberto = ref<number | null>(null)
 
 // 🔍 Filtros
 const filtroTexto = ref('')
@@ -835,6 +946,33 @@ const getDaysExpired = (animalServico: AnimalServico): number => {
   const dataExpiracao = new Date(Number(ano), Number(mes) - 1, Number(dia))
 
   return Math.abs(Math.ceil((hoje.getTime() - dataExpiracao.getTime()) / (1000 * 60 * 60 * 24)))
+}
+
+// 💳 Funções para status de pagamento
+const getStatusPagamentoIcon = (status: string): string => {
+  switch (status) {
+    case 'pago':
+      return 'check-circle'
+    case 'em_aberto':
+      return 'clock'
+    case 'cancelado':
+      return 'times-circle'
+    default:
+      return 'question-circle'
+  }
+}
+
+const getStatusPagamentoTexto = (status: string): string => {
+  switch (status) {
+    case 'pago':
+      return 'Pago'
+    case 'em_aberto':
+      return 'Em Aberto'
+    case 'cancelado':
+      return 'Cancelado'
+    default:
+      return 'Indefinido'
+  }
 }
 
 // 📄 Lista com filtros inteligentes aplicados
@@ -1100,6 +1238,15 @@ const getServicoDescricao = (animalServico: AnimalServico): string => {
   return servico.quantidade > 1 ? `Pacote (${servico.quantidade} banhos)` : 'Banho Único'
 }
 
+const getServicoValor = (animalServico: AnimalServico): number => {
+  const servico = getServicoCompleto(animalServico)
+  return servico?.valor || 0
+}
+
+const formatarValor = (valor: number): string => {
+  return valor.toFixed(2).replace('.', ',')
+}
+
 const getUsuarioNome = (animalServico: AnimalServico): string => {
   // Busca reversa: procura o usuário que tem este animalServico
   const usuario = usuarios.value.find(u =>
@@ -1266,6 +1413,119 @@ const verDetalhesAnimalServico = (animalServico: AnimalServico): void => {
   router.push(`/animal-servico/${animalServico.id}`)
 }
 
+// 🚀 Funções das ações rápidas
+const toggleMenuAcoes = (animalServicoId: number): void => {
+  if (menuAcoesAberto.value === animalServicoId) {
+    menuAcoesAberto.value = null
+  } else {
+    menuAcoesAberto.value = animalServicoId
+  }
+}
+
+const abrirModalBanhoRapido = (animalServico: AnimalServico): void => {
+  console.log('🚀 Abrindo modal rápido para registrar banho:', animalServico)
+  abrirModalBanho(animalServico)
+  menuAcoesAberto.value = null
+}
+
+const editarExpiracao = (animalServico: AnimalServico): void => {
+  console.log('📅 Editando expiração:', animalServico.id)
+  // TODO: Implementar modal de edição de expiração
+  alert(`🚧 Funcionalidade "Editar Expiração" será implementada em breve!\n\nPacote: ${getAnimalNome(animalServico)}\nID: ${animalServico.id}`)
+  menuAcoesAberto.value = null
+}
+
+const duplicarServico = (animalServico: AnimalServico): void => {
+  console.log('📋 Duplicando serviço:', animalServico.id)
+  // TODO: Implementar duplicação de serviço
+  const confirmacao = confirm(`📋 Duplicar este serviço?\n\nAnimal: ${getAnimalNome(animalServico)}\nServiço: ${getServicoDescricao(animalServico)}\nValor: R$ ${formatarValor(getServicoValor(animalServico))}\n\n✨ Será criado um novo serviço idêntico para o mesmo animal.`)
+
+  if (confirmacao) {
+    alert(`🚧 Funcionalidade "Duplicar Serviço" será implementada em breve!\n\nPor enquanto, use a tela de cadastro manual. 😊`)
+  }
+  menuAcoesAberto.value = null
+}
+
+// 💳 Funções para alterar status de pagamento
+const marcarComoPago = async (animalServico: AnimalServico): Promise<void> => {
+  try {
+    loading.value = true
+    menuAcoesAberto.value = null
+
+    const dataAtual = new Date().toISOString().split('T')[0]
+
+    console.log(`💳 Marcando serviço ${animalServico.id} como pago...`)
+    await animalServicoService.marcarComoPago(animalServico.id, dataAtual as string)
+
+    // Atualizar o item na lista
+    const index = animalServicos.value.findIndex(as => as.id === animalServico.id)
+    if (index !== -1 && animalServicos.value[index]) {
+      animalServicos.value[index].statusPagamento = 'pago'
+      animalServicos.value[index].dataPagamento = dataAtual
+    }
+
+    console.log('✅ Status alterado para PAGO com sucesso!')
+  } catch (error) {
+    console.error('❌ Erro ao marcar como pago:', error)
+    alert('Erro ao marcar como pago. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const marcarComoEmAberto = async (animalServico: AnimalServico): Promise<void> => {
+  try {
+    loading.value = true
+    menuAcoesAberto.value = null
+
+    console.log(`🔄 Marcando serviço ${animalServico.id} como em aberto...`)
+    await animalServicoService.reativarServico(animalServico.id)
+
+    // Atualizar o item na lista
+    const index = animalServicos.value.findIndex(as => as.id === animalServico.id)
+    if (index !== -1 && animalServicos.value[index]) {
+      animalServicos.value[index].statusPagamento = 'em_aberto'
+      animalServicos.value[index].dataPagamento = undefined
+    }
+
+    console.log('✅ Status alterado para EM ABERTO com sucesso!')
+  } catch (error) {
+    console.error('❌ Erro ao marcar como em aberto:', error)
+    alert('Erro ao marcar como em aberto. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const marcarComoCancelado = async (animalServico: AnimalServico): Promise<void> => {
+  if (!confirm(`Tem certeza de que deseja CANCELAR o serviço de ${getAnimalNome(animalServico)}?`)) {
+    menuAcoesAberto.value = null
+    return
+  }
+
+  try {
+    loading.value = true
+    menuAcoesAberto.value = null
+
+    console.log(`❌ Marcando serviço ${animalServico.id} como cancelado...`)
+    await animalServicoService.marcarComoCancelado(animalServico.id)
+
+    // Atualizar o item na lista
+    const index = animalServicos.value.findIndex(as => as.id === animalServico.id)
+    if (index !== -1 && animalServicos.value[index]) {
+      animalServicos.value[index].statusPagamento = 'cancelado'
+      animalServicos.value[index].dataPagamento = undefined
+    }
+
+    console.log('✅ Status alterado para CANCELADO com sucesso!')
+  } catch (error) {
+    console.error('❌ Erro ao marcar como cancelado:', error)
+    alert('Erro ao marcar como cancelado. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
 // 🛁 Funções do modal de banho
 const abrirModalBanho = (animalServico: AnimalServico): void => {
   animalServicoSelecionado.value = animalServico
@@ -1329,9 +1589,22 @@ watch(filtroTexto, () => {
   itensExibidos.value = itensPorPagina.value
 })
 
+// Fechar menus quando clicar fora
+const fecharMenus = (): void => {
+  menuAcoesAberto.value = null
+}
+
 // 🔄 Lifecycle
 onMounted(() => {
   carregarAnimalServicos()
+
+  // Event listener para fechar menus ao clicar fora
+  document.addEventListener('click', fecharMenus)
+})
+
+// Cleanup no unmount
+onUnmounted(() => {
+  document.removeEventListener('click', fecharMenus)
 })
 </script>
 

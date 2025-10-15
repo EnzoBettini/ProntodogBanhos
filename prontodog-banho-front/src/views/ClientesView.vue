@@ -247,8 +247,7 @@
           <div
             v-for="(cliente, index) in clientesExibidos"
             :key="cliente.id"
-            class="group relative bg-gradient-to-r from-white via-white to-emerald-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden"
-            :style="{ animationDelay: `${index * 100}ms` }"
+            class="group relative bg-gradient-to-r from-white via-white to-emerald-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden"
             @click="verDetalhes(cliente)"
           >
               <div class="p-6">
@@ -257,7 +256,7 @@
                   <div class="flex items-center gap-4 flex-1">
                     <!-- Avatar circular com gradiente -->
                     <div class="relative">
-                      <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-all duration-300">
+                      <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200">
                         <FontAwesomeIcon icon="user" class="text-2xl text-white" />
                       </div>
                       <!-- Badge de pets -->

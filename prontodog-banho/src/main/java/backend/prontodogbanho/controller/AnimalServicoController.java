@@ -6,6 +6,7 @@ import backend.prontodogbanho.service.AnimalServicoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,5 +121,133 @@ public class AnimalServicoController {
     public ResponseEntity<List<AnimalServico>> buscarPacotesQueExpiramHoje() {
         List<AnimalServico> pacotes = animalServicoService.buscarPacotesQueExpiramHoje();
         return ResponseEntity.ok(pacotes);
+    }
+
+    // Endpoints para controle de pagamento
+
+    /**
+     * Busca serviços por status de pagamento
+     * GET /animalservico/pagamento/status?status=pago
+     */
+    @GetMapping("/pagamento/status")
+    public ResponseEntity<List<AnimalServico>> buscarPorStatusPagamento(
+            @RequestParam String status) {
+        try {
+            List<AnimalServico> servicos = animalServicoService.buscarPorStatusPagamento(status);
+            return ResponseEntity.ok(servicos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Busca serviços em aberto (não pagos)
+     * GET /animalservico/pagamento/em-aberto
+     */
+    @GetMapping("/pagamento/em-aberto")
+    public ResponseEntity<List<AnimalServico>> buscarServicosEmAberto() {
+        List<AnimalServico> servicos = animalServicoService.buscarServicosEmAberto();
+        return ResponseEntity.ok(servicos);
+    }
+
+    /**
+     * Busca serviços pagos
+     * GET /animalservico/pagamento/pagos
+     */
+    @GetMapping("/pagamento/pagos")
+    public ResponseEntity<List<AnimalServico>> buscarServicosPagos() {
+        List<AnimalServico> servicos = animalServicoService.buscarServicosPagos();
+        return ResponseEntity.ok(servicos);
+    }
+
+    /**
+     * Busca serviços cancelados
+     * GET /animalservico/pagamento/cancelados
+     */
+    @GetMapping("/pagamento/cancelados")
+    public ResponseEntity<List<AnimalServico>> buscarServicosCancelados() {
+        List<AnimalServico> servicos = animalServicoService.buscarServicosCancelados();
+        return ResponseEntity.ok(servicos);
+    }
+
+    /**
+     * Marca um serviço como pago
+     * PUT /animalservico/{id}/marcar-pago?dataPagamento=2024-01-15
+     */
+    @PutMapping("/{id}/marcar-pago")
+    public ResponseEntity<?> marcarComoPago(
+            @PathVariable Long id,
+            @RequestParam(required = false) String dataPagamento) {
+        try {
+            LocalDate dataPag = null;
+            if (dataPagamento != null && !dataPagamento.isEmpty()) {
+                dataPag = LocalDate.parse(dataPagamento);
+            }
+
+            AnimalServico servicoAtualizado = animalServicoService.marcarComoPago(id, dataPag);
+            return ResponseEntity.ok(servicoAtualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                .body("Erro ao marcar como pago: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Marca um serviço como cancelado
+     * PUT /animalservico/{id}/marcar-cancelado
+     */
+    @PutMapping("/{id}/marcar-cancelado")
+    public ResponseEntity<?> marcarComoCancelado(@PathVariable Long id) {
+        try {
+            AnimalServico servicoAtualizado = animalServicoService.marcarComoCancelado(id);
+            return ResponseEntity.ok(servicoAtualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                .body("Erro ao marcar como cancelado: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Reativa um serviço (volta para em_aberto)
+     * PUT /animalservico/{id}/reativar
+     */
+    @PutMapping("/{id}/reativar")
+    public ResponseEntity<?> reativarServico(@PathVariable Long id) {
+        try {
+            AnimalServico servicoAtualizado = animalServicoService.reativarServico(id);
+            return ResponseEntity.ok(servicoAtualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                .body("Erro ao reativar serviço: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Busca serviços pagos em um período específico
+     * GET /animalservico/pagamento/pagos-periodo?dataInicio=2024-01-01&dataFim=2024-01-31
+     */
+    @GetMapping("/pagamento/pagos-periodo")
+    public ResponseEntity<?> buscarServicosPagosPorPeriodo(
+            @RequestParam String dataInicio,
+            @RequestParam String dataFim) {
+        try {
+            LocalDate inicio = LocalDate.parse(dataInicio);
+            LocalDate fim = LocalDate.parse(dataFim);
+
+            List<AnimalServico> servicos = animalServicoService.buscarServicosPagosPorPeriodo(inicio, fim);
+            return ResponseEntity.ok(servicos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body("Erro na consulta por período: " + e.getMessage());
+        }
     }
 }

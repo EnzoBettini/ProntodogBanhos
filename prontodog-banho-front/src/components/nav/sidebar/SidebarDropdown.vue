@@ -27,12 +27,15 @@
       name="slide-down"
       appear
     >
-      <div v-if="isOpen && !collapsed" class="ml-1 mt-2 space-y-2 overflow-hidden relative">
-        <!-- ✨ Linha conectora visual -->
-        <div class="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary-300/50 via-primary-200/30 to-transparent ml-1"></div>
+      <div v-if="isOpen && !collapsed" class="mt-2 overflow-hidden relative">
+        <!-- ✨ Fundo suave para os subitens -->
+        <div class="bg-gradient-to-r from-primary-25/40 to-secondary-25/20 rounded-lg border border-primary-100/30 shadow-inner">
+          <!-- ✨ Linha conectora visual mais elegante -->
+          <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-400/60 via-primary-300/40 to-primary-200/20 rounded-full"></div>
 
-        <div class="relative pl-3 space-y-1">
-          <slot />
+          <div class="relative pl-8 pr-3 py-2 space-y-1.5">
+            <slot />
+          </div>
         </div>
       </div>
     </Transition>
@@ -97,41 +100,41 @@ const toggleOpen = () => {
 </script>
 
 <style scoped>
-/* Animações suaves para os dropdowns da sidebar */
+/* 🎨 Animações otimizadas para os dropdowns da sidebar */
 .slide-down-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s ease-out;
   transform-origin: top;
   overflow: hidden;
 }
 
 .slide-down-leave-active {
-  transition: all 0.25s cubic-bezier(0.6, 0, 0.8, 1);
+  transition: all 0.2s ease-in;
   transform-origin: top;
   overflow: hidden;
 }
 
-/* Estados das transições */
+/* Estados das transições - mais suaves */
 .slide-down-enter-from {
   opacity: 0;
-  transform: translateY(-8px) scaleY(0.95);
+  transform: translateY(-4px);
   max-height: 0;
 }
 
 .slide-down-enter-to {
   opacity: 1;
-  transform: translateY(0) scaleY(1);
-  max-height: 200px;
+  transform: translateY(0);
+  max-height: 300px;
 }
 
 .slide-down-leave-from {
   opacity: 1;
-  transform: translateY(0) scaleY(1);
-  max-height: 200px;
+  transform: translateY(0);
+  max-height: 300px;
 }
 
 .slide-down-leave-to {
   opacity: 0;
-  transform: translateY(-8px) scaleY(0.95);
+  transform: translateY(-4px);
   max-height: 0;
 }
 

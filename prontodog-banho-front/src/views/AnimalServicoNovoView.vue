@@ -206,6 +206,75 @@
             </div>
           </div>
 
+          <!-- 💳 Seção de Pagamento -->
+          <div class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-emerald-50/50 to-green-50/50 border border-emerald-200/50 hover:border-emerald-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center text-lg font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">
+                <div class="p-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
+                  <FontAwesomeIcon :icon="['fas', 'credit-card']" class="text-white text-sm" />
+                </div>
+                Controle de Pagamento
+              </label>
+              <div class="flex items-center gap-1">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-1 h-1 bg-teal-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+              </div>
+            </div>
+
+            <!-- Status e Data lado a lado -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Status de Pagamento -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Status de Pagamento *
+                </label>
+                <select
+                  v-model="formulario.statusPagamento"
+                  :disabled="loading"
+                  required
+                  class="w-full px-4 py-3 bg-white/80 border-2 border-emerald-200/50 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-300 text-base font-medium hover:border-emerald-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:shadow-lg focus:shadow-lg backdrop-blur-sm"
+                >
+                  <option value="em_aberto">💳 Em Aberto</option>
+                  <option value="pago">✅ Pago</option>
+                  <option value="cancelado">❌ Cancelado</option>
+                </select>
+              </div>
+
+              <!-- Data de Pagamento -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Data de Pagamento
+                  <span v-if="formulario.statusPagamento !== 'pago'" class="ml-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                    Opcional
+                  </span>
+                  <span v-else class="ml-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                    Recomendado
+                  </span>
+                </label>
+                <input
+                  v-model="formulario.dataPagamento"
+                  type="date"
+                  :disabled="loading"
+                  class="w-full px-4 py-3 bg-white/80 border-2 border-emerald-200/50 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-300 text-base font-medium hover:border-emerald-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:shadow-lg focus:shadow-lg backdrop-blur-sm"
+                />
+              </div>
+            </div>
+
+            <p class="text-sm text-gray-500 flex items-center gap-2">
+              <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-emerald-500" />
+              <span v-if="formulario.statusPagamento === 'em_aberto'">
+                Serviço aguarda pagamento. Defina a data quando receber.
+              </span>
+              <span v-else-if="formulario.statusPagamento === 'pago'">
+                Serviço foi pago. A data ajuda no controle financeiro.
+              </span>
+              <span v-else>
+                Serviço foi cancelado. Não será cobrado.
+              </span>
+            </p>
+          </div>
+
           <!-- 🛁 Banhos Usados -->
           <div class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-cyan-50/50 to-teal-50/50 border border-cyan-200/50 hover:border-cyan-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
@@ -686,7 +755,10 @@ const formulario = ref({
   dataServico: '',
   dataExpiracao: '',
   banhosUsados: 0,
-  usuarioId: ''
+  usuarioId: '',
+  // Campos de pagamento
+  statusPagamento: 'em_aberto',
+  dataPagamento: ''
 })
 
 // 📅 Datas dos banhos já realizados
@@ -1000,6 +1072,8 @@ const cadastrarAnimalServico = async (): Promise<void> => {
         animalId: Number(formulario.value.animalId),
         servicoId: Number(formulario.value.servicoId),
         usuarioId: Number(formulario.value.usuarioId),
+        statusPagamento: formulario.value.statusPagamento,
+        dataPagamento: formulario.value.dataPagamento || undefined,
         datasBanhosRealizados: datasBanhosRealizados.value,
         observacoesBanhos: observacoesBanhos.value.filter(obs => obs.trim() !== '')
       }
@@ -1038,6 +1112,8 @@ const cadastrarAnimalServico = async (): Promise<void> => {
         dataServico: formulario.value.dataServico,
         dataExpiracao: formulario.value.dataExpiracao || undefined,
         banhosUsados: formulario.value.banhosUsados,
+        statusPagamento: formulario.value.statusPagamento,
+        dataPagamento: formulario.value.dataPagamento || undefined,
         animal: { id: Number(formulario.value.animalId) },
         servico: { id: Number(formulario.value.servicoId) },
         usuario: { id: Number(formulario.value.usuarioId) }
@@ -1081,7 +1157,10 @@ const cadastrarOutroServico = (): void => {
     dataServico: obterDataLocal(),
     dataExpiracao: '',
     banhosUsados: 0,
-    usuarioId: ''
+    usuarioId: '',
+    // Campos de pagamento
+    statusPagamento: 'em_aberto',
+    dataPagamento: ''
   }
 
   // Limpar datas dos banhos

@@ -14,13 +14,13 @@
       <FontAwesomeIcon
         :icon="icon"
         :class="[
-          'flex-shrink-0 transition-all duration-300 group-hover:scale-110',
-          collapsed ? 'w-6 h-6' : 'w-5 h-5',
-          active ? 'text-white drop-shadow-sm' : 'text-gray-600 group-hover:text-primary-600'
+          'flex-shrink-0 transition-all duration-200 group-hover:scale-105',
+          collapsed ? 'w-6 h-6' : 'w-4 h-4',
+          active ? 'text-white drop-shadow-sm' : 'text-gray-500 group-hover:text-primary-600'
         ]"
       />
       <!-- ✨ Efeito de brilho no ícone ativo -->
-      <div v-if="active" class="absolute inset-0 bg-white/30 rounded-lg blur opacity-50 animate-pulse"></div>
+      <div v-if="active" class="absolute inset-0 bg-white/20 rounded-lg blur opacity-40 animate-pulse"></div>
     </div>
     <span
       v-show="!collapsed"
@@ -47,13 +47,13 @@
       <FontAwesomeIcon
         :icon="icon"
         :class="[
-          'flex-shrink-0 transition-all duration-300 group-hover:scale-110',
-          collapsed ? 'w-6 h-6' : 'w-5 h-5',
-          active ? 'text-white drop-shadow-sm' : 'text-gray-600 group-hover:text-primary-600'
+          'flex-shrink-0 transition-all duration-200 group-hover:scale-105',
+          collapsed ? 'w-6 h-6' : 'w-4 h-4',
+          active ? 'text-white drop-shadow-sm' : 'text-gray-500 group-hover:text-primary-600'
         ]"
       />
       <!-- ✨ Efeito de brilho no ícone ativo -->
-      <div v-if="active" class="absolute inset-0 bg-white/30 rounded-lg blur opacity-50 animate-pulse"></div>
+      <div v-if="active" class="absolute inset-0 bg-white/20 rounded-lg blur opacity-40 animate-pulse"></div>
     </div>
     <span
       v-show="!collapsed"
@@ -102,17 +102,17 @@ const handleClick = () => {
 }
 
 const itemClasses = computed(() => {
-  const paddingX = props.collapsed ? 'px-2 mx-1' : 'px-4'
+  const paddingX = props.collapsed ? 'px-2 mx-1' : 'px-3'
   const justifyContent = props.collapsed ? 'justify-center' : 'justify-start'
-  const paddingY = props.collapsed ? 'py-3' : 'py-3'
+  const paddingY = props.collapsed ? 'py-3' : 'py-2.5'
   const gapClass = props.icon ? 'gap-3' : 'gap-0'
-  const borderRadius = props.collapsed ? 'rounded-2xl' : 'rounded-xl'
-  const baseClasses = `group relative flex items-center ${gapClass} ${paddingX} ${paddingY} ${justifyContent} ${borderRadius} transition-all duration-300 cursor-pointer transform hover:translate-x-1 overflow-hidden focus:outline-none`
+  const borderRadius = props.collapsed ? 'rounded-2xl' : 'rounded-lg'
+  const baseClasses = `group relative flex items-center ${gapClass} ${paddingX} ${paddingY} ${justifyContent} ${borderRadius} transition-all duration-200 cursor-pointer transform hover:translate-x-0.5 overflow-hidden focus:outline-none`
 
   if (props.active) {
-    return `${baseClasses} bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg hover:shadow-xl hover:from-primary-600 hover:to-secondary-600`
+    return `${baseClasses} bg-gradient-to-r from-primary-400 to-secondary-400 text-white shadow-md hover:shadow-lg hover:from-primary-500 hover:to-secondary-500`
   }
 
-  return `${baseClasses} text-gray-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 hover:text-primary-700 hover:shadow-md`
+  return `${baseClasses} text-gray-600 hover:bg-gradient-to-r hover:from-primary-50/80 hover:to-secondary-50/60 hover:text-primary-700 hover:shadow-sm`
 })
 </script>

@@ -103,11 +103,20 @@ public class AnimalServicoService {
             System.out.println("📅 Data de expiração convertida: " + dto.getDataExpiracao() + " -> " + dataExpiracaoLocal);
         }
 
+        // Converter data de pagamento se fornecida
+        LocalDate dataPagamentoLocal = dto.getDataPagamentoAsLocalDate();
+        String statusPagamento = dto.getStatusPagamento();
+        if (statusPagamento == null || statusPagamento.trim().isEmpty()) {
+            statusPagamento = "em_aberto"; // Padrão
+        }
+
         // Criar AnimalServico
         AnimalServico animalServico = new AnimalServico();
         animalServico.setDataServico(dataServicoLocal);
         animalServico.setBanhosUsados(dto.getBanhosUsados());
         animalServico.setDataExpiracao(dataExpiracaoLocal);
+        animalServico.setStatusPagamento(statusPagamento);
+        animalServico.setDataPagamento(dataPagamentoLocal);
         animalServico.setAnimal(animal);
         animalServico.setServico(servico);
         animalServico.setUsuario(usuario);
@@ -155,6 +164,8 @@ public class AnimalServicoService {
             animalServicoExistente.setDataServico(novosDados.getDataServico());
             animalServicoExistente.setBanhosUsados(novosDados.getBanhosUsados());
             animalServicoExistente.setDataExpiracao(novosDados.getDataExpiracao());
+            animalServicoExistente.setStatusPagamento(novosDados.getStatusPagamento());
+            animalServicoExistente.setDataPagamento(novosDados.getDataPagamento());
             animalServicoExistente.setAnimal(novosDados.getAnimal());
             animalServicoExistente.setServico(novosDados.getServico());
             animalServicoExistente.setUsuario(novosDados.getUsuario());
@@ -215,6 +226,119 @@ public class AnimalServicoService {
         return animalServicoRepository.findAll().stream()
                 .filter(as -> as.getDataExpiracao() != null)
                 .filter(as -> as.getDataExpiracao().isEqual(hoje))
+                .toList();
+    }
+
+    // Métodos para controle de pagamento
+
+    /**
+     * Busca serviços por status de pagamento
+     * @param status "pago", "em_aberto" ou "cancelado"
+     * @return lista de serviços com o status especificado
+     */
+    public List<AnimalServico> buscarPorStatusPagamento(String status) {
+        return animalServicoRepository.findAll().stream()
+                .filter(as -> status.equals(as.getStatusPagamento()))
+                .toList();
+    }
+
+    /**
+     * Busca serviços em aberto (não pagos)
+     * @return lista de serviços em aberto
+     */
+    public List<AnimalServico> buscarServicosEmAberto() {
+        return buscarPorStatusPagamento("em_aberto");
+    }
+
+    /**
+     * Busca serviços pagos
+     * @return lista de serviços pagos
+     */
+    public List<AnimalServico> buscarServicosPagos() {
+        return buscarPorStatusPagamento("pago");
+    }
+
+    /**
+     * Busca serviços cancelados
+     * @return lista de serviços cancelados
+     */
+    public List<AnimalServico> buscarServicosCancelados() {
+        return buscarPorStatusPagamento("cancelado");
+    }
+
+    /**
+     * Marca um serviço como pago
+     * @param id ID do serviço
+     * @param dataPagamento data do pagamento
+     * @return serviço atualizado
+     */
+    @Transactional
+    public AnimalServico marcarComoPago(Long id, LocalDate dataPagamento) {
+        Optional<AnimalServico> animalServicoOptional = animalServicoRepository.findById(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico animalServico = animalServicoOptional.get();
+            animalServico.setStatusPagamento("pago");
+            animalServico.setDataPagamento(dataPagamento != null ? dataPagamento : LocalDate.now());
+
+            return animalServicoRepository.save(animalServico);
+        } else {
+            throw new RuntimeException("AnimalServico não encontrado com id: " + id);
+        }
+    }
+
+    /**
+     * Marca um serviço como cancelado
+     * @param id ID do serviço
+     * @return serviço atualizado
+     */
+    @Transactional
+    public AnimalServico marcarComoCancelado(Long id) {
+        Optional<AnimalServico> animalServicoOptional = animalServicoRepository.findById(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico animalServico = animalServicoOptional.get();
+            animalServico.setStatusPagamento("cancelado");
+            animalServico.setDataPagamento(null);
+
+            return animalServicoRepository.save(animalServico);
+        } else {
+            throw new RuntimeException("AnimalServico não encontrado com id: " + id);
+        }
+    }
+
+    /**
+     * Reativa um serviço (volta para em_aberto)
+     * @param id ID do serviço
+     * @return serviço atualizado
+     */
+    @Transactional
+    public AnimalServico reativarServico(Long id) {
+        Optional<AnimalServico> animalServicoOptional = animalServicoRepository.findById(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico animalServico = animalServicoOptional.get();
+            animalServico.setStatusPagamento("em_aberto");
+            animalServico.setDataPagamento(null);
+
+            return animalServicoRepository.save(animalServico);
+        } else {
+            throw new RuntimeException("AnimalServico não encontrado com id: " + id);
+        }
+    }
+
+    /**
+     * Busca serviços pagos em um período específico
+     * @param dataInicio data de início do período
+     * @param dataFim data de fim do período
+     * @return lista de serviços pagos no período
+     */
+    public List<AnimalServico> buscarServicosPagosPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
+        return animalServicoRepository.findAll().stream()
+                .filter(as -> "pago".equals(as.getStatusPagamento()))
+                .filter(as -> as.getDataPagamento() != null)
+                .filter(as -> !as.getDataPagamento().isBefore(dataInicio))
+                .filter(as -> !as.getDataPagamento().isAfter(dataFim))
                 .toList();
     }
 }

@@ -33,6 +33,8 @@ export interface AnimalServico {
   dataServico: string // formato: "YYYY-MM-DD"
   dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
+  statusPagamento: string // "pago", "em_aberto", "cancelado"
+  dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
   animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)
   servicoId?: number   // ID do serviço (não vem o objeto completo devido ao @JsonBackReference)
   usuarioId?: number   // ID do usuário (não vem o objeto completo devido ao @JsonBackReference)
@@ -131,6 +133,8 @@ export interface NovoAnimalServico {
   dataServico: string // formato: "YYYY-MM-DD"
   dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
+  statusPagamento?: string // "pago", "em_aberto", "cancelado" (padrão: "em_aberto")
+  dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
   animal: { id: number } // Referência ao animal
   servico: { id: number } // Referência ao serviço
   usuario: { id: number } // Referência ao usuário
@@ -141,6 +145,8 @@ export interface CriarAnimalServicoCompleto {
   dataServico: string // formato: "YYYY-MM-DD"
   dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
+  statusPagamento?: string // "pago", "em_aberto", "cancelado" (padrão: "em_aberto")
+  dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
   animalId: number
   servicoId: number
   usuarioId: number
@@ -177,6 +183,15 @@ export const TIPOS_ANIMAIS = [
 ] as const
 
 export type TipoAnimal = typeof TIPOS_ANIMAIS[number]
+
+// 💳 Status de pagamento disponíveis
+export const STATUS_PAGAMENTO = [
+  'em_aberto',
+  'pago',
+  'cancelado'
+] as const
+
+export type StatusPagamento = typeof STATUS_PAGAMENTO[number]
 
 // 💼 Tipos de serviços comuns em petshops
 export const TIPOS_SERVICOS = [
