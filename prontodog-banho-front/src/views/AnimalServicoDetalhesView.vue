@@ -1117,10 +1117,19 @@ const salvarNovaData = async (): Promise<void> => {
   try {
     salvandoData.value = true
 
+    // ⚠️ CORREÇÃO: Enviar apenas campos escalares, NÃO objetos relacionados
     const dadosAtualizacao = {
-      ...animalServico.value,
-      dataServico: novaData.value
+      id: animalServico.value.id,
+      dataServico: novaData.value,
+      banhosUsados: animalServico.value.banhosUsados,
+      dataExpiracao: animalServico.value.dataExpiracao,
+      statusPagamento: animalServico.value.statusPagamento,
+      dataPagamento: animalServico.value.dataPagamento,
+      // ❌ NÃO enviar objetos relacionados: animal, servico, usuario
+      // ✅ O backend já conhece estes relacionamentos pelo ID do registro
     }
+
+    console.log('📤 Enviando dados limpos para API:', dadosAtualizacao)
 
     await animalServicoService.atualizar(animalServico.value.id, dadosAtualizacao)
 

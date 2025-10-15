@@ -47,6 +47,11 @@ public class AnimalServico {
     @JsonBackReference("servico-servico")
     private Servico servico;
 
+    // Método para expor o servicoId no JSON sem quebrar o relacionamento
+    public Long getServicoId() {
+        return servico != null ? servico.getId() : null;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="usuario_id", nullable = false)
     @JsonBackReference("usuario-servico")

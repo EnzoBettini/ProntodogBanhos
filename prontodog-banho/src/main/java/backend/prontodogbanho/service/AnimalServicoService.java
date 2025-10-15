@@ -161,14 +161,49 @@ public class AnimalServicoService {
         if (animalServicoOptional.isPresent()) {
             AnimalServico animalServicoExistente = animalServicoOptional.get();
 
-            animalServicoExistente.setDataServico(novosDados.getDataServico());
-            animalServicoExistente.setBanhosUsados(novosDados.getBanhosUsados());
+            System.out.println("🔍 ANTES da atualização:");
+            System.out.println("  - ID: " + animalServicoExistente.getId());
+            System.out.println("  - Animal ID: " + (animalServicoExistente.getAnimal() != null ? animalServicoExistente.getAnimal().getId() : "null"));
+            System.out.println("  - Servico ID: " + (animalServicoExistente.getServico() != null ? animalServicoExistente.getServico().getId() : "null"));
+            System.out.println("  - Usuario ID: " + (animalServicoExistente.getUsuario() != null ? animalServicoExistente.getUsuario().getId() : "null"));
+
+            // ✅ Atualizar apenas campos escalares (não relacionamentos)
+            if (novosDados.getDataServico() != null) {
+                animalServicoExistente.setDataServico(novosDados.getDataServico());
+                System.out.println("📅 Atualizando data do serviço: " + novosDados.getDataServico());
+            }
+            if (novosDados.getBanhosUsados() != null) {
+                animalServicoExistente.setBanhosUsados(novosDados.getBanhosUsados());
+                System.out.println("🛁 Atualizando banhos usados: " + novosDados.getBanhosUsados());
+            }
+            // dataExpiracao pode ser null (remoção da expiração)
             animalServicoExistente.setDataExpiracao(novosDados.getDataExpiracao());
-            animalServicoExistente.setStatusPagamento(novosDados.getStatusPagamento());
+            System.out.println("⏰ Atualizando data expiração: " + novosDados.getDataExpiracao());
+
+            if (novosDados.getStatusPagamento() != null) {
+                animalServicoExistente.setStatusPagamento(novosDados.getStatusPagamento());
+                System.out.println("💳 Atualizando status pagamento: " + novosDados.getStatusPagamento());
+            }
+            // dataPagamento pode ser null (remoção da data)
             animalServicoExistente.setDataPagamento(novosDados.getDataPagamento());
-            animalServicoExistente.setAnimal(novosDados.getAnimal());
-            animalServicoExistente.setServico(novosDados.getServico());
-            animalServicoExistente.setUsuario(novosDados.getUsuario());
+            System.out.println("📆 Atualizando data pagamento: " + novosDados.getDataPagamento());
+
+            // ✅ VERIFICAÇÃO CRÍTICA: Garantir que relacionamentos não sejam null
+            if (animalServicoExistente.getAnimal() == null ||
+                animalServicoExistente.getServico() == null ||
+                animalServicoExistente.getUsuario() == null) {
+
+                System.err.println("❌ ERRO CRÍTICO: Relacionamentos estão null após atualização!");
+                System.err.println("  - Animal: " + animalServicoExistente.getAnimal());
+                System.err.println("  - Servico: " + animalServicoExistente.getServico());
+                System.err.println("  - Usuario: " + animalServicoExistente.getUsuario());
+                throw new RuntimeException("Relacionamentos críticos estão null - operação cancelada");
+            }
+
+            System.out.println("🔍 DEPOIS da atualização (antes do save):");
+            System.out.println("  - Animal ID: " + animalServicoExistente.getAnimal().getId());
+            System.out.println("  - Servico ID: " + animalServicoExistente.getServico().getId());
+            System.out.println("  - Usuario ID: " + animalServicoExistente.getUsuario().getId());
 
             return animalServicoRepository.save(animalServicoExistente);
         } else {
