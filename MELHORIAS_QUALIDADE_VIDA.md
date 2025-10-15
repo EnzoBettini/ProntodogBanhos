@@ -66,19 +66,34 @@
 
 ---
 
-### 3. **⚡ Melhorias na Listagem de Animal Serviços**
+### 3. **⚡ Melhorias na Listagem de Animal Serviços** ✅ **IMPLEMENTADO**
 
 **🕒 Tempo estimado: 15-20 minutos**
 **💡 Por que é importante**: A listagem atual não destaca visualmente o status de expiração
 
 #### Implementação:
 
-- [ ] Badge de status em cada card:
-  - 🔴 "VENCIDO há X dias" (animado, vermelho)
-  - 🟡 "Expira em X dias" (amarelo)
-  - 🟢 "Válido" (verde discreto)
-- [ ] Ícone de alerta piscando para vencidos
-- [ ] Barra de progresso de expiração no card
+- [x] **Badges de status aprimorados em cada card**:
+  - 🎯 Badge principal: "COMPLETO" vs "EM ANDAMENTO"
+  - 🛁 Badge de banhos restantes: "X restantes" com cores dinâmicas
+  - 📦 Badge de tipo de serviço: "Pacote" vs "Banho Único"
+  - 🗓️ Badge de expiração: "VENCIDO", "Vencendo", "Válido"
+- [x] **Animações especiais para urgência**:
+  - 🚨 Cards vencidos: pulse + brilho vermelho especial
+  - ⚠️ Cards com poucos banhos: destaque amarelo
+  - ✅ Cards completos: fundo verde suave
+- [x] **Barra de progresso com cores dinâmicas**:
+  - Verde: Completo (100%)
+  - Vermelho pulsante: 1 banho restante
+  - Amarelo: 2 banhos restantes
+  - Azul: Mais de 2 banhos restantes
+  - Efeito shimmer (brilho deslizante)
+- [x] **Cards com cores contextuais**:
+  - Vermelho: Vencidos (com brilho especial)
+  - Amarelo: Vencendo ou poucos banhos
+  - Verde: Completos
+  - Azul: Normais
+  - Cinza: Sem expiração
 - [ ] Botão de ação rápida "Marcar Banho" direto da lista
 - [ ] Ordenação padrão por urgência de expiração
 

@@ -159,14 +159,17 @@
             </p>
           </div>
 
-          <!-- ⏰ Data de Expiração (opcional) -->
-          <div class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-violet-50/50 to-purple-50/50 border border-violet-200/50 hover:border-violet-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+          <!-- ⏰ Data de Expiração (apenas para pacotes) -->
+          <div
+            v-if="servicoSelecionado && servicoSelecionado.quantidade > 1"
+            class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-violet-50/50 to-purple-50/50 border border-violet-200/50 hover:border-violet-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+          >
             <div class="flex items-center justify-between">
               <label class="flex items-center text-lg font-bold text-gray-800 group-hover:text-violet-700 transition-colors">
                 <div class="p-2 bg-gradient-to-r from-violet-500 to-purple-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
                   <FontAwesomeIcon :icon="['fas', 'clock']" class="text-white text-sm" />
                 </div>
-                Data de Expiração
+                Data de Expiração do Pacote
                 <span class="ml-2 px-2 py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-medium">
                   Opcional
                 </span>
@@ -185,8 +188,22 @@
             />
             <p class="text-sm text-gray-500 flex items-center gap-2">
               <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-violet-500" />
-              Data limite para usar o pacote. Deixe vazio se não há expiração.
+              Data limite para usar todos os banhos do pacote.
             </p>
+          </div>
+
+          <!-- 💡 Aviso para banhos únicos -->
+          <div
+            v-if="servicoSelecionado && servicoSelecionado.quantidade === 1"
+            class="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200"
+          >
+            <div class="flex items-center gap-3">
+              <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-amber-600 text-lg" />
+              <div>
+                <p class="text-amber-800 font-medium">Banho Único</p>
+                <p class="text-amber-700 text-sm">Este serviço não precisa de data de expiração, pois será realizado na data informada.</p>
+              </div>
+            </div>
           </div>
 
           <!-- 🛁 Banhos Usados -->
@@ -1079,6 +1096,12 @@ watch(servicoSelecionado, (novoServico) => {
     console.log(`⚠️ Ajustando banhos de ${formulario.value.banhosUsados} para ${novoServico.quantidade} (limite do serviço)`)
     formulario.value.banhosUsados = 0 // Resetar para 0 para evitar confusão
     gerenciarDatasBanhos(0)
+  }
+
+  // 🚀 NOVA LÓGICA: Limpar data de expiração se for banho único
+  if (novoServico && novoServico.quantidade === 1) {
+    console.log('🔄 Banho único detectado - limpando data de expiração')
+    formulario.value.dataExpiracao = ''
   }
 })
 

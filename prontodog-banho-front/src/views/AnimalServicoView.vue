@@ -261,13 +261,13 @@
                 >
                   <option value="todos">📋 Todos ({{ contadoresExpiracao.total }})</option>
                   <option value="vencidos" :class="{ 'text-red-700 font-bold': contadoresExpiracao.vencidos > 0 }">
-                    🚨 Vencidos ({{ contadoresExpiracao.vencidos }})
+                    🚨 Pacotes Vencidos ({{ contadoresExpiracao.vencidos }})
                   </option>
                   <option value="vencendo" :class="{ 'text-yellow-700 font-bold': contadoresExpiracao.vencendo > 0 }">
-                    ⏰ Vencendo ({{ contadoresExpiracao.vencendo }})
+                    ⏰ Pacotes Vencendo ({{ contadoresExpiracao.vencendo }})
                   </option>
-                  <option value="validos">🟢 Válidos ({{ contadoresExpiracao.validos }})</option>
-                  <option value="sem-expiracao">📅 Sem Expiração ({{ contadoresExpiracao.semExpiracao }})</option>
+                  <option value="validos">🟢 Pacotes Válidos ({{ contadoresExpiracao.validos }})</option>
+                  <option value="sem-expiracao">📅 Banhos Únicos + Sem Data ({{ contadoresExpiracao.semExpiracao }})</option>
                 </select>
                 <!-- Ícone dropdown customizado -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -311,7 +311,31 @@
           <div
             v-for="(animalServico, index) in animalServicosFiltrados"
             :key="animalServico.id"
-            class="group relative bg-gradient-to-r from-white via-white to-amber-50 rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden"
+            class="group relative rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden border-2"
+            :class="{
+              // 🚨 Card urgente - vencido (apenas para pacotes)
+              'bg-gradient-to-r from-red-50 via-red-50 to-red-100 border-red-200 animate-pulse animate-urgent-glow':
+                getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'vencido',
+
+              // ⚠️ Card atenção - vencendo (apenas pacotes) ou poucos banhos
+              'bg-gradient-to-r from-yellow-50 via-yellow-50 to-yellow-100 border-yellow-200':
+                (getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'vencendo') ||
+                (!isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1),
+
+              // ✅ Card completo
+              'bg-gradient-to-r from-green-50 via-green-50 to-green-100 border-green-200':
+                isServicoCompleto(animalServico),
+
+              // 🔵 Card normal (incluindo banhos únicos válidos)
+              'bg-gradient-to-r from-white via-white to-amber-50 border-gray-200':
+                !isServicoCompleto(animalServico) &&
+                (getTotalBanhos(animalServico) === 1 ||
+                 (getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'valido' && getBanhosRestantes(animalServico) > 1)),
+
+              // 📅 Card sem expiração (apenas para pacotes)
+              'bg-gradient-to-r from-slate-50 via-slate-50 to-gray-100 border-slate-200':
+                getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'sem-expiracao'
+            }"
             :style="{ animationDelay: `${index * 100}ms` }"
           >
             <div class="p-6">
@@ -335,21 +359,52 @@
                       <h3 class="text-xl font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors duration-300">
                         {{ getAnimalNome(animalServico) }}
                       </h3>
-                      <div class="flex items-center gap-2 flex-shrink-0">
-                        <BaseBadge
-                          :variant="animalServico.banhosUsados > 0 ? 'success' : 'warning'"
-                          size="sm"
-                        >
-                          {{ getServicoDescricao(animalServico) }}
-                        </BaseBadge>
-
-                        <!-- 🗓️ Badge de Status de Expiração -->
+                      <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
+                        <!-- 🎯 Badge de Status do Pacote (Completo vs Em Andamento) -->
                         <div
-                          v-if="animalServico.dataExpiracao"
+                          class="px-3 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
+                          :class="{
+                            'bg-green-100 border-green-300 text-green-800': isServicoCompleto(animalServico),
+                            'bg-blue-100 border-blue-300 text-blue-800': !isServicoCompleto(animalServico)
+                          }"
+                        >
+                          <FontAwesomeIcon
+                            :icon="isServicoCompleto(animalServico) ? 'check-circle' : 'clock'"
+                            class="mr-1"
+                          />
+                          {{ isServicoCompleto(animalServico) ? 'COMPLETO' : 'EM ANDAMENTO' }}
+                        </div>
+
+                        <!-- 🛁 Badge de Banhos Restantes -->
+                        <div
+                          v-if="!isServicoCompleto(animalServico)"
                           class="px-2 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
                           :class="{
-                            'bg-red-100 border-red-300 text-red-800 animate-pulse': getExpirationStatus(animalServico) === 'vencido',
-                            'bg-yellow-100 border-yellow-300 text-yellow-800': getExpirationStatus(animalServico) === 'vencendo',
+                            'bg-red-100 border-red-300 text-red-800 animate-pulse': getBanhosRestantes(animalServico) <= 1,
+                            'bg-yellow-100 border-yellow-300 text-yellow-800': getBanhosRestantes(animalServico) === 2,
+                            'bg-emerald-100 border-emerald-300 text-emerald-800': getBanhosRestantes(animalServico) > 2
+                          }"
+                        >
+                          <FontAwesomeIcon icon="bath" class="mr-1" />
+                          {{ getBanhosRestantes(animalServico) }} restante{{ getBanhosRestantes(animalServico) !== 1 ? 's' : '' }}
+                        </div>
+
+                        <!-- 📦 Badge de Tipo de Serviço -->
+                        <div class="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 border-2 border-gray-300 text-gray-700 shadow-sm">
+                          <FontAwesomeIcon
+                            :icon="getTotalBanhos(animalServico) > 1 ? 'box' : 'droplet'"
+                            class="mr-1"
+                          />
+                          {{ getServicoDescricao(animalServico) }}
+                        </div>
+
+                        <!-- 🗓️ Badge de Status de Expiração (apenas para pacotes) -->
+                        <div
+                          v-if="animalServico.dataExpiracao && getTotalBanhos(animalServico) > 1"
+                          class="px-2 py-1 rounded-full text-xs font-bold shadow-sm border-2 transition-all duration-300"
+                          :class="{
+                            'bg-red-100 border-red-300 text-red-800 animate-bounce': getExpirationStatus(animalServico) === 'vencido',
+                            'bg-yellow-100 border-yellow-300 text-yellow-800 animate-pulse': getExpirationStatus(animalServico) === 'vencendo',
                             'bg-green-100 border-green-300 text-green-800': getExpirationStatus(animalServico) === 'valido'
                           }"
                         >
@@ -381,17 +436,40 @@
                       </span>
                     </div>
 
-                    <!-- Progress bar de banhos -->
+                    <!-- Progress bar de banhos com cores dinâmicas -->
                     <div class="flex items-center gap-3">
-                      <div class="flex-1 bg-gray-200 rounded-full h-2">
+                      <div class="flex-1 bg-gray-200 rounded-full h-3 shadow-inner">
                         <div
-                          class="bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500"
+                          class="h-3 rounded-full transition-all duration-700 ease-out"
+                          :class="{
+                            'bg-gradient-to-r from-green-400 to-emerald-500': isServicoCompleto(animalServico),
+                            'bg-gradient-to-r from-red-400 to-red-500 animate-pulse': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1,
+                            'bg-gradient-to-r from-yellow-400 to-orange-500': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) === 2,
+                            'bg-gradient-to-r from-blue-400 to-indigo-500': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) > 2
+                          }"
                           :style="{ width: `${getProgressoBanhos(animalServico)}%` }"
-                        ></div>
+                        >
+                          <!-- Efeito de brilho na barra -->
+                          <div class="h-full rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+                        </div>
                       </div>
-                      <span class="text-sm font-medium text-gray-600">
-                        {{ animalServico.banhosUsados }}/{{ getTotalBanhos(animalServico) }}
-                      </span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-gray-700">
+                          {{ animalServico.banhosUsados }}/{{ getTotalBanhos(animalServico) }}
+                        </span>
+                        <span class="text-xs text-gray-500">•</span>
+                        <span
+                          class="text-xs font-medium"
+                          :class="{
+                            'text-red-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1,
+                            'text-yellow-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) === 2,
+                            'text-blue-600': !isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) > 2,
+                            'text-green-600': isServicoCompleto(animalServico)
+                          }"
+                        >
+                          {{ Math.round(getProgressoBanhos(animalServico)) }}%
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -629,6 +707,24 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes urgent-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4);
+  }
+}
+
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out;
 }
@@ -643,6 +739,14 @@
 
 .animate-twinkle {
   animation: twinkle 1.5s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-urgent-glow {
+  animation: urgent-glow 2s ease-in-out infinite;
 }
 
 /* 🌊 Wave background pattern */
@@ -690,8 +794,11 @@ const filtroExpiracao = ref('todos') // 'todos', 'vencidos', 'vencendo', 'valido
 const itensPorPagina = ref(10)
 const itensExibidos = ref(10)
 
-// 🗓️ Funções para determinar status de expiração
+// 🗓️ Funções para determinar status de expiração (apenas para pacotes)
 const getExpirationStatus = (animalServico: AnimalServico): 'vencido' | 'vencendo' | 'valido' | 'sem-expiracao' => {
+  // Banhos únicos não têm controle de expiração
+  if (getTotalBanhos(animalServico) === 1) return 'sem-expiracao'
+
   if (!animalServico.dataExpiracao) return 'sem-expiracao'
 
   const hoje = new Date()
@@ -931,13 +1038,13 @@ const totalServicosAtivos = computed(() => {
 const getFiltroExpiracaoTexto = (): string => {
   switch (filtroExpiracao.value) {
     case 'vencidos':
-      return 'vencidos'
+      return 'pacotes vencidos'
     case 'vencendo':
-      return 'vencendo em breve'
+      return 'pacotes vencendo em breve'
     case 'validos':
-      return 'válidos'
+      return 'pacotes válidos'
     case 'sem-expiracao':
-      return 'sem data de expiração'
+      return 'banhos únicos e serviços sem data de expiração'
     default:
       return ''
   }
@@ -1009,6 +1116,11 @@ const getTotalBanhos = (animalServico: AnimalServico): number => {
 const getProgressoBanhos = (animalServico: AnimalServico): number => {
   const total = getTotalBanhos(animalServico)
   return Math.min((animalServico.banhosUsados / total) * 100, 100)
+}
+
+const getBanhosRestantes = (animalServico: AnimalServico): number => {
+  const total = getTotalBanhos(animalServico)
+  return Math.max(total - animalServico.banhosUsados, 0)
 }
 
 const podeAdicionarBanho = (animalServico: AnimalServico): boolean => {
