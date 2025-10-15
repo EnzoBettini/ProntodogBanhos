@@ -145,7 +145,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="grid grid-cols-2 gap-4 text-sm mb-3">
                   <div>
                     <p class="text-gray-600">Quantidade:</p>
                     <p class="font-medium">{{ servico?.quantidade || 'N/A' }} banhos</p>
@@ -154,6 +154,12 @@
                     <p class="text-gray-600">Valor:</p>
                     <p class="font-medium text-green-600">R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}</p>
                   </div>
+                </div>
+
+                <!-- Informação de quem lançou -->
+                <div class="pt-3 border-t border-purple-200">
+                  <p class="text-gray-600 text-sm">Lançado por:</p>
+                  <p class="font-medium text-purple-800">{{ usuario?.nome || 'N/A' }}</p>
                 </div>
               </div>
             </div>
@@ -531,7 +537,10 @@ const carregarDados = async (): Promise<void> => {
       ) || null
     }
 
-    usuario.value = usuariosData.find(u => u.id === animalServico.value?.usuarioId) || null
+    // 🔥 CORREÇÃO: usar busca reversa igual à lista (mesma abordagem do AnimalServicoView)
+    usuario.value = usuariosData.find(u =>
+      u.animalServicos?.some(as => as.id === animalServico.value?.id)
+    ) || null
 
     // Se for pacote, carregar banhos individuais
     if (servico.value && servico.value.quantidade > 1) {

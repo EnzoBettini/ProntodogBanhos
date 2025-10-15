@@ -1,24 +1,77 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-amber-50 via-white to-green-50 p-4 pb-20">
-    <!-- 🎨 Background decorativo -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <!-- Círculos decorativos -->
-      <div class="absolute top-20 left-10 w-72 h-72 bg-amber-200/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-20 right-10 w-96 h-96 bg-green-200/20 rounded-full blur-3xl"></div>
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-amber-100/10 to-green-100/10 rounded-full blur-3xl"></div>
+  <div class="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-100">
+    <!-- 🌟 Header com gradiente elegante -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white pt-16">
+      <!-- Background pattern -->
+      <div class="absolute inset-0 opacity-10 bg-pattern"></div>
+
+      <div class="relative px-6 py-8 z-20">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div class="flex items-center gap-4 animate-fade-in-up">
+            <!-- Ícone animado -->
+            <div class="relative">
+              <div class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform hover:scale-110 transition-all duration-300 shadow-lg">
+                <FontAwesomeIcon icon="clipboard-list" class="text-2xl text-white animate-bounce-gentle" />
+              </div>
+              <div v-if="!loading && animalServicos.length > 0" class="absolute -top-1 -right-1 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
+                <span class="text-xs font-bold text-yellow-800">{{ animalServicos.length }}</span>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-amber-100">
+                Animal Serviços
+              </h1>
+              <p class="text-white text-lg flex items-center gap-2 font-medium opacity-90">
+                <FontAwesomeIcon icon="star" class="text-yellow-400 animate-twinkle mr-1" />
+                {{ loading ? 'Carregando...' : `${animalServicosFiltrados.length} ${animalServicosFiltrados.length === 1 ? 'serviço encontrado' : 'serviços encontrados'}` }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Botões de ação elegantes -->
+          <div class="flex items-center gap-3">
+            <button
+              @click="carregarAnimalServicos"
+              :disabled="loading"
+              class="group flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 backdrop-blur-sm text-white rounded-xl hover:bg-opacity-30 transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FontAwesomeIcon
+                :icon="loading ? 'spinner' : 'refresh'"
+                :class="{ 'animate-spin': loading, 'group-hover:rotate-180': !loading }"
+                class="transition-transform duration-300"
+              />
+              <span class="font-medium">{{ loading ? 'Carregando...' : 'Atualizar' }}</span>
+            </button>
+
+            <button
+              @click="$router.push('/animal-servico/novo')"
+              class="group flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl font-medium shadow-lg"
+            >
+              <FontAwesomeIcon icon="plus" class="group-hover:rotate-90 transition-transform duration-300" />
+              <span>Novo Serviço</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wave decoration -->
+      <div class="absolute bottom-0 left-0 right-0 z-10">
+        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-15">
+          <defs>
+            <linearGradient id="animalServicoWaveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+              <stop offset="50%" style="stop-color:#1d4ed8;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <path d="M0 60h1440V0c-120 40-240 60-360 60S840 40 720 60s-240 0-360-60S120 40 0 60z" fill="url(#animalServicoWaveGradient)"/>
+        </svg>
+      </div>
     </div>
 
-    <div class="relative z-20 max-w-7xl mx-auto pt-8">
-      <!-- 📋 Header -->
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-400 to-green-500 rounded-2xl mb-6 shadow-2xl">
-          <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-white text-3xl" />
-        </div>
-        <h1 class="text-4xl font-bold text-gray-800 mb-3">Animal Serviços Registrados</h1>
-        <p class="text-gray-600 max-w-3xl mx-auto text-lg">
-          Gerencie os serviços registrados para cada animal. Visualize pacotes, banhos utilizados e adicione novos banhos individuais.
-        </p>
-      </div>
+    <!-- Container principal -->
+    <div class="relative -mt-8 px-6 pb-8 z-30">
 
       <!-- 🔄 Estado de Loading -->
       <div v-if="loading && !animalServicos.length" class="text-center py-12">
@@ -42,73 +95,141 @@
       </div>
 
       <!-- 📭 Estado Vazio -->
-      <div v-else-if="!animalServicos.length && !loading" class="text-center py-12">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-gray-400 to-gray-500 rounded-2xl mb-6 shadow-lg">
-          <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-white text-3xl" />
-        </div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-3">Nenhum serviço registrado</h3>
-        <p class="text-gray-600 mb-6 max-w-md mx-auto">
-          Ainda não há animal serviços cadastrados no sistema. Cadastre o primeiro serviço para começar!
-        </p>
-        <BaseButton @click="$router.push('/animal-servico/novo')" variant="primary" class="px-8 py-3">
-          <FontAwesomeIcon :icon="['fas', 'plus-circle']" class="mr-2" />
-          Cadastrar Primeiro Serviço
-        </BaseButton>
+      <div v-else-if="!animalServicos.length && !loading" class="p-12 text-center">
+        <BaseCard class="bg-gradient-to-br from-amber-50 to-orange-50 border-0 shadow-lg">
+          <div class="p-8">
+            <div class="relative">
+              <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
+                <FontAwesomeIcon icon="clipboard-list" class="text-3xl text-white" />
+              </div>
+              <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-amber-200 rounded-2xl animate-ping opacity-20"></div>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum serviço encontrado</h3>
+            <p class="text-gray-500 mb-6">
+              Que tal cadastrar o primeiro animal serviço no sistema? 🐾
+            </p>
+            <button
+              @click="$router.push('/animal-servico/novo')"
+              class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+            >
+              <FontAwesomeIcon icon="plus" />
+              <span>Cadastrar primeiro serviço</span>
+            </button>
+          </div>
+        </BaseCard>
+      </div>
+
+      <!-- 🔍 Estado de busca sem resultados -->
+      <div v-else-if="!loading && animalServicos.length > 0 && animalServicosFiltrados.length === 0" class="p-12 text-center">
+        <BaseCard class="bg-gradient-to-br from-red-50 to-pink-50 border-0 shadow-lg">
+          <div class="p-8">
+            <div class="relative">
+              <div class="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle"
+                :class="infoFiltroAtivo ? 'bg-gradient-to-br from-red-400 to-pink-500' : 'bg-gradient-to-br from-amber-400 to-orange-500'"
+              >
+                <FontAwesomeIcon
+                  :icon="infoFiltroAtivo ? 'search' : 'clipboard-list'"
+                  class="text-3xl text-white"
+                />
+              </div>
+              <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-2xl animate-ping opacity-20"
+                :class="infoFiltroAtivo ? 'bg-red-200' : 'bg-amber-200'"
+              ></div>
+            </div>
+
+            <!-- Mensagem personalizada baseada no filtro -->
+            <template v-if="infoFiltroAtivo">
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">
+                Nenhum resultado para {{ infoFiltroAtivo.tipo.toLowerCase() }}
+              </h3>
+              <p class="text-gray-600 mb-4">{{ infoFiltroAtivo.descricao }}</p>
+              <div class="flex items-center justify-center gap-2 px-4 py-2 bg-red-100 rounded-lg mb-6 max-w-md mx-auto">
+                <FontAwesomeIcon :icon="infoFiltroAtivo.icone" class="text-red-600" />
+                <code class="text-red-800 font-medium">{{ filtroTexto }}</code>
+              </div>
+              <button
+                @click="filtroTexto = ''"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+              >
+                <FontAwesomeIcon icon="times" />
+                <span>Limpar filtro</span>
+              </button>
+            </template>
+          </div>
+        </BaseCard>
       </div>
 
       <!-- ✅ Lista de Animal Serviços -->
       <div v-else>
-        <!-- 🔍 Filtros -->
-        <BaseCard class="mb-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <BaseInput
-              v-model="filtroTexto"
-              type="search"
-              placeholder="Buscar por animal, serviço ou vendedor..."
-              class="text-lg"
-            >
-              <template #icon>
-                <FontAwesomeIcon :icon="['fas', 'search']" class="text-gray-400" />
-              </template>
-            </BaseInput>
+        <!-- 🔍 Filtros elegantes -->
+        <BaseCard class="mb-6 shadow-lg border-0 bg-white bg-opacity-90 backdrop-blur-sm animate-slide-up">
+          <div class="p-4">
+            <div class="flex flex-col lg:flex-row gap-4 items-center">
+              <!-- Campo de busca principal -->
+              <div class="flex-1 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FontAwesomeIcon icon="search" class="h-5 w-5 text-amber-400" />
+                </div>
+                <input
+                  v-model="filtroTexto"
+                  type="text"
+                  placeholder="Digite nome ou use: #123 (ID), @animal (Animal), %pacote (Serviço)..."
+                  class="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-white to-amber-50 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
+                />
+              </div>
 
-            <div class="flex gap-4">
-              <BaseButton @click="carregarAnimalServicos" variant="ghost" class="flex-shrink-0">
-                <FontAwesomeIcon :icon="['fas', 'refresh']" class="mr-2" />
-                Atualizar
-              </BaseButton>
+              <!-- 💡 Dicas dos filtros inteligentes -->
+              <div v-if="filtroTexto && !loading" class="w-full lg:w-auto">
+                <div class="flex flex-wrap items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
+                  <FontAwesomeIcon icon="lightbulb" class="text-amber-500 text-sm" />
+                  <span class="text-xs text-amber-700 font-medium">Filtros:</span>
+                  <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-amber-700">
+                      <FontAwesomeIcon icon="hashtag" class="mr-1" /><code>#123</code> = ID
+                    </span>
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-amber-700">
+                      <FontAwesomeIcon icon="at" class="mr-1" /><code>@Rex</code> = Animal
+                    </span>
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-amber-700">
+                      <FontAwesomeIcon icon="percent" class="mr-1" /><code>%Pacote</code> = Serviço
+                    </span>
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-amber-700">
+                      <FontAwesomeIcon icon="user" class="mr-1" /><code>Maria</code> = Dono
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-              <BaseButton @click="$router.push('/animal-servico/novo')" variant="primary" class="flex-1">
-                <FontAwesomeIcon :icon="['fas', 'plus-circle']" class="mr-2" />
-                Novo Registro
-              </BaseButton>
+              <!-- Stats rápidas -->
+              <div class="flex items-center gap-3 flex-wrap">
+                <!-- Filtro Ativo (aparece quando há busca) -->
+                <div v-if="infoFiltroAtivo" class="flex items-center gap-2 px-4 py-2 rounded-full shadow-sm border-2 animate-pulse"
+                  :class="{
+                    'bg-blue-50 border-blue-200 text-blue-700': infoFiltroAtivo.cor === 'blue',
+                    'bg-green-50 border-green-200 text-green-700': infoFiltroAtivo.cor === 'green',
+                    'bg-purple-50 border-purple-200 text-purple-700': infoFiltroAtivo.cor === 'purple',
+                    'bg-amber-50 border-amber-200 text-amber-700': infoFiltroAtivo.cor === 'amber'
+                  }"
+                >
+                  <FontAwesomeIcon :icon="infoFiltroAtivo.icone" class="text-sm" />
+                  <span class="text-sm font-bold">{{ infoFiltroAtivo.tipo }}</span>
+                  <code class="text-xs bg-white bg-opacity-60 px-1.5 py-0.5 rounded">{{ infoFiltroAtivo.valor }}</code>
+                </div>
+
+                <!-- Stats normais -->
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-100 to-orange-100 rounded-full">
+                  <FontAwesomeIcon icon="clipboard-list" class="text-amber-600 text-sm" />
+                  <span class="text-sm font-medium text-amber-700">{{ animalServicosFiltrados.length }} encontrados</span>
+                </div>
+
+                <div v-if="!infoFiltroAtivo" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
+                  <FontAwesomeIcon icon="calendar-days" class="text-blue-600 text-sm" />
+                  <span class="text-sm font-medium text-blue-700">{{ totalServicosAtivos }} ativos</span>
+                </div>
+              </div>
             </div>
           </div>
         </BaseCard>
-
-        <!-- 📊 Contador de itens e status da paginação -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div class="flex items-center gap-4">
-            <div class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-              <div class="flex items-center gap-2 text-sm text-gray-600">
-                <FontAwesomeIcon :icon="['fas', 'eye']" class="text-blue-500" />
-                <span>Exibindo <strong class="text-blue-600">{{ animalServicosFiltrados.length }}</strong> de <strong class="text-gray-800">{{ totalItensDisponiveis }}</strong></span>
-              </div>
-            </div>
-            <div v-if="filtroTexto" class="bg-amber-100 px-3 py-2 rounded-lg border border-amber-200">
-              <div class="flex items-center gap-2 text-sm text-amber-700">
-                <FontAwesomeIcon :icon="['fas', 'filter']" />
-                <span>Filtro ativo</span>
-              </div>
-            </div>
-          </div>
-          <div v-if="animalServicos.length > 10" class="bg-green-50 px-3 py-2 rounded-lg border border-green-200">
-            <div class="flex items-center gap-2 text-sm text-green-700">
-              <FontAwesomeIcon :icon="['fas', 'info-circle']" />
-              <span>Carregamento paginado (10 por vez)</span>
-            </div>
-          </div>
-        </div>
 
         <!-- 📊 Lista elegante de animal serviços -->
         <div ref="listaAnimalServicosRef" class="space-y-4">
@@ -135,26 +256,31 @@
 
                   <!-- Informações do serviço -->
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center gap-3 mb-1">
                       <h3 class="text-xl font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors duration-300">
                         {{ getAnimalNome(animalServico) }}
                       </h3>
                       <BaseBadge
                         :variant="animalServico.banhosUsados > 0 ? 'success' : 'warning'"
                         size="sm"
+                        class="flex-shrink-0"
                       >
                         {{ getServicoDescricao(animalServico) }}
                       </BaseBadge>
                     </div>
 
-                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-2 flex-wrap">
                       <span class="flex items-center gap-1">
-                        <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="text-gray-400" />
+                        <FontAwesomeIcon icon="hashtag" class="text-gray-400" />
+                        ID: {{ animalServico.id }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <FontAwesomeIcon icon="calendar-alt" class="text-gray-400" />
                         {{ formatarData(animalServico.dataServico) }}
                       </span>
                       <span class="flex items-center gap-1">
-                        <FontAwesomeIcon :icon="['fas', 'user']" class="text-gray-400" />
-                        {{ getUsuarioNome(animalServico) }}
+                        <FontAwesomeIcon icon="user" class="text-emerald-500" />
+                        <span class="text-emerald-700 font-medium">{{ getClienteNome(animalServico) }}</span>
                       </span>
                     </div>
 
@@ -362,6 +488,74 @@
   </div>
 </template>
 
+<style scoped>
+/* 🎨 Animações personalizadas */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 1.5s ease-in-out infinite;
+}
+
+/* 🌊 Wave background pattern */
+.bg-pattern {
+  background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+</style>
+
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -371,7 +565,7 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseInput from '@/components/UI/BaseInput.vue'
 import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
-import { animalServicoService, animaisService, servicosService, usuariosService, banhosIndividuaisService, type NovoBanhoIndividual } from '@/services/api'
+import { animalServicoService, animaisService, servicosService, usuariosService, banhosIndividuaisService, clientesService, type NovoBanhoIndividual } from '@/services/api'
 import type { AnimalServico, Animal, ServicoCompleto, Usuario } from '@/types/api'
 
 const router = useRouter()
@@ -398,19 +592,52 @@ const filtroTexto = ref('')
 const itensPorPagina = ref(10)
 const itensExibidos = ref(10)
 
-// 📄 Lista com filtros aplicados
+// 📄 Lista com filtros inteligentes aplicados
 const animalServicosFiltrados = computed(() => {
   return animalServicos.value.filter(animalServico => {
     if (!filtroTexto.value) return true
 
-    const termo = filtroTexto.value.toLowerCase()
-    const animalNome = getAnimalNome(animalServico).toLowerCase()
-    const servicoNome = getServicoNome(animalServico).toLowerCase()
-    const usuarioNome = getUsuarioNome(animalServico).toLowerCase()
+    // 🧠 FILTROS INTELIGENTES com prefixos especiais
+    const termoBusca = filtroTexto.value.trim()
 
-    return animalNome.includes(termo) ||
-           servicoNome.includes(termo) ||
-           usuarioNome.includes(termo)
+    // 🚀 FILTRO INTELIGENTE: Detecta prefixos especiais
+    if (termoBusca.startsWith('#')) {
+      // 🆔 Busca por ID do Serviço: #123
+      const idBusca = termoBusca.substring(1)
+      if (idBusca) {
+        return animalServico.id.toString().includes(idBusca)
+      } else {
+        return true // Se apenas # foi digitado, mostra todos
+      }
+    } else if (termoBusca.startsWith('@')) {
+      // 🐕 Busca por Nome do Animal: @Rex
+      const animalBusca = termoBusca.substring(1)
+      if (animalBusca) {
+        const animalNome = getAnimalNome(animalServico).toLowerCase()
+        return animalNome.includes(animalBusca.toLowerCase())
+      } else {
+        return true // Se apenas @ foi digitado, mostra todos
+      }
+    } else if (termoBusca.startsWith('%')) {
+      // 🎯 Busca por Tipo de Serviço: %Pacote
+      const servicoBusca = termoBusca.substring(1)
+      if (servicoBusca) {
+        const servicoNome = getServicoNome(animalServico).toLowerCase()
+        const servicoDescricao = getServicoDescricao(animalServico).toLowerCase()
+        return servicoNome.includes(servicoBusca.toLowerCase()) ||
+               servicoDescricao.includes(servicoBusca.toLowerCase())
+      } else {
+        return true // Se apenas % foi digitado, mostra todos
+      }
+    } else {
+      // 🔍 BUSCA NORMAL: Por nome do dono
+      const termoBuscaLower = termoBusca.toLowerCase()
+
+      // 👤 Busca por nome do cliente (dono)
+      const clienteNome = getClienteNome(animalServico).toLowerCase()
+
+      return clienteNome.includes(termoBuscaLower)
+    }
   }).slice(0, itensExibidos.value)
 })
 
@@ -419,14 +646,38 @@ const totalItensDisponiveis = computed(() => {
   return animalServicos.value.filter(animalServico => {
     if (!filtroTexto.value) return true
 
-    const termo = filtroTexto.value.toLowerCase()
-    const animalNome = getAnimalNome(animalServico).toLowerCase()
-    const servicoNome = getServicoNome(animalServico).toLowerCase()
-    const usuarioNome = getUsuarioNome(animalServico).toLowerCase()
+    const termoBusca = filtroTexto.value.trim()
 
-    return animalNome.includes(termo) ||
-           servicoNome.includes(termo) ||
-           usuarioNome.includes(termo)
+    if (termoBusca.startsWith('#')) {
+      const idBusca = termoBusca.substring(1)
+      if (idBusca) {
+        return animalServico.id.toString().includes(idBusca)
+      } else {
+        return true
+      }
+    } else if (termoBusca.startsWith('@')) {
+      const animalBusca = termoBusca.substring(1)
+      if (animalBusca) {
+        const animalNome = getAnimalNome(animalServico).toLowerCase()
+        return animalNome.includes(animalBusca.toLowerCase())
+      } else {
+        return true
+      }
+    } else if (termoBusca.startsWith('%')) {
+      const servicoBusca = termoBusca.substring(1)
+      if (servicoBusca) {
+        const servicoNome = getServicoNome(animalServico).toLowerCase()
+        const servicoDescricao = getServicoDescricao(animalServico).toLowerCase()
+        return servicoNome.includes(servicoBusca.toLowerCase()) ||
+               servicoDescricao.includes(servicoBusca.toLowerCase())
+      } else {
+        return true
+      }
+    } else {
+      const termoBuscaLower = termoBusca.toLowerCase()
+      const clienteNome = getClienteNome(animalServico).toLowerCase()
+      return clienteNome.includes(termoBuscaLower)
+    }
   }).length
 })
 
@@ -437,6 +688,54 @@ const temMaisItens = computed(() => {
 const proximosItens = computed(() => {
   const restantes = totalItensDisponiveis.value - itensExibidos.value
   return Math.min(restantes, itensPorPagina.value)
+})
+
+// 🎯 Informações sobre o filtro ativo
+const infoFiltroAtivo = computed(() => {
+  const termo = filtroTexto.value?.trim()
+  if (!termo) return null
+
+  if (termo.startsWith('#')) {
+    const id = termo.substring(1)
+    return {
+      tipo: 'ID Serviço',
+      icone: 'hashtag',
+      cor: 'blue',
+      valor: id || '...',
+      descricao: id ? `Buscando ID do serviço: ${id}` : 'Digite o ID do serviço após #'
+    }
+  } else if (termo.startsWith('@')) {
+    const animal = termo.substring(1)
+    return {
+      tipo: 'Nome Animal',
+      icone: 'at',
+      cor: 'green',
+      valor: animal || '...',
+      descricao: animal ? `Buscando animal: ${animal}` : 'Digite o nome do animal após @'
+    }
+  } else if (termo.startsWith('%')) {
+    const servico = termo.substring(1)
+    return {
+      tipo: 'Tipo Serviço',
+      icone: 'percent',
+      cor: 'purple',
+      valor: servico || '...',
+      descricao: servico ? `Buscando serviço: ${servico}` : 'Digite o tipo de serviço após %'
+    }
+  } else {
+    return {
+      tipo: 'Nome Dono',
+      icone: 'user',
+      cor: 'amber',
+      valor: termo,
+      descricao: `Buscando por dono: "${termo}"`
+    }
+  }
+})
+
+// 📊 Total de serviços ativos (não completos)
+const totalServicosAtivos = computed(() => {
+  return animalServicos.value.filter(animalServico => !isServicoCompleto(animalServico)).length
 })
 
 // 🔧 Funções auxiliares - Busca reversa devido ao @JsonBackReference
@@ -453,6 +752,12 @@ const getAnimalCompleto = (animalServico: AnimalServico): Animal | null => {
   return animais.value.find(a =>
     a.servicos?.some(servico => servico.id === animalServico.id)
   ) || null
+}
+
+const getClienteNome = (animalServico: AnimalServico): string => {
+  // Busca reversa: procura o animal que tem este animalServico, depois pega o cliente
+  const animal = getAnimalCompleto(animalServico)
+  return animal?.cliente?.nomeCompleto || `Dono não encontrado (ID: ${animalServico.id})`
 }
 
 const getServicoNome = (animalServico: AnimalServico): string => {
@@ -575,21 +880,41 @@ const carregarAnimalServicos = async (): Promise<void> => {
     error.value = ''
 
     console.log('🔄 Carregando animal serviços e dados relacionados...')
-    const [animalServicosData, animaisData, servicosData, usuariosData] = await Promise.all([
+    const [animalServicosData, clientesData, servicosData, usuariosData] = await Promise.all([
       animalServicoService.buscarTodos(),
-      animaisService.buscarTodos(),
+      clientesService.buscarTodos(), // 🔥 CORREÇÃO: usar clientesService para obter dados completos
       servicosService.buscarTodos(),
       usuariosService.buscarTodos()
     ])
 
+    // 🐕 Extrai todos os animais dos clientes e adiciona referência ao cliente
+    const todosAnimais: any[] = []
+    clientesData.forEach((cliente: any) => {
+      cliente.animais.forEach((animal: any) => {
+        todosAnimais.push({
+          ...animal,
+          cliente: {
+            id: cliente.id,
+            nomeCompleto: cliente.nomeCompleto,
+            cpf: cliente.cpf,
+            codigoSimplesVet: cliente.codigoSimplesVet,
+            codigoClienteSistema: cliente.codigoClienteSistema,
+            telefones: cliente.telefones,
+            emailClientes: cliente.emailClientes,
+            animais: [] // Evita referência circular
+          }
+        })
+      })
+    })
+
     animalServicos.value = animalServicosData
-    animais.value = animaisData
+    animais.value = todosAnimais // 🔥 CORREÇÃO: usar animais com dados do cliente
     servicos.value = servicosData
     usuarios.value = usuariosData
 
     console.log(`✅ Dados carregados:`)
     console.log(`  - ${animalServicos.value.length} animal serviços`)
-    console.log(`  - ${animais.value.length} animais`)
+    console.log(`  - ${animais.value.length} animais (com dados dos donos)`)
     console.log(`  - ${servicos.value.length} serviços`)
     console.log(`  - ${usuarios.value.length} usuários`)
 
@@ -598,7 +923,7 @@ const carregarAnimalServicos = async (): Promise<void> => {
       console.log('🔍 Estrutura do primeiro Animal Serviço:', animalServicos.value[0])
     }
     if (animais.value.length > 0) {
-      console.log('🔍 Estrutura do primeiro Animal:', animais.value[0])
+      console.log('🔍 Estrutura do primeiro Animal (com cliente):', animais.value[0])
     }
   } catch (err) {
     console.error('❌ Erro ao carregar animal serviços:', err)

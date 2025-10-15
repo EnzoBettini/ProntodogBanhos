@@ -85,9 +85,28 @@
               <input
                 v-model="filtroNome"
                 type="text"
-                placeholder="Buscar por nome, ID, SimplesVet ou dono..."
+                placeholder="Digite nome ou use: #123 (ID) ou $456 (SimplesVet)..."
                 class="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-white to-blue-50 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
               />
+            </div>
+
+            <!-- 💡 Dicas dos filtros inteligentes -->
+            <div v-if="filtroNome && !loading" class="w-full">
+              <div class="flex flex-wrap items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                <FontAwesomeIcon icon="lightbulb" class="text-blue-500 text-sm" />
+                <span class="text-xs text-blue-700 font-medium">Dicas de busca:</span>
+                <div class="flex flex-wrap gap-2 text-xs">
+                  <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-blue-700">
+                    <FontAwesomeIcon icon="hashtag" class="mr-1" /><code>#123</code> = ID Sistema
+                  </span>
+                  <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-blue-700">
+                    <FontAwesomeIcon icon="dollar-sign" class="mr-1" /><code>$456</code> = SimplesVet
+                  </span>
+                  <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-blue-700">
+                    <FontAwesomeIcon icon="dog" class="mr-1" /><code>Rex</code> = Nome/Dono
+                  </span>
+                </div>
+              </div>
             </div>
 
             <!-- Filtros secundários -->
@@ -120,12 +139,27 @@
             </div>
 
             <!-- Stats rápidas -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
+              <!-- Filtro Ativo (aparece quando há busca) -->
+              <div v-if="infoFiltroAtivo" class="flex items-center gap-2 px-4 py-2 rounded-full shadow-sm border-2 animate-pulse"
+                :class="{
+                  'bg-blue-50 border-blue-200 text-blue-700': infoFiltroAtivo.cor === 'blue',
+                  'bg-green-50 border-green-200 text-green-700': infoFiltroAtivo.cor === 'green',
+                  'bg-purple-50 border-purple-200 text-purple-700': infoFiltroAtivo.cor === 'purple'
+                }"
+              >
+                <FontAwesomeIcon :icon="infoFiltroAtivo.icone" class="text-sm" />
+                <span class="text-sm font-bold">{{ infoFiltroAtivo.tipo }}</span>
+                <code class="text-xs bg-white bg-opacity-60 px-1.5 py-0.5 rounded">{{ infoFiltroAtivo.valor }}</code>
+              </div>
+
+              <!-- Stats normais -->
               <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
                 <FontAwesomeIcon icon="dog" class="text-blue-600 text-sm" />
                 <span class="text-sm font-medium text-blue-700">{{ animaisFiltrados.length }} encontrados</span>
               </div>
-              <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full">
+
+              <div v-if="!infoFiltroAtivo" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full">
                 <FontAwesomeIcon icon="users" class="text-green-600 text-sm" />
                 <span class="text-sm font-medium text-green-700">{{ clientesUnicos.length }} donos</span>
               </div>
@@ -322,22 +356,52 @@
       <!-- 📭 Estado vazio -->
       <BaseCard v-else class="p-12 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
         <div class="relative">
-          <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
-            <FontAwesomeIcon icon="dog" class="text-3xl text-white" />
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle"
+            :class="infoFiltroAtivo ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 'bg-gradient-to-br from-blue-400 to-indigo-600'"
+          >
+            <FontAwesomeIcon
+              :icon="infoFiltroAtivo ? 'search' : 'dog'"
+              class="text-3xl text-white"
+            />
           </div>
-          <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-blue-200 rounded-2xl animate-ping opacity-20"></div>
+          <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-2xl animate-ping opacity-20"
+            :class="infoFiltroAtivo ? 'bg-amber-200' : 'bg-blue-200'"
+          ></div>
         </div>
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum amiguinho encontrado</h3>
-        <p class="text-gray-500 mb-6">
-          Que tal cadastrar o primeiro pet no sistema? 🐾
-        </p>
-        <button
-          @click="$router.push('/animais/novo')"
-          class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
-        >
-          <FontAwesomeIcon icon="plus" />
-          <span>Adicionar primeiro animal</span>
-        </button>
+
+        <!-- Mensagem personalizada baseada no filtro -->
+        <template v-if="infoFiltroAtivo">
+          <h3 class="text-xl font-semibold text-gray-700 mb-2">
+            Nenhum resultado para {{ infoFiltroAtivo.tipo.toLowerCase() }}
+          </h3>
+          <p class="text-gray-600 mb-4">{{ infoFiltroAtivo.descricao }}</p>
+          <div class="flex items-center justify-center gap-2 px-4 py-2 bg-amber-100 rounded-lg mb-6 max-w-md mx-auto">
+            <FontAwesomeIcon :icon="infoFiltroAtivo.icone" class="text-amber-600" />
+            <code class="text-amber-800 font-medium">{{ filtroNome }}</code>
+          </div>
+          <button
+            @click="filtroNome = ''"
+            class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+          >
+            <FontAwesomeIcon icon="times" />
+            <span>Limpar filtro</span>
+          </button>
+        </template>
+
+        <!-- Mensagem padrão (sem filtros) -->
+        <template v-else>
+          <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum amiguinho encontrado</h3>
+          <p class="text-gray-500 mb-6">
+            Que tal cadastrar o primeiro pet no sistema? 🐾
+          </p>
+          <button
+            @click="$router.push('/animais/novo')"
+            class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+          >
+            <FontAwesomeIcon icon="plus" />
+            <span>Adicionar primeiro animal</span>
+          </button>
+        </template>
       </BaseCard>
     </div>
   </div>
@@ -379,23 +443,44 @@ useAutoAnimateList(listaAnimaisRef)
 // 🎨 Computed Properties
 const animaisFiltrados = computed(() => {
   return animais.value.filter(animal => {
-    // 🔍 Busca por texto no campo principal (nome, ID, SimplesVet, dono)
+    // 🧠 FILTROS INTELIGENTES com prefixos especiais
     let nomeMatch = true
     if (filtroNome.value) {
-      const termoBusca = filtroNome.value.toLowerCase().trim()
+      const termoBusca = filtroNome.value.trim()
 
-      // 📝 Busca por nome do animal
-      const nomeAnimalMatch = animal.nome.toLowerCase().includes(termoBusca)
+      // 🚀 FILTRO INTELIGENTE: Detecta prefixos especiais
+      if (termoBusca.startsWith('#')) {
+        // 🆔 Busca por ID do Sistema: #123
+        const idBusca = termoBusca.substring(1)
+        if (idBusca) {
+          nomeMatch = animal.codigoAnimalSistema.toString().includes(idBusca) ||
+                      animal.id?.toString().includes(idBusca)
+        } else {
+          nomeMatch = true // Se apenas # foi digitado, mostra todos
+        }
+      } else if (termoBusca.startsWith('$')) {
+        // 💰 Busca por SimplesVet: $456
+        const simplesVetBusca = termoBusca.substring(1)
+        if (simplesVetBusca) {
+          nomeMatch = animal.codigoSimplesVet?.toString().includes(simplesVetBusca) || false
+        } else {
+          nomeMatch = true // Se apenas $ foi digitado, mostra todos
+        }
+      } else {
+        // 🔍 BUSCA NORMAL: Por nome do animal ou dono
+        const termoBuscaLower = termoBusca.toLowerCase()
 
-      // 🆔 Busca por IDs (sistema e SimplesVet)
-      const idMatch = animal.codigoAnimalSistema.toString().includes(termoBusca) ||
-                      animal.codigoSimplesVet?.toString().includes(termoBusca) ||
-                      animal.id?.toString().includes(termoBusca)
+        // 📝 Busca por nome do animal
+        const nomeAnimalMatch = animal.nome.toLowerCase().includes(termoBuscaLower)
 
-      // 👤 Busca por nome do dono
-      const donoMatch = animal.cliente?.nomeCompleto?.toLowerCase().includes(termoBusca) || false
+        // 👤 Busca por nome do dono
+        const donoMatch = animal.cliente?.nomeCompleto?.toLowerCase().includes(termoBuscaLower) || false
 
-      nomeMatch = nomeAnimalMatch || idMatch || donoMatch
+        // 🐕 Busca por tipo do animal
+        const tipoAnimalMatch = animal.tipo.toLowerCase().includes(termoBuscaLower)
+
+        nomeMatch = nomeAnimalMatch || donoMatch || tipoAnimalMatch
+      }
     }
 
     // 👤 Filtro específico por cliente (dropdown)
@@ -436,6 +521,40 @@ const tiposUnicos = computed(() => {
     .map(animal => animal.tipo)
     .filter(Boolean)
   return [...new Set(tipos)].sort()
+})
+
+// 🎯 Informações sobre o filtro ativo
+const infoFiltroAtivo = computed(() => {
+  const termo = filtroNome.value?.trim()
+  if (!termo) return null
+
+  if (termo.startsWith('#')) {
+    const id = termo.substring(1)
+    return {
+      tipo: 'ID Sistema',
+      icone: 'hashtag',
+      cor: 'blue',
+      valor: id || '...',
+      descricao: id ? `Buscando ID do sistema: ${id}` : 'Digite o ID do sistema após #'
+    }
+  } else if (termo.startsWith('$')) {
+    const simplesVet = termo.substring(1)
+    return {
+      tipo: 'SimplesVet',
+      icone: 'dollar-sign',
+      cor: 'green',
+      valor: simplesVet || '...',
+      descricao: simplesVet ? `Buscando SimplesVet: ${simplesVet}` : 'Digite o código SimplesVet após $'
+    }
+  } else {
+    return {
+      tipo: 'Busca Normal',
+      icone: 'search',
+      cor: 'purple',
+      valor: termo,
+      descricao: `Buscando por nome/dono/tipo: "${termo}"`
+    }
+  }
 })
 
 // 🛠️ Métodos

@@ -104,6 +104,46 @@
         </BaseButton>
       </div>
 
+      <!-- 🔍 Estado de busca sem resultados -->
+      <div v-else-if="!loading && clientes.length > 0 && clientesFiltrados.length === 0" class="p-12 text-center">
+        <BaseCard class="bg-gradient-to-br from-amber-50 to-orange-50 border-0 shadow-lg">
+          <div class="p-8">
+            <div class="relative">
+              <div class="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle"
+                :class="infoFiltroAtivo ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 'bg-gradient-to-br from-emerald-400 to-green-500'"
+              >
+                <FontAwesomeIcon
+                  :icon="infoFiltroAtivo ? 'search' : 'users'"
+                  class="text-3xl text-white"
+                />
+              </div>
+              <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-2xl animate-ping opacity-20"
+                :class="infoFiltroAtivo ? 'bg-amber-200' : 'bg-emerald-200'"
+              ></div>
+            </div>
+
+            <!-- Mensagem personalizada baseada no filtro -->
+            <template v-if="infoFiltroAtivo">
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">
+                Nenhum resultado para {{ infoFiltroAtivo.tipo.toLowerCase() }}
+              </h3>
+              <p class="text-gray-600 mb-4">{{ infoFiltroAtivo.descricao }}</p>
+              <div class="flex items-center justify-center gap-2 px-4 py-2 bg-amber-100 rounded-lg mb-6 max-w-md mx-auto">
+                <FontAwesomeIcon :icon="infoFiltroAtivo.icone" class="text-amber-600" />
+                <code class="text-amber-800 font-medium">{{ filtroBusca }}</code>
+              </div>
+              <button
+                @click="filtroBusca = ''"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg mx-auto font-medium"
+              >
+                <FontAwesomeIcon icon="times" />
+                <span>Limpar filtro</span>
+              </button>
+            </template>
+          </div>
+        </BaseCard>
+      </div>
+
       <!-- ✅ Lista de Clientes (Estado de Sucesso) -->
       <div v-else>
         <!-- 🔍 Filtros elegantes -->
@@ -118,7 +158,7 @@
                 <input
                   v-model="filtroBusca"
                   type="text"
-                  placeholder="Buscar por nome, CPF, ID ou código SimplesVet..."
+                  placeholder="Digite nome ou use: #123 (ID), $456 (SimplesVet), @12345678900 (CPF)..."
                   class="w-full pl-10 pr-12 py-3 bg-gradient-to-r from-white to-emerald-50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 placeholder-gray-400 text-gray-700 shadow-sm"
                 />
 
@@ -130,13 +170,16 @@
                     <!-- Conteúdo do tooltip -->
                     <div class="absolute bottom-full right-0 mb-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50">
                       <div class="space-y-2">
-                        <p class="font-semibold text-emerald-300">💡 Dicas de busca:</p>
+                        <p class="font-semibold text-emerald-300">💡 Filtros Inteligentes:</p>
                         <div class="space-y-1 text-xs">
-                          <p>📝 <span class="text-emerald-200">Nome:</span> Digite parte do nome</p>
-                          <p>📱 <span class="text-emerald-200">CPF:</span> 123.456.789-00 ou 12345678900</p>
-                          <p>🆔 <span class="text-emerald-200">ID:</span> Digite o número do ID</p>
-                          <p>🏥 <span class="text-emerald-200">SimplesVet:</span> Digite o código</p>
+                          <p>📝 <span class="text-emerald-200">Nome:</span> Maria Silva</p>
+                          <p>🆔 <span class="text-emerald-200">ID Sistema:</span> <code class="bg-gray-800 px-1 rounded">#123</code></p>
+                          <p>🏥 <span class="text-emerald-200">SimplesVet:</span> <code class="bg-gray-800 px-1 rounded">$456</code></p>
+                          <p>📱 <span class="text-emerald-200">CPF:</span> <code class="bg-gray-800 px-1 rounded">@12345678900</code></p>
                         </div>
+                        <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-700">
+                          Use os símbolos para busca específica!
+                        </p>
                       </div>
 
                       <!-- Seta do tooltip -->
@@ -146,23 +189,53 @@
                 </div>
               </div>
 
+              <!-- 💡 Dicas dos filtros inteligentes -->
+              <div v-if="filtroBusca && !loading" class="w-full">
+                <div class="flex flex-wrap items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg border border-emerald-100">
+                  <FontAwesomeIcon icon="lightbulb" class="text-emerald-500 text-sm" />
+                  <span class="text-xs text-emerald-700 font-medium">Filtros inteligentes:</span>
+                  <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-emerald-700">
+                      <FontAwesomeIcon icon="hashtag" class="mr-1" /><code>#123</code> = ID Sistema
+                    </span>
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-emerald-700">
+                      <FontAwesomeIcon icon="dollar-sign" class="mr-1" /><code>$456</code> = SimplesVet
+                    </span>
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-emerald-700">
+                      <FontAwesomeIcon icon="at" class="mr-1" /><code>@123456</code> = CPF
+                    </span>
+                    <span class="px-2 py-1 bg-white bg-opacity-60 rounded-md text-emerald-700">
+                      <FontAwesomeIcon icon="user" class="mr-1" /><code>Maria</code> = Nome
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Stats rápidas -->
               <div class="flex items-center gap-3 flex-wrap">
+                <!-- Filtro Ativo (aparece quando há busca) -->
+                <div v-if="infoFiltroAtivo" class="flex items-center gap-2 px-4 py-2 rounded-full shadow-sm border-2 animate-pulse"
+                  :class="{
+                    'bg-blue-50 border-blue-200 text-blue-700': infoFiltroAtivo.cor === 'blue',
+                    'bg-green-50 border-green-200 text-green-700': infoFiltroAtivo.cor === 'green',
+                    'bg-purple-50 border-purple-200 text-purple-700': infoFiltroAtivo.cor === 'purple',
+                    'bg-emerald-50 border-emerald-200 text-emerald-700': infoFiltroAtivo.cor === 'emerald'
+                  }"
+                >
+                  <FontAwesomeIcon :icon="infoFiltroAtivo.icone" class="text-sm" />
+                  <span class="text-sm font-bold">{{ infoFiltroAtivo.tipo }}</span>
+                  <code class="text-xs bg-white bg-opacity-60 px-1.5 py-0.5 rounded">{{ infoFiltroAtivo.valor }}</code>
+                </div>
+
+                <!-- Stats normais -->
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full">
                   <FontAwesomeIcon icon="users" class="text-emerald-600 text-sm" />
                   <span class="text-sm font-medium text-emerald-700">{{ clientesExibidos.length }} de {{ totalItensDisponiveis }} encontrados</span>
                 </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
+
+                <div v-if="!infoFiltroAtivo" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
                   <FontAwesomeIcon icon="dog" class="text-blue-600 text-sm" />
                   <span class="text-sm font-medium text-blue-700">{{ totalAnimais }} pets</span>
-                </div>
-
-                <!-- Dica de busca quando há termo -->
-                <div v-if="filtroBusca" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-100 to-amber-100 rounded-full">
-                  <FontAwesomeIcon icon="search" class="text-amber-600 text-sm animate-pulse" />
-                  <span class="text-sm font-medium text-amber-700">
-                    Buscando: "{{ filtroBusca }}"
-                  </span>
                 </div>
               </div>
             </div>
@@ -208,14 +281,18 @@
                         </BaseBadge>
                       </div>
 
-                      <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                      <div class="flex items-center gap-4 text-sm text-gray-600 mb-2 flex-wrap">
+                        <span class="flex items-center gap-1">
+                          <FontAwesomeIcon icon="hashtag" class="text-gray-400" />
+                          ID: {{ cliente.codigoClienteSistema }}
+                        </span>
                         <span class="flex items-center gap-1">
                           <FontAwesomeIcon icon="id-card" class="text-gray-400" />
                           {{ formatarCpf(cliente.cpf) }}
                         </span>
                         <span class="flex items-center gap-1">
                           <FontAwesomeIcon icon="code" class="text-gray-400" />
-                          {{ cliente.codigoSimplesVet }}
+                          SimplesVet: {{ cliente.codigoSimplesVet }}
                         </span>
                       </div>
 
@@ -369,26 +446,48 @@ useAutoAnimateList(listaClientesRef)
 const clientesFiltrados = computed(() => {
   if (!filtroBusca.value) return clientes.value
 
-  const termoBusca = filtroBusca.value.toLowerCase().trim()
-
   return clientes.value.filter(cliente => {
-    // 📝 Busca por nome (case-insensitive)
-    const nomeMatch = cliente.nomeCompleto.toLowerCase().includes(termoBusca)
+    // 🧠 FILTROS INTELIGENTES com prefixos especiais
+    const termoBusca = filtroBusca.value.trim()
 
-    // 📱 Busca por CPF (com e sem formatação)
-    const cpfLimpo = cliente.cpf.replace(/\D/g, '') // Remove formatação
-    const cpfFormatado = formatarCpf(cliente.cpf)
-    const cpfMatch = cpfLimpo.includes(termoBusca.replace(/\D/g, '')) ||
-                     cpfFormatado.toLowerCase().includes(termoBusca)
+    // 🚀 FILTRO INTELIGENTE: Detecta prefixos especiais
+    if (termoBusca.startsWith('#')) {
+      // 🆔 Busca por ID do Sistema: #123
+      const idBusca = termoBusca.substring(1)
+      if (idBusca) {
+        return cliente.codigoClienteSistema.toString().includes(idBusca) ||
+               cliente.id.toString().includes(idBusca)
+      } else {
+        return true // Se apenas # foi digitado, mostra todos
+      }
+    } else if (termoBusca.startsWith('$')) {
+      // 🏥 Busca por SimplesVet: $456
+      const simplesVetBusca = termoBusca.substring(1)
+      if (simplesVetBusca) {
+        return cliente.codigoSimplesVet.toString().includes(simplesVetBusca)
+      } else {
+        return true // Se apenas $ foi digitado, mostra todos
+      }
+    } else if (termoBusca.startsWith('@')) {
+      // 📱 Busca por CPF: @12345678900
+      const cpfBusca = termoBusca.substring(1)
+      if (cpfBusca) {
+        const cpfLimpo = cliente.cpf.replace(/\D/g, '') // Remove formatação
+        const cpfFormatado = formatarCpf(cliente.cpf)
+        return cpfLimpo.includes(cpfBusca.replace(/\D/g, '')) ||
+               cpfFormatado.includes(cpfBusca)
+      } else {
+        return true // Se apenas @ foi digitado, mostra todos
+      }
+    } else {
+      // 🔍 BUSCA NORMAL: Por nome do cliente
+      const termoBuscaLower = termoBusca.toLowerCase()
 
-    // 🆔 Busca por ID do sistema (número)
-    const idMatch = cliente.id.toString().includes(termoBusca) ||
-                    cliente.codigoClienteSistema.toString().includes(termoBusca)
+      // 📝 Busca por nome do cliente
+      const nomeMatch = cliente.nomeCompleto.toLowerCase().includes(termoBuscaLower)
 
-    // 🏥 Busca por código SimplesVet (número)
-    const simplesVetMatch = cliente.codigoSimplesVet.toString().includes(termoBusca)
-
-    return nomeMatch || cpfMatch || idMatch || simplesVetMatch
+      return nomeMatch
+    }
   })
 })
 
@@ -408,6 +507,49 @@ const totalItensDisponiveis = computed(() => {
 
 const totalAnimais = computed(() => {
   return clientes.value.reduce((total, cliente) => total + cliente.animais.length, 0)
+})
+
+// 🎯 Informações sobre o filtro ativo
+const infoFiltroAtivo = computed(() => {
+  const termo = filtroBusca.value?.trim()
+  if (!termo) return null
+
+  if (termo.startsWith('#')) {
+    const id = termo.substring(1)
+    return {
+      tipo: 'ID Sistema',
+      icone: 'hashtag',
+      cor: 'blue',
+      valor: id || '...',
+      descricao: id ? `Buscando ID do sistema: ${id}` : 'Digite o ID do sistema após #'
+    }
+  } else if (termo.startsWith('$')) {
+    const simplesVet = termo.substring(1)
+    return {
+      tipo: 'SimplesVet',
+      icone: 'dollar-sign',
+      cor: 'green',
+      valor: simplesVet || '...',
+      descricao: simplesVet ? `Buscando SimplesVet: ${simplesVet}` : 'Digite o código SimplesVet após $'
+    }
+  } else if (termo.startsWith('@')) {
+    const cpf = termo.substring(1)
+    return {
+      tipo: 'CPF',
+      icone: 'at',
+      cor: 'purple',
+      valor: cpf || '...',
+      descricao: cpf ? `Buscando CPF: ${cpf}` : 'Digite o CPF após @'
+    }
+  } else {
+    return {
+      tipo: 'Nome',
+      icone: 'user',
+      cor: 'emerald',
+      valor: termo,
+      descricao: `Buscando por nome: "${termo}"`
+    }
+  }
 })
 
 // 🔧 Funções utilitárias movidas para @/utils/formatters

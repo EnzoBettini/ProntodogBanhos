@@ -142,7 +142,14 @@
         </template>
 
         <div class="p-6">
-          <div class="grid md:grid-cols-2 gap-6">
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="flex items-center gap-3">
+              <FontAwesomeIcon :icon="['fas', 'hashtag']" class="text-emerald-600" />
+              <div>
+                <label class="block text-sm font-medium text-gray-600">ID Sistema</label>
+                <p class="text-lg font-semibold text-gray-900">{{ cliente.codigoClienteSistema }}</p>
+              </div>
+            </div>
             <div class="flex items-center gap-3">
               <FontAwesomeIcon :icon="['fas', 'id-card']" class="text-emerald-600" />
               <div>
@@ -151,7 +158,7 @@
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <FontAwesomeIcon :icon="['fas', 'at']" class="text-emerald-600" />
+              <FontAwesomeIcon :icon="['fas', 'code']" class="text-emerald-600" />
               <div>
                 <label class="block text-sm font-medium text-gray-600">Código SimplesVet</label>
                 <p class="text-lg font-semibold text-gray-900">{{ cliente.codigoSimplesVet || 'Não informado' }}</p>
