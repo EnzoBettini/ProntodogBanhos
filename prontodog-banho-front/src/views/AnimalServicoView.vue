@@ -115,9 +115,8 @@
           <div
             v-for="(animalServico, index) in animalServicosFiltrados"
             :key="animalServico.id"
-            class="group relative bg-gradient-to-r from-white via-white to-amber-50 rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden cursor-pointer"
+            class="group relative bg-gradient-to-r from-white via-white to-amber-50 rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-1 animate-fade-in-up overflow-hidden"
             :style="{ animationDelay: `${index * 100}ms` }"
-            @click="verDetalhesAnimalServico(animalServico)"
           >
             <div class="p-6">
               <div class="flex items-center justify-between">
@@ -184,11 +183,27 @@
                     {{ isServicoCompleto(animalServico) ? 'Completo' : 'Em Andamento' }}
                   </BaseBadge>
 
-                  <!-- Ícone clicável -->
-                  <div class="flex items-center gap-2 text-gray-400 group-hover:text-amber-600 transition-colors duration-300">
-                    <FontAwesomeIcon :icon="['fas', 'eye']" class="text-lg" />
-                    <span class="text-sm font-medium hidden sm:inline">Ver Detalhes</span>
-                    <FontAwesomeIcon :icon="['fas', 'chevron-right']" class="text-sm transform group-hover:translate-x-1 transition-transform duration-300" />
+                  <!-- Ações -->
+                  <div class="flex items-center gap-3">
+                    <!-- Ver detalhes -->
+                    <button
+                      @click.stop="verDetalhesAnimalServico(animalServico)"
+                      class="group/btn flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105"
+                      title="Ver detalhes do animal serviço"
+                    >
+                      <FontAwesomeIcon :icon="['fas', 'eye']" class="text-sm" />
+                      <span class="text-xs font-medium hidden sm:inline">Ver</span>
+                    </button>
+
+                    <!-- Excluir -->
+                    <button
+                      @click.stop="confirmarExclusao(animalServico)"
+                      class="group/btn flex items-center gap-2 px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105"
+                      title="Excluir animal serviço"
+                    >
+                      <FontAwesomeIcon :icon="['fas', 'trash']" class="text-sm" />
+                      <span class="text-xs font-medium hidden sm:inline">Excluir</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -501,6 +516,55 @@ const formatarData = (data: string): string => {
   } catch (error) {
     console.warn('⚠️ Erro ao formatar data:', data, error)
     return data
+  }
+}
+
+// 🗑️ Funções de exclusão
+const confirmarExclusao = (animalServico: AnimalServico): void => {
+  const animalNome = getAnimalNome(animalServico)
+  const servicoNome = getServicoDescricao(animalServico)
+
+  const confirmacao = window.confirm(
+    `🗑️ Tem certeza que deseja excluir este animal serviço?\n\n` +
+    `Animal: ${animalNome}\n` +
+    `Serviço: ${servicoNome}\n` +
+    `Data: ${formatarData(animalServico.dataServico)}\n` +
+    `Banhos utilizados: ${animalServico.banhosUsados}\n\n` +
+    `⚠️ ATENÇÃO: Esta ação não poderá ser desfeita!\n` +
+    `Todos os banhos individuais relacionados também serão excluídos.`
+  )
+
+  if (confirmacao) {
+    excluirAnimalServico(animalServico)
+  }
+}
+
+const excluirAnimalServico = async (animalServico: AnimalServico): Promise<void> => {
+  try {
+    loading.value = true
+    console.log(`🗑️ Excluindo animal serviço ID ${animalServico.id}...`)
+
+    await animalServicoService.excluir(animalServico.id)
+
+    console.log('✅ Animal serviço excluído com sucesso!')
+
+    // Remover da lista local para feedback imediato
+    const index = animalServicos.value.findIndex(as => as.id === animalServico.id)
+    if (index > -1) {
+      animalServicos.value.splice(index, 1)
+    }
+
+    // Mostrar feedback de sucesso
+    alert(`✅ Animal serviço de "${getAnimalNome(animalServico)}" foi excluído com sucesso!`)
+
+    // Recarregar dados para garantir consistência
+    await carregarAnimalServicos()
+
+  } catch (error) {
+    console.error('❌ Erro ao excluir animal serviço:', error)
+    alert(`❌ Erro ao excluir animal serviço: ${error instanceof Error ? error.message : 'Erro desconhecido'}\n\nTente novamente.`)
+  } finally {
+    loading.value = false
   }
 }
 

@@ -43,12 +43,25 @@
             <p class="text-gray-600">Animal: {{ animal?.nome || 'N/A' }} • Serviço: {{ servico?.nome || 'N/A' }}</p>
           </div>
 
-          <BaseBadge
-            :variant="isServicoCompleto ? 'success' : 'warning'"
-            size="lg"
-          >
-            {{ isServicoCompleto ? 'Completo' : 'Em Andamento' }}
-          </BaseBadge>
+          <div class="flex items-center gap-4">
+            <BaseBadge
+              :variant="isServicoCompleto ? 'success' : 'warning'"
+              size="lg"
+            >
+              {{ isServicoCompleto ? 'Completo' : 'Em Andamento' }}
+            </BaseBadge>
+
+            <!-- Botão Excluir -->
+            <BaseButton
+              @click="confirmarExclusaoAnimalServico"
+              variant="danger"
+              class="flex items-center gap-2"
+              title="Excluir este animal serviço"
+            >
+              <FontAwesomeIcon :icon="['fas', 'trash']" />
+              <span class="hidden sm:inline">Excluir</span>
+            </BaseButton>
+          </div>
         </div>
 
         <!-- Grid principal -->
@@ -589,6 +602,50 @@ const salvarNovaData = async (): Promise<void> => {
     alert('Erro ao atualizar a data. Tente novamente.')
   } finally {
     salvandoData.value = false
+  }
+}
+
+// 🗑️ Funções de exclusão do animal serviço
+const confirmarExclusaoAnimalServico = (): void => {
+  if (!animalServico.value || !animal.value || !servico.value) return
+
+  const confirmacao = window.confirm(
+    `🗑️ Tem certeza que deseja excluir este animal serviço?\n\n` +
+    `Animal: ${animal.value.nome}\n` +
+    `Serviço: ${servico.value.nome}\n` +
+    `Data: ${formatarData(animalServico.value.dataServico)}\n` +
+    `Banhos utilizados: ${animalServico.value.banhosUsados}/${servico.value.quantidade}\n\n` +
+    `⚠️ ATENÇÃO: Esta ação não poderá ser desfeita!\n` +
+    `Todos os banhos individuais relacionados também serão excluídos.`
+  )
+
+  if (confirmacao) {
+    excluirAnimalServico()
+  }
+}
+
+const excluirAnimalServico = async (): Promise<void> => {
+  if (!animalServico.value) return
+
+  try {
+    loading.value = true
+    console.log(`🗑️ Excluindo animal serviço ID ${animalServico.value.id}...`)
+
+    await animalServicoService.excluir(animalServico.value.id)
+
+    console.log('✅ Animal serviço excluído com sucesso!')
+
+    // Mostrar feedback de sucesso
+    alert(`✅ Animal serviço de "${animal.value?.nome}" foi excluído com sucesso!\n\nVocê será redirecionado para a lista.`)
+
+    // Redirecionar para lista
+    voltarParaLista()
+
+  } catch (err) {
+    console.error('❌ Erro ao excluir animal serviço:', err)
+    alert(`❌ Erro ao excluir animal serviço: ${err instanceof Error ? err.message : 'Erro desconhecido'}\n\nTente novamente.`)
+  } finally {
+    loading.value = false
   }
 }
 
