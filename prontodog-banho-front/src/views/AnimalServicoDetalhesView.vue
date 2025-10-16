@@ -243,7 +243,7 @@
                 </p>
               </div>
 
-              <!-- Detalhes do serviço -->
+              <!-- Detalhes básicos do serviço -->
               <div class="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
                 <div class="flex items-center gap-3 mb-3">
                   <FontAwesomeIcon :icon="['fas', 'wrench']" class="text-purple-600" />
@@ -259,8 +259,8 @@
                     <p class="font-medium">{{ servico?.quantidade || 'N/A' }} banhos</p>
                   </div>
                   <div>
-                    <p class="text-gray-600">Valor:</p>
-                    <p class="font-medium text-green-600">R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}</p>
+                    <p class="text-gray-600">Descrição:</p>
+                    <p class="font-medium">{{ servico?.descricao || 'N/A' }}</p>
                   </div>
                 </div>
 
@@ -564,6 +564,162 @@
 
         </div>
 
+        <!-- 💰 Informações Financeiras -->
+        <div class="mt-6 w-full min-w-0">
+          <BaseCard class="shadow-xl border-0">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
+                <FontAwesomeIcon :icon="['fas', 'dollar-sign']" class="text-white text-xl" />
+              </div>
+              <div class="flex-1">
+                <h2 class="text-xl font-bold text-gray-800">Resumo Financeiro</h2>
+                <p class="text-gray-600">
+                  {{ temServicosAdicionais ? `${1 + servicosAdicionais.length} serviços contratados` : '1 serviço contratado' }} •
+                  Total: R$ {{ valorTotalGeral.toFixed(2).replace('.', ',') }}
+                </p>
+              </div>
+
+              <!-- Botões de Ação -->
+              <div class="flex items-center gap-2">
+                <BaseButton @click="abrirModalEditarServico" variant="secondary" size="sm">
+                  <FontAwesomeIcon :icon="['fas', 'edit']" class="mr-1" />
+                  Editar Serviço
+                </BaseButton>
+                <BaseButton @click="adicionarNovoServicoAdicional" variant="primary" size="sm">
+                  <FontAwesomeIcon :icon="['fas', 'plus']" class="mr-1" />
+                  Adicionar Extra
+                </BaseButton>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Serviço Principal -->
+              <div class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                    <FontAwesomeIcon :icon="['fas', 'star']" />
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-gray-800">{{ servico?.nome || 'N/A' }}</h3>
+                    <p class="text-sm text-gray-600">
+                      Serviço Principal • {{ servico?.quantidade || 'N/A' }} banhos
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      Lançado por: {{ usuario?.nome || 'N/A' }}
+                    </p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-indigo-600">
+                    R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}
+                  </p>
+                  <p class="text-sm text-gray-500">Serviço Principal</p>
+                </div>
+              </div>
+
+              <!-- Serviços Adicionais -->
+              <div v-if="temServicosAdicionais">
+                <div class="flex items-center gap-2 mb-3 mt-4">
+                  <FontAwesomeIcon :icon="['fas', 'plus-circle']" class="text-amber-500" />
+                  <h3 class="font-semibold text-gray-800">Serviços Adicionais</h3>
+                  <span class="text-sm text-gray-500">({{ servicosAdicionais.length }} item{{ servicosAdicionais.length !== 1 ? 's' : '' }})</span>
+                </div>
+
+                <div
+                  v-for="adicional in servicosAdicionais"
+                  :key="adicional.id"
+                  class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 mb-3"
+                >
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                      +
+                    </div>
+                    <div>
+                      <h3 class="font-bold text-gray-800">{{ adicional.nomeServicoAdicional }}</h3>
+                      <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <span>Quantidade: {{ adicional.quantidade }}</span>
+                        <span>•</span>
+                        <span>R$ {{ adicional.valorUnitario.toFixed(2).replace('.', ',') }} cada</span>
+                        <span v-if="adicional.statusPagamento !== 'em_aberto'">•</span>
+                        <BaseBadge
+                          v-if="adicional.statusPagamento !== 'em_aberto'"
+                          :variant="adicional.statusPagamento === 'pago' ? 'success' : 'warning'"
+                          size="sm"
+                        >
+                          {{ adicional.statusPagamento === 'pago' ? 'Pago' : 'Cancelado' }}
+                        </BaseBadge>
+                      </div>
+                      <p v-if="adicional.observacoes" class="text-xs text-gray-500 mt-1">
+                        {{ adicional.observacoes }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="text-right">
+                      <p class="text-2xl font-bold text-amber-600">
+                        R$ {{ adicional.valorTotal.toFixed(2).replace('.', ',') }}
+                      </p>
+                      <p class="text-sm text-gray-500">Serviço Adicional</p>
+                    </div>
+
+                    <!-- Botões de ação do serviço adicional -->
+                    <div class="flex flex-col gap-1">
+                      <BaseButton
+                        @click="editarServicoAdicional(adicional)"
+                        variant="ghost"
+                        size="sm"
+                        class="text-amber-600 hover:text-amber-700 p-1"
+                      >
+                        <FontAwesomeIcon :icon="['fas', 'edit']" class="text-xs" />
+                      </BaseButton>
+                      <BaseButton
+                        @click="removerServicoAdicional(adicional)"
+                        variant="ghost"
+                        size="sm"
+                        class="text-red-600 hover:text-red-700 p-1"
+                      >
+                        <FontAwesomeIcon :icon="['fas', 'trash']" class="text-xs" />
+                      </BaseButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Geral -->
+              <div class="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white">
+                      <FontAwesomeIcon :icon="['fas', 'calculator']" />
+                    </div>
+                    <div>
+                      <h3 class="font-bold text-gray-800">Valor Total Geral</h3>
+                      <p class="text-sm text-gray-600">
+                        {{ temServicosAdicionais ?
+                          `Principal: R$ ${valorTotalPrincipal.toFixed(2).replace('.', ',')} + Adicionais: R$ ${valorTotalAdicionais.toFixed(2).replace('.', ',')}` :
+                          'Apenas serviço principal'
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-3xl font-bold text-green-600">
+                      R$ {{ valorTotalGeral.toFixed(2).replace('.', ',') }}
+                    </p>
+                    <p class="text-sm text-gray-500">Total a Pagar</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Caso não tenha serviços adicionais -->
+            <div v-if="!temServicosAdicionais" class="mt-4 text-center py-4 bg-gray-50 rounded-xl">
+              <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-gray-400 text-2xl mb-2" />
+              <p class="text-gray-500 text-sm">Apenas o serviço principal foi contratado</p>
+            </div>
+          </BaseCard>
+        </div>
+
         <!-- 🛁 Histórico de Banhos (se for pacote) -->
         <div v-if="servico && servico.quantidade > 1" class="mt-6 w-full min-w-0">
           <BaseCard class="shadow-xl border-0">
@@ -700,6 +856,236 @@
       </div>
     </BaseModal>
 
+    <!-- 🔧 Modal para Adicionar Serviço Extra -->
+    <BaseModal v-model="mostrarModalAdicionarExtra" title="Adicionar Serviço Extra">
+      <div class="space-y-4">
+        <!-- Seleção do serviço -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <FontAwesomeIcon :icon="['fas', 'search']" class="text-blue-600 mr-2" />
+            Serviço Adicional *
+          </label>
+          <SearchSelect
+            v-model="formularioServicoAdicional.servicoId"
+            :options="servicosAdicionaisDisponiveis"
+            :display-key="'nome'"
+            :value-key="'id'"
+            :description-key="'servicoDescription'"
+            placeholder="🔍 Buscar serviço adicional..."
+            empty-message="Nenhum serviço adicional encontrado"
+            @update:model-value="atualizarValorServicoSelecionado"
+          />
+        </div>
+
+        <!-- Quantidade -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Quantidade *
+          </label>
+          <input
+            v-model.number="formularioServicoAdicional.quantidade"
+            type="number"
+            min="1"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Valor Original -->
+        <div v-if="formularioServicoAdicional.valorOriginal > 0">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Valor Padrão do Serviço
+          </label>
+          <div class="px-3 py-2 bg-gray-100 rounded-lg text-gray-700 font-medium">
+            R$ {{ formularioServicoAdicional.valorOriginal.toFixed(2).replace('.', ',') }}
+          </div>
+        </div>
+
+        <!-- Checkbox para alterar valor -->
+        <div v-if="formularioServicoAdicional.valorOriginal > 0" class="flex items-center gap-2">
+          <input
+            v-model="formularioServicoAdicional.alterarValor"
+            type="checkbox"
+            id="alterarValorModal"
+            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            @change="toggleAlterarValorModal"
+          />
+          <label for="alterarValorModal" class="text-sm text-gray-700">
+            Alterar valor para este atendimento específico
+          </label>
+        </div>
+
+        <!-- Valor personalizado -->
+        <div v-if="formularioServicoAdicional.alterarValor">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Valor Personalizado *
+          </label>
+          <input
+            v-model.number="formularioServicoAdicional.valorUnitario"
+            type="number"
+            step="0.01"
+            min="0"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Status de pagamento -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Status de Pagamento
+          </label>
+          <select
+            v-model="formularioServicoAdicional.statusPagamento"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="em_aberto">Em Aberto</option>
+            <option value="pago">Pago</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+
+        <!-- Data de pagamento -->
+        <div v-if="formularioServicoAdicional.statusPagamento === 'pago'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Data do Pagamento
+          </label>
+          <input
+            v-model="formularioServicoAdicional.dataPagamento"
+            type="date"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <!-- Observações -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Observações
+          </label>
+          <textarea
+            v-model="formularioServicoAdicional.observacoes"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Observações sobre este serviço adicional..."
+          ></textarea>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-end gap-3 pt-4">
+          <BaseButton @click="mostrarModalAdicionarExtra = false" variant="ghost">
+            Cancelar
+          </BaseButton>
+          <BaseButton
+            @click="salvarServicoAdicional"
+            variant="primary"
+            :disabled="editandoServicos || formularioServicoAdicional.servicoId === 0"
+          >
+            <FontAwesomeIcon v-if="editandoServicos" :icon="['fas', 'spinner']" class="animate-spin mr-2" />
+            {{ editandoServicos ? 'Salvando...' : 'Adicionar Serviço' }}
+          </BaseButton>
+        </div>
+      </div>
+    </BaseModal>
+
+    <!-- 🔧 Modal para Editar Serviço Adicional -->
+    <BaseModal v-model="mostrarModalEditarAdicional" title="Editar Serviço Adicional">
+      <div class="space-y-4">
+        <!-- Nome do serviço (readonly) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Serviço
+          </label>
+          <div class="px-3 py-2 bg-gray-100 rounded-lg text-gray-700 font-medium">
+            {{ formularioServicoAdicional.servicoNome }}
+          </div>
+        </div>
+
+        <!-- Quantidade -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Quantidade *
+          </label>
+          <input
+            v-model.number="formularioServicoAdicional.quantidade"
+            type="number"
+            min="1"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Valor -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Valor Unitário *
+          </label>
+          <input
+            v-model.number="formularioServicoAdicional.valorUnitario"
+            type="number"
+            step="0.01"
+            min="0"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Status de pagamento -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Status de Pagamento
+          </label>
+          <select
+            v-model="formularioServicoAdicional.statusPagamento"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="em_aberto">Em Aberto</option>
+            <option value="pago">Pago</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+
+        <!-- Data de pagamento -->
+        <div v-if="formularioServicoAdicional.statusPagamento === 'pago'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Data do Pagamento
+          </label>
+          <input
+            v-model="formularioServicoAdicional.dataPagamento"
+            type="date"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <!-- Observações -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Observações
+          </label>
+          <textarea
+            v-model="formularioServicoAdicional.observacoes"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Observações sobre este serviço adicional..."
+          ></textarea>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-end gap-3 pt-4">
+          <BaseButton @click="mostrarModalEditarAdicional = false" variant="ghost">
+            Cancelar
+          </BaseButton>
+          <BaseButton
+            @click="salvarServicoAdicional"
+            variant="primary"
+            :disabled="editandoServicos"
+          >
+            <FontAwesomeIcon v-if="editandoServicos" :icon="['fas', 'spinner']" class="animate-spin mr-2" />
+            {{ editandoServicos ? 'Salvando...' : 'Salvar Alterações' }}
+          </BaseButton>
+        </div>
+      </div>
+    </BaseModal>
+
     <!-- 🌊 Wave Footer -->
     <div class="fixed bottom-0 left-0 right-0 w-full overflow-hidden z-10 pointer-events-none">
       <svg viewBox="0 0 1440 120" class="w-full h-20 md:h-24" preserveAspectRatio="none">
@@ -717,6 +1103,133 @@
       </svg>
     </div>
   </div>
+
+  <!-- 🔧 Modal para Editar Serviço Principal -->
+  <BaseModal
+    v-model="mostrarModalEditarServico"
+    title="Editar Serviço Principal"
+  >
+    <div class="space-y-6">
+      <!-- Seleção do serviço -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <FontAwesomeIcon :icon="['fas', 'search']" class="text-blue-600 mr-2" />
+          Serviço *
+        </label>
+        <SearchSelect
+          v-model="formularioEditarServico.servicoId"
+          :options="todosServicos"
+          :label-key="'nome'"
+          :value-key="'id'"
+          :description-key="'servicoDescription'"
+          placeholder="🔍 Buscar serviço..."
+          empty-message="Nenhum serviço encontrado"
+          @update:model-value="(value) => console.log('🔄 Serviço selecionado:', value)"
+        />
+      </div>
+
+      <!-- Seleção do usuário -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <FontAwesomeIcon :icon="['fas', 'user']" class="text-purple-600 mr-2" />
+          Quem lançou o serviço *
+        </label>
+        <SearchSelect
+          v-model="formularioEditarServico.usuarioId"
+          :options="todosUsuarios"
+          :label-key="'nome'"
+          :value-key="'id'"
+          :description-key="'usuarioDescription'"
+          placeholder="🔍 Buscar usuário..."
+          empty-message="Nenhum usuário encontrado"
+          @update:model-value="(value) => console.log('👤 Usuário selecionado:', value)"
+        />
+      </div>
+
+      <!-- Data do serviço -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <FontAwesomeIcon :icon="['fas', 'calendar']" class="text-green-600 mr-2" />
+          Data do Serviço *
+        </label>
+        <input
+          v-model="formularioEditarServico.dataServico"
+          type="date"
+          required
+          class="w-full px-4 py-3 bg-white border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-300 text-base font-medium hover:border-green-300"
+        />
+      </div>
+
+      <!-- Data de expiração -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-600 mr-2" />
+          Data de Expiração (opcional)
+        </label>
+        <input
+          v-model="formularioEditarServico.dataExpiracao"
+          type="date"
+          class="w-full px-4 py-3 bg-white border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all duration-300 text-base font-medium hover:border-orange-300"
+        />
+      </div>
+
+      <!-- Status do pagamento -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <FontAwesomeIcon :icon="['fas', 'credit-card']" class="text-pink-600 mr-2" />
+          Status do Pagamento *
+        </label>
+        <select
+          v-model="formularioEditarServico.statusPagamento"
+          required
+          class="w-full px-4 py-3 pr-12 border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all duration-300 bg-white appearance-none cursor-pointer hover:border-pink-300"
+        >
+          <option value="em_aberto">💳 Em Aberto</option>
+          <option value="pago">✅ Pago</option>
+          <option value="cancelado">❌ Cancelado</option>
+        </select>
+      </div>
+
+      <!-- Data do pagamento (apenas se pago) -->
+      <div v-if="formularioEditarServico.statusPagamento === 'pago'">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <FontAwesomeIcon :icon="['fas', 'calendar-check']" class="text-teal-600 mr-2" />
+          Data do Pagamento *
+        </label>
+        <input
+          v-model="formularioEditarServico.dataPagamento"
+          type="date"
+          required
+          class="w-full px-4 py-3 bg-white border-2 border-teal-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all duration-300 text-base font-medium hover:border-teal-300"
+        />
+      </div>
+    </div>
+
+    <!-- Botões do Modal -->
+    <template #footer>
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+        <BaseButton
+          @click="mostrarModalEditarServico = false"
+          variant="secondary"
+          :disabled="editandoServicos"
+        >
+          Cancelar
+        </BaseButton>
+        <BaseButton
+          @click="salvarEdicaoServico"
+          variant="primary"
+          :disabled="editandoServicos"
+        >
+          <FontAwesomeIcon
+            :icon="editandoServicos ? ['fas', 'spinner'] : ['fas', 'save']"
+            :class="{ 'animate-spin': editandoServicos }"
+            class="mr-2"
+          />
+          {{ editandoServicos ? 'Salvando...' : 'Salvar Alterações' }}
+        </BaseButton>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -727,7 +1240,8 @@ import BaseCard from '@/components/UI/BaseCard.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
-import { animalServicoService, animaisService, servicosService, clientesService, usuariosService, banhosIndividuaisService, type NovoBanhoIndividual, type BanhoIndividual } from '@/services/api'
+import SearchSelect from '@/components/UI/SearchSelect.vue'
+import { animalServicoService, animaisService, servicosService, clientesService, usuariosService, banhosIndividuaisService, servicosAdicionaisService, type NovoBanhoIndividual, type BanhoIndividual } from '@/services/api'
 import type { AnimalServico, Animal, ServicoCompleto, Cliente, Usuario } from '@/types/api'
 import { formatarCpf, formatarTelefone, getIconeTipoAnimal } from '@/utils/formatters'
 
@@ -749,6 +1263,8 @@ const servico = ref<ServicoCompleto | null>(null)
 const cliente = ref<Cliente | null>(null)
 const usuario = ref<Usuario | null>(null)
 const banhosIndividuais = ref<BanhoIndividual[]>([])
+const servicosAdicionais = ref<any[]>([])
+const valorTotalAdicionais = ref(0)
 
 // Estados de edição
 const editarData = ref(false)
@@ -775,6 +1291,44 @@ const formularioBanho = ref({
 // Estados do relatório PDF
 const gerandoPDF = ref(false)
 
+// Estados para edição de serviços
+const mostrarModalEditarServico = ref(false)
+const mostrarModalAdicionarExtra = ref(false)
+const mostrarModalEditarAdicional = ref(false)
+const editandoServicos = ref(false)
+const servicoAdicionalEditando = ref<any>(null)
+
+// Lista de todos os serviços disponíveis para seleção
+const todosServicos = ref<ServicoCompleto[]>([])
+const servicosAdicionaisDisponiveis = ref<ServicoCompleto[]>([])
+
+// Formulário para editar serviço principal
+const formularioEditarServico = ref({
+  servicoId: null as number | null,
+  usuarioId: null as number | null,
+  dataServico: '',
+  dataExpiracao: '',
+  statusPagamento: 'em_aberto',
+  dataPagamento: ''
+})
+
+// Lista de usuários para seleção
+const todosUsuarios = ref<Usuario[]>([])
+
+// Formulário para adicionar/editar serviço adicional
+const formularioServicoAdicional = ref({
+  id: null as number | null,
+  servicoId: 0,
+  servicoNome: '',
+  quantidade: 1,
+  valorUnitario: 0,
+  valorOriginal: 0,
+  statusPagamento: 'em_aberto',
+  dataPagamento: '',
+  observacoes: '',
+  alterarValor: false
+})
+
 // Computadas
 const totalBanhos = computed(() => servico.value?.quantidade || 1)
 
@@ -789,7 +1343,19 @@ const isServicoCompleto = computed(() => {
 })
 
 const podeAdicionarBanho = computed(() => {
-  return !isServicoCompleto.value && servico.value && servico.value.quantidade > 1
+  // Pode adicionar banho se o serviço não está completo (independente da quantidade)
+  return !isServicoCompleto.value && servico.value
+})
+
+// Computadas para valores dos serviços
+const valorTotalPrincipal = computed(() => servico.value?.valor || 0)
+
+const valorTotalGeral = computed(() => {
+  return valorTotalPrincipal.value + valorTotalAdicionais.value
+})
+
+const temServicosAdicionais = computed(() => {
+  return servicosAdicionais.value.length > 0
 })
 
 // Computadas para controle de expiração
@@ -1027,6 +1593,232 @@ const salvarDataPagamento = async (): Promise<void> => {
   }
 }
 
+// 🔧 Métodos para edição de serviços adicionais
+const editarServicoAdicional = (adicional: any): void => {
+  servicoAdicionalEditando.value = adicional
+  formularioServicoAdicional.value = {
+    id: adicional.id,
+    servicoId: adicional.servicoAdicionalId,
+    servicoNome: adicional.nomeServicoAdicional,
+    quantidade: adicional.quantidade,
+    valorUnitario: adicional.valorUnitario,
+    valorOriginal: adicional.valorUnitario,
+    statusPagamento: adicional.statusPagamento,
+    dataPagamento: adicional.dataPagamento || '',
+    observacoes: adicional.observacoes || '',
+    alterarValor: false
+  }
+  mostrarModalEditarAdicional.value = true
+}
+
+const removerServicoAdicional = async (adicional: any): Promise<void> => {
+  if (!confirm(`Deseja realmente remover o serviço "${adicional.nomeServicoAdicional}"?`)) return
+
+  try {
+    await servicosAdicionaisService.remover(adicional.id)
+
+    // Recarregar dados
+    await recarregarServicosAdicionais()
+
+    console.log('✅ Serviço adicional removido com sucesso!')
+  } catch (error) {
+    console.error('❌ Erro ao remover serviço adicional:', error)
+    alert('Erro ao remover serviço adicional. Tente novamente.')
+  }
+}
+
+const adicionarNovoServicoAdicional = (): void => {
+  formularioServicoAdicional.value = {
+    id: null,
+    servicoId: 0,
+    servicoNome: '',
+    quantidade: 1,
+    valorUnitario: 0,
+    valorOriginal: 0,
+    statusPagamento: 'em_aberto',
+    dataPagamento: '',
+    observacoes: '',
+    alterarValor: false
+  }
+  mostrarModalAdicionarExtra.value = true
+}
+
+const salvarServicoAdicional = async (): Promise<void> => {
+  if (!animalServico.value) return
+
+  try {
+    editandoServicos.value = true
+
+    const dadosServico = {
+      animalServicoPrincipalId: animalServico.value.id,
+      servicoAdicionalId: formularioServicoAdicional.value.servicoId,
+      quantidade: formularioServicoAdicional.value.quantidade,
+      valorUnitario: formularioServicoAdicional.value.valorUnitario,
+      statusPagamento: formularioServicoAdicional.value.statusPagamento,
+      dataPagamento: formularioServicoAdicional.value.dataPagamento || null,
+      observacoes: formularioServicoAdicional.value.observacoes,
+      usuarioId: usuario.value?.id || null
+    }
+
+    if (formularioServicoAdicional.value.id) {
+      // Editar existente - precisa implementar endpoint de atualização
+      console.log('🔄 Editando serviço adicional...', dadosServico)
+      // TODO: Implementar endpoint de edição
+      alert('Funcionalidade de edição ainda não implementada no backend')
+    } else {
+      // Criar novo
+      await servicosAdicionaisService.criar(dadosServico)
+      console.log('✅ Novo serviço adicional criado!')
+    }
+
+    // Recarregar dados
+    await recarregarServicosAdicionais()
+
+    // Fechar modais
+    mostrarModalAdicionarExtra.value = false
+    mostrarModalEditarAdicional.value = false
+
+  } catch (error) {
+    console.error('❌ Erro ao salvar serviço adicional:', error)
+    alert('Erro ao salvar serviço adicional. Tente novamente.')
+  } finally {
+    editandoServicos.value = false
+  }
+}
+
+const recarregarServicosAdicionais = async (): Promise<void> => {
+  if (!animalServico.value) return
+
+  try {
+    servicosAdicionais.value = await servicosAdicionaisService.buscarPorAnimalServico(animalServico.value.id)
+    valorTotalAdicionais.value = await servicosAdicionaisService.calcularValorTotal(animalServico.value.id)
+  } catch (error) {
+    console.warn('⚠️ Erro ao recarregar serviços adicionais:', error)
+    servicosAdicionais.value = []
+    valorTotalAdicionais.value = 0
+  }
+}
+
+const atualizarValorServicoSelecionado = (novoValor?: number): void => {
+  const servicoId = novoValor || formularioServicoAdicional.value.servicoId
+  const servicoSelecionado = servicosAdicionaisDisponiveis.value.find(s => s.id === servicoId)
+  if (servicoSelecionado) {
+    formularioServicoAdicional.value.servicoId = servicoId
+    formularioServicoAdicional.value.servicoNome = servicoSelecionado.nome
+    formularioServicoAdicional.value.valorOriginal = servicoSelecionado.valor
+    formularioServicoAdicional.value.valorUnitario = servicoSelecionado.valor
+    formularioServicoAdicional.value.alterarValor = false
+
+    console.log('✅ Serviço selecionado:', servicoSelecionado.nome, 'Valor:', servicoSelecionado.valor)
+  }
+}
+
+const toggleAlterarValorModal = (): void => {
+  if (!formularioServicoAdicional.value.alterarValor) {
+    // Se desmarcou o checkbox, volta ao valor original
+    formularioServicoAdicional.value.valorUnitario = formularioServicoAdicional.value.valorOriginal
+  }
+}
+
+// 🔧 Métodos para edição do serviço principal
+const abrirModalEditarServico = (): void => {
+  if (!animalServico.value || !servico.value || !usuario.value) return
+
+  console.log('🔧 Verificando dados disponíveis para SearchSelects:')
+  console.log('  - todosServicos.value.length:', todosServicos.value.length)
+  console.log('  - todosUsuarios.value.length:', todosUsuarios.value.length)
+  console.log('  - servico.value.id atual:', servico.value.id)
+  console.log('  - usuario.value.id atual:', usuario.value.id)
+
+  formularioEditarServico.value = {
+    servicoId: servico.value.id,
+    usuarioId: usuario.value.id,
+    dataServico: animalServico.value.dataServico,
+    dataExpiracao: animalServico.value.dataExpiracao || '',
+    statusPagamento: animalServico.value.statusPagamento,
+    dataPagamento: animalServico.value.dataPagamento || ''
+  }
+
+  mostrarModalEditarServico.value = true
+  console.log('🔧 Abrindo modal de edição do serviço principal:', formularioEditarServico.value)
+}
+
+const salvarEdicaoServico = async (): Promise<void> => {
+  if (!animalServico.value) return
+
+  try {
+    editandoServicos.value = true
+    console.log('💾 Salvando edição do serviço principal...', formularioEditarServico.value)
+
+    const dadosAtualizacao = {
+      id: animalServico.value.id,
+      dataServico: formularioEditarServico.value.dataServico,
+      dataExpiracao: formularioEditarServico.value.dataExpiracao || undefined,
+      statusPagamento: formularioEditarServico.value.statusPagamento,
+      dataPagamento: formularioEditarServico.value.dataPagamento || undefined,
+      servicoId: formularioEditarServico.value.servicoId || undefined,
+      usuarioId: formularioEditarServico.value.usuarioId || undefined
+    }
+
+    console.log('📤 Dados sendo enviados para o backend:', dadosAtualizacao)
+    console.log('🔍 IDs específicos:')
+    console.log('  - servicoId:', formularioEditarServico.value.servicoId, typeof formularioEditarServico.value.servicoId)
+    console.log('  - usuarioId:', formularioEditarServico.value.usuarioId, typeof formularioEditarServico.value.usuarioId)
+    console.log('🔍 Valores atuais vs novos:')
+    console.log('  - Serviço atual:', servico.value?.id, servico.value?.nome, 'qtd:', servico.value?.quantidade)
+    console.log('  - Serviço novo:', formularioEditarServico.value.servicoId)
+    console.log('  - Usuário atual:', usuario.value?.id, usuario.value?.nome)
+    console.log('  - Usuário novo:', formularioEditarServico.value.usuarioId)
+    console.log('  - Banhos usados atuais:', animalServico.value?.banhosUsados)
+
+    const response = await animalServicoService.atualizar(animalServico.value.id, dadosAtualizacao)
+    console.log('✅ Resposta do backend:', response)
+
+    // Verificar se mudou o serviço para mostrar aviso se necessário
+    const servicoMudou = formularioEditarServico.value.servicoId !== servico.value?.id
+    const servicoNovo = todosServicos.value.find(s => s.id === formularioEditarServico.value.servicoId)
+    const banhosUsadosAntes = animalServico.value?.banhosUsados || 0
+    const servicoAnterior = servico.value
+
+    // Recarregar dados
+    await carregarDados()
+
+    // Verificar se houve mudanças nos banhos
+    const banhosUsadosDepois = animalServico.value?.banhosUsados || 0
+
+    if (servicoMudou && servicoNovo && servicoAnterior) {
+      if (banhosUsadosAntes > servicoNovo.quantidade) {
+        // Caso onde banhos foram deletados e resetados
+        alert(`🔄 Serviço alterado com limpeza automática!\n\n` +
+              `📋 Alteração realizada:\n` +
+              `• De: "${servicoAnterior.nome}" (${servicoAnterior.quantidade} banhos)\n` +
+              `• Para: "${servicoNovo.nome}" (${servicoNovo.quantidade} banhos)\n\n` +
+              `🧹 Limpeza executada:\n` +
+              `• Todos os ${banhosUsadosAntes} banhos anteriores foram removidos\n` +
+              `• Histórico limpo para o novo serviço\n` +
+              `• Contador zerado (${banhosUsadosDepois}/${servicoNovo.quantidade})\n\n` +
+              `✅ Pronto! Agora você pode registrar os banhos do novo serviço.`)
+      } else if (banhosUsadosAntes > banhosUsadosDepois) {
+        // Caso onde apenas o contador foi resetado
+        alert(`🔄 Contador ajustado!\n\n` +
+              `Novo serviço "${servicoNovo.nome}" (${servicoNovo.quantidade} banhos).\n` +
+              `Contador: ${banhosUsadosAntes} → ${banhosUsadosDepois}\n\n` +
+              `✅ Você pode registrar novos banhos.`)
+      }
+    }
+
+    mostrarModalEditarServico.value = false
+
+    console.log('✅ Serviço principal atualizado com sucesso!')
+
+  } catch (error) {
+    console.error('❌ Erro ao salvar edição do serviço:', error)
+    alert('Erro ao salvar alterações. Tente novamente.')
+  } finally {
+    editandoServicos.value = false
+  }
+}
+
 const carregarDados = async (): Promise<void> => {
   try {
     loading.value = true
@@ -1045,10 +1837,55 @@ const carregarDados = async (): Promise<void> => {
     // Carregar dados relacionados
     const [animaisData, servicosData, clientesData, usuariosData] = await Promise.all([
       animaisService.buscarTodos(),
-      servicosService.buscarTodos(),
+      servicosService.buscarTodosSimples(), // Usar versão simples para evitar problemas de serialização
       clientesService.buscarTodos(),
       usuariosService.buscarTodos()
     ])
+
+    // Salvar serviços e usuários para edição
+    // Para serviços principais: todos exceto os que são APENAS adicionais
+    todosServicos.value = servicosData.filter(s => {
+      // Se não tem a propriedade podeSerAdicional ou é false, pode ser principal
+      // Se tem podeSerAdicional=true MAS quantidade > 1, também pode ser principal (pacotes)
+      return !s.podeSerAdicional || s.quantidade > 1
+    })
+    todosUsuarios.value = usuariosData
+    // Para serviços adicionais: apenas os marcados como adicionais
+    servicosAdicionaisDisponiveis.value = servicosData.filter(s => s.podeSerAdicional === true)
+
+    console.log('🔍 Filtros aplicados:')
+    console.log('  - Serviços principais:', todosServicos.value.map(s => `${s.nome} (${s.podeSerAdicional ? 'adicional' : 'principal'})`))
+    console.log('  - Serviços adicionais:', servicosAdicionaisDisponiveis.value.map(s => s.nome))
+
+    console.log('🔍 Dados carregados para SearchSelects:')
+    console.log('  - Todos serviços:', todosServicos.value.length)
+    console.log('  - Todos usuários:', todosUsuarios.value.length)
+    console.log('  - Serviços adicionais:', servicosAdicionaisDisponiveis.value.length)
+
+    // Preparar descrições para o SearchSelect dos serviços
+    todosServicos.value.forEach(servico => {
+      const valorText = `R$ ${servico.valor.toFixed(2).replace('.', ',')}`
+      const quantidadeText = servico.quantidade > 1 ? ` • ${servico.quantidade} banhos` : ' • Banho único'
+      const descricaoText = servico.descricao ? ` • ${servico.descricao}` : ''
+      ;(servico as any).servicoDescription = `${valorText}${quantidadeText}${descricaoText}`
+    })
+
+    // Preparar descrições para o SearchSelect dos serviços adicionais
+    servicosAdicionaisDisponiveis.value.forEach(servico => {
+      const valorText = `R$ ${servico.valor.toFixed(2).replace('.', ',')}`
+      const categoriaText = servico.categoria ? ` • ${servico.categoria}` : ''
+      const descricaoText = servico.descricao ? ` • ${servico.descricao}` : ''
+      ;(servico as any).servicoDescription = `${valorText}${categoriaText}${descricaoText}`
+    })
+
+    // Preparar descrições para o SearchSelect dos usuários
+    todosUsuarios.value.forEach(user => {
+      ;(user as any).usuarioDescription = `${user.email} • ${user.role}`
+    })
+
+    console.log('📝 Exemplos de dados preparados:')
+    console.log('  - Primeiro serviço:', todosServicos.value[0])
+    console.log('  - Primeiro usuário:', todosUsuarios.value[0])
 
     // Buscar dados específicos - busca reversa devido ao @JsonBackReference
     animal.value = animaisData.find(a =>
@@ -1092,6 +1929,17 @@ const carregarDados = async (): Promise<void> => {
     // Se for pacote, carregar banhos individuais
     if (servico.value && servico.value.quantidade > 1) {
       banhosIndividuais.value = await banhosIndividuaisService.buscarPorAnimalServico(animalServico.value.id)
+    }
+
+    // Carregar serviços adicionais
+    try {
+      servicosAdicionais.value = await servicosAdicionaisService.buscarPorAnimalServico(animalServico.value.id)
+      valorTotalAdicionais.value = await servicosAdicionaisService.calcularValorTotal(animalServico.value.id)
+      console.log('✅ Serviços adicionais carregados:', servicosAdicionais.value.length)
+    } catch (error) {
+      console.warn('⚠️ Erro ao carregar serviços adicionais (pode ser normal se não houver):', error)
+      servicosAdicionais.value = []
+      valorTotalAdicionais.value = 0
     }
 
     // Definir data atual para edição
@@ -1227,7 +2075,7 @@ const salvarBanhoIndividual = async (): Promise<void> => {
       usuarioId: null
     }
 
-    console.log('🛁 Registrando banho:', { animalServicoId: animalServico.value.id, data: dadosBanho.dataBanho })
+    console.log('🛁 Registrando banho:', dadosBanho)
 
     await banhosIndividuaisService.criar(dadosBanho)
 
@@ -1337,13 +2185,41 @@ const gerarRelatorioPDF = async (): Promise<void> => {
         </div>
 
         <div class="section">
-          <h2>💼 Serviço</h2>
-          <p><strong>Serviço:</strong> ${servico.value.nome}</p>
-          <p><strong>Valor:</strong> R$ ${servico.value.valor.toFixed(2).replace('.', ',')}</p>
-          <p><strong>Quantidade de Banhos:</strong> ${servico.value.quantidade}</p>
-          <p><strong>Banhos Utilizados:</strong> ${animalServico.value.banhosUsados}</p>
-          <p><strong>Banhos Restantes:</strong> ${Math.max(0, servico.value.quantidade - animalServico.value.banhosUsados)}</p>
-          <p><strong>Status:</strong> ${isServicoCompleto.value ? 'COMPLETO' : 'EM ANDAMENTO'}</p>
+          <h2>💼 Resumo dos Serviços</h2>
+
+          <!-- Serviço Principal -->
+          <div style="margin-bottom: 15px; padding: 10px; background: #f3f4f6; border-radius: 5px;">
+            <h3 style="margin: 0 0 8px 0; color: #4f46e5;">⭐ Serviço Principal</h3>
+            <p><strong>Serviço:</strong> ${servico.value.nome}</p>
+            <p><strong>Valor:</strong> R$ ${servico.value.valor.toFixed(2).replace('.', ',')}</p>
+            <p><strong>Quantidade de Banhos:</strong> ${servico.value.quantidade}</p>
+            <p><strong>Banhos Utilizados:</strong> ${animalServico.value.banhosUsados}</p>
+            <p><strong>Banhos Restantes:</strong> ${Math.max(0, servico.value.quantidade - animalServico.value.banhosUsados)}</p>
+            <p><strong>Status:</strong> ${isServicoCompleto.value ? 'COMPLETO' : 'EM ANDAMENTO'}</p>
+          </div>
+
+          ${servicosAdicionais.value.length > 0 ? `
+            <!-- Serviços Adicionais -->
+            <div style="margin-bottom: 15px;">
+              <h3 style="margin: 0 0 10px 0; color: #f59e0b;">➕ Serviços Adicionais</h3>
+              ${servicosAdicionais.value.map(adicional => `
+                <div style="margin-bottom: 8px; padding: 8px; background: #fef3c7; border-radius: 3px;">
+                  <p><strong>${adicional.nomeServicoAdicional}</strong></p>
+                  <p>Quantidade: ${adicional.quantidade} • Valor Unitário: R$ ${adicional.valorUnitario.toFixed(2).replace('.', ',')} • Total: R$ ${adicional.valorTotal.toFixed(2).replace('.', ',')}</p>
+                  <p>Status: ${adicional.statusPagamento === 'pago' ? 'PAGO' : adicional.statusPagamento === 'cancelado' ? 'CANCELADO' : 'EM ABERTO'}</p>
+                  ${adicional.observacoes ? `<p>Obs: ${adicional.observacoes}</p>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <!-- Total Geral -->
+          <div style="margin-top: 15px; padding: 10px; background: #10b981; color: white; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0;">💰 VALOR TOTAL GERAL: R$ ${valorTotalGeral.value.toFixed(2).replace('.', ',')}</h3>
+            ${servicosAdicionais.value.length > 0 ? `
+              <p style="margin: 5px 0 0 0; font-size: 12px;">Principal: R$ ${valorTotalPrincipal.value.toFixed(2).replace('.', ',')} + Adicionais: R$ ${valorTotalAdicionais.value.toFixed(2).replace('.', ',')}</p>
+            ` : ''}
+          </div>
         </div>
 
         <div class="section">

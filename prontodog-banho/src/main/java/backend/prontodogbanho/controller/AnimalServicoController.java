@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -75,8 +76,42 @@ public class AnimalServicoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AnimalServico> atualizarServico(@PathVariable Long id, @RequestBody AnimalServico animalServico) {
-        AnimalServico servicoAtualizado = this.animalServicoService.atualizarTudo(id, animalServico);
+    public ResponseEntity<AnimalServico> atualizarServico(@PathVariable Long id, @RequestBody Map<String, Object> dadosAtualizacao) {
+        System.out.println("🔍 CONTROLLER - Dados recebidos: " + dadosAtualizacao);
+
+        AnimalServico animalServico = new AnimalServico();
+
+        // Processar campos diretos
+        if (dadosAtualizacao.containsKey("dataServico")) {
+            animalServico.setDataServico(LocalDate.parse((String) dadosAtualizacao.get("dataServico")));
+        }
+        if (dadosAtualizacao.containsKey("dataExpiracao") && dadosAtualizacao.get("dataExpiracao") != null) {
+            animalServico.setDataExpiracao(LocalDate.parse((String) dadosAtualizacao.get("dataExpiracao")));
+        }
+        if (dadosAtualizacao.containsKey("statusPagamento")) {
+            animalServico.setStatusPagamento((String) dadosAtualizacao.get("statusPagamento"));
+        }
+        if (dadosAtualizacao.containsKey("dataPagamento") && dadosAtualizacao.get("dataPagamento") != null) {
+            animalServico.setDataPagamento(LocalDate.parse((String) dadosAtualizacao.get("dataPagamento")));
+        }
+
+        // Processar IDs dos relacionamentos
+        Long servicoId = null;
+        Long usuarioId = null;
+
+        if (dadosAtualizacao.containsKey("servicoId") && dadosAtualizacao.get("servicoId") != null) {
+            Object servicoIdObj = dadosAtualizacao.get("servicoId");
+            servicoId = servicoIdObj instanceof Integer ? ((Integer) servicoIdObj).longValue() : (Long) servicoIdObj;
+            System.out.println("🔍 CONTROLLER - Serviço ID extraído: " + servicoId);
+        }
+
+        if (dadosAtualizacao.containsKey("usuarioId") && dadosAtualizacao.get("usuarioId") != null) {
+            Object usuarioIdObj = dadosAtualizacao.get("usuarioId");
+            usuarioId = usuarioIdObj instanceof Integer ? ((Integer) usuarioIdObj).longValue() : (Long) usuarioIdObj;
+            System.out.println("🔍 CONTROLLER - Usuário ID extraído: " + usuarioId);
+        }
+
+        AnimalServico servicoAtualizado = this.animalServicoService.atualizarComIDs(id, animalServico, servicoId, usuarioId);
         return ResponseEntity.ok(servicoAtualizado);
     }
 

@@ -58,6 +58,11 @@ public class AnimalServico {
     @JsonBackReference("usuario-servico")
     private Usuario usuario;
 
+    // Método para expor o usuarioId no JSON sem quebrar o relacionamento
+    public Long getUsuarioId() {
+        return usuario != null ? usuario.getId() : null;
+    }
+
     @OneToMany(mappedBy="animalServico", cascade=CascadeType.ALL)
     @JsonManagedReference("animalservico-banho")
     private List<BanhoIndividual> banhosIndividuais;

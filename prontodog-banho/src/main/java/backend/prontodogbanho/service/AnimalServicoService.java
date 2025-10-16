@@ -231,6 +231,11 @@ public class AnimalServicoService {
         if (animalServicoOptional.isPresent()) {
             AnimalServico animalServicoExistente = animalServicoOptional.get();
 
+            System.out.println("🔍 DADOS RECEBIDOS do frontend:");
+            System.out.println("  - novosDados.getServicoId(): " + novosDados.getServicoId());
+            System.out.println("  - novosDados.getUsuarioId(): " + novosDados.getUsuarioId());
+            System.out.println("  - novosDados completo: " + novosDados);
+
             System.out.println("🔍 ANTES da atualização:");
             System.out.println("  - ID: " + animalServicoExistente.getId());
             System.out.println("  - Animal ID: " + (animalServicoExistente.getAnimal() != null ? animalServicoExistente.getAnimal().getId() : "null"));
@@ -258,6 +263,37 @@ public class AnimalServicoService {
             animalServicoExistente.setDataPagamento(novosDados.getDataPagamento());
             System.out.println("📆 Atualizando data pagamento: " + novosDados.getDataPagamento());
 
+            // ✅ Atualizar relacionamentos se fornecidos
+            if (novosDados.getServicoId() != null) {
+                System.out.println("🔄 Tentando atualizar serviço para ID: " + novosDados.getServicoId());
+                Optional<Servico> novoServico = servicoRepository.findById(novosDados.getServicoId());
+                if (novoServico.isPresent()) {
+                    Servico servicoAnterior = animalServicoExistente.getServico();
+                    animalServicoExistente.setServico(novoServico.get());
+                    System.out.println("✅ Serviço atualizado de ID " + (servicoAnterior != null ? servicoAnterior.getId() : "null") + " para ID: " + novosDados.getServicoId());
+                } else {
+                    System.err.println("❌ Serviço não encontrado com ID: " + novosDados.getServicoId());
+                    throw new RuntimeException("Serviço não encontrado com ID: " + novosDados.getServicoId());
+                }
+            } else {
+                System.out.println("⚠️  novosDados.getServicoId() é null - não atualizando serviço");
+            }
+
+            if (novosDados.getUsuarioId() != null) {
+                System.out.println("👤 Tentando atualizar usuário para ID: " + novosDados.getUsuarioId());
+                Optional<Usuario> novoUsuario = usuarioRepository.findById(novosDados.getUsuarioId());
+                if (novoUsuario.isPresent()) {
+                    Usuario usuarioAnterior = animalServicoExistente.getUsuario();
+                    animalServicoExistente.setUsuario(novoUsuario.get());
+                    System.out.println("✅ Usuário atualizado de ID " + (usuarioAnterior != null ? usuarioAnterior.getId() : "null") + " para ID: " + novosDados.getUsuarioId());
+                } else {
+                    System.err.println("❌ Usuário não encontrado com ID: " + novosDados.getUsuarioId());
+                    throw new RuntimeException("Usuário não encontrado com ID: " + novosDados.getUsuarioId());
+                }
+            } else {
+                System.out.println("⚠️  novosDados.getUsuarioId() é null - não atualizando usuário");
+            }
+
             // ✅ VERIFICAÇÃO CRÍTICA: Garantir que relacionamentos não sejam null
             if (animalServicoExistente.getAnimal() == null ||
                 animalServicoExistente.getServico() == null ||
@@ -275,7 +311,186 @@ public class AnimalServicoService {
             System.out.println("  - Servico ID: " + animalServicoExistente.getServico().getId());
             System.out.println("  - Usuario ID: " + animalServicoExistente.getUsuario().getId());
 
-            return animalServicoRepository.save(animalServicoExistente);
+            AnimalServico salvo = animalServicoRepository.save(animalServicoExistente);
+
+            System.out.println("✅ SALVO NO BANCO:");
+            System.out.println("  - ID salvo: " + salvo.getId());
+            System.out.println("  - Servico ID salvo: " + (salvo.getServico() != null ? salvo.getServico().getId() : "null"));
+            System.out.println("  - Usuario ID salvo: " + (salvo.getUsuario() != null ? salvo.getUsuario().getId() : "null"));
+            System.out.println("✅ AnimalServicoService.atualizarTudo - Atualização concluída com sucesso!");
+
+            return salvo;
+        } else {
+            throw new RuntimeException("AnimalServico não encontrado com id: " + id);
+        }
+    }
+
+    @Transactional
+    public AnimalServico atualizarComIDs(Long id, AnimalServico novosDados, Long servicoId, Long usuarioId) {
+        System.out.println("🔍 SERVICE - atualizarComIDs chamado:");
+        System.out.println("  - ID: " + id);
+        System.out.println("  - servicoId: " + servicoId);
+        System.out.println("  - usuarioId: " + usuarioId);
+        System.out.println("  - novosDados: " + novosDados);
+
+        Optional<AnimalServico> animalServicoOptional = animalServicoRepository.findById(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico animalServicoExistente = animalServicoOptional.get();
+
+            System.out.println("🔍 ANTES da atualização:");
+            System.out.println("  - Servico ID atual: " + (animalServicoExistente.getServico() != null ? animalServicoExistente.getServico().getId() : "null"));
+            System.out.println("  - Usuario ID atual: " + (animalServicoExistente.getUsuario() != null ? animalServicoExistente.getUsuario().getId() : "null"));
+
+            // Atualizar campos básicos se fornecidos
+            if (novosDados.getDataServico() != null) {
+                animalServicoExistente.setDataServico(novosDados.getDataServico());
+                System.out.println("📅 Atualizando data do serviço: " + novosDados.getDataServico());
+            }
+            if (novosDados.getDataExpiracao() != null) {
+                animalServicoExistente.setDataExpiracao(novosDados.getDataExpiracao());
+                System.out.println("⏰ Atualizando data expiração: " + novosDados.getDataExpiracao());
+            }
+            if (novosDados.getStatusPagamento() != null) {
+                animalServicoExistente.setStatusPagamento(novosDados.getStatusPagamento());
+                System.out.println("💳 Atualizando status pagamento: " + novosDados.getStatusPagamento());
+            }
+            if (novosDados.getDataPagamento() != null) {
+                animalServicoExistente.setDataPagamento(novosDados.getDataPagamento());
+                System.out.println("📆 Atualizando data pagamento: " + novosDados.getDataPagamento());
+            }
+
+            // Atualizar serviço se fornecido
+            if (servicoId != null) {
+                System.out.println("🔄 Tentando atualizar serviço para ID: " + servicoId);
+                Optional<Servico> novoServico = servicoRepository.findById(servicoId);
+                if (novoServico.isPresent()) {
+                    Servico servicoAnterior = animalServicoExistente.getServico();
+                    Servico servicoNovo = novoServico.get();
+
+                    System.out.println("🔍 ANÁLISE DE BANHOS:");
+                    System.out.println("  - Serviço anterior: " + (servicoAnterior != null ? servicoAnterior.getNome() + " (qtd: " + servicoAnterior.getQuantidade() + ")" : "null"));
+                    System.out.println("  - Serviço novo: " + servicoNovo.getNome() + " (qtd: " + servicoNovo.getQuantidade() + ")");
+
+                    // Verificar se precisa resetar banhos usados
+                    Integer banhosUsadosAtuais = animalServicoExistente.getBanhosUsados();
+                    Integer quantidadeNovoServico = servicoNovo.getQuantidade();
+
+                    System.out.println("  - Banhos usados atuais: " + banhosUsadosAtuais + " (tipo: " + (banhosUsadosAtuais != null ? banhosUsadosAtuais.getClass().getSimpleName() : "null") + ")");
+                    System.out.println("  - Quantidade novo serviço: " + quantidadeNovoServico + " (tipo: " + (quantidadeNovoServico != null ? quantidadeNovoServico.getClass().getSimpleName() : "null") + ")");
+
+                    // DEBUG: Testando todas as condições
+                    System.out.println("🔍 CONDIÇÕES DETALHADAS:");
+                    System.out.println("  - banhosUsadosAtuais != null: " + (banhosUsadosAtuais != null));
+                    System.out.println("  - quantidadeNovoServico != null: " + (quantidadeNovoServico != null));
+                    if (banhosUsadosAtuais != null && quantidadeNovoServico != null) {
+                        System.out.println("  - banhosUsadosAtuais > quantidadeNovoServico: " + (banhosUsadosAtuais > quantidadeNovoServico) + " (" + banhosUsadosAtuais + " > " + quantidadeNovoServico + ")");
+                    }
+                    System.out.println("  - CONDIÇÃO COMPLETA: " + (banhosUsadosAtuais != null && quantidadeNovoServico != null && banhosUsadosAtuais > quantidadeNovoServico));
+
+                    if (banhosUsadosAtuais != null && quantidadeNovoServico != null && banhosUsadosAtuais > quantidadeNovoServico) {
+                        System.out.println("⚠️  CONFLITO DETECTADO: " + banhosUsadosAtuais + " banhos usados > " + quantidadeNovoServico + " banhos permitidos");
+
+                        // Verificar quantos banhos individuais existem no banco
+                        Long banhosRegistrados = banhoIndividualRepository.countByAnimalServicoId(animalServicoExistente.getId());
+                        System.out.println("🔍 Banhos registrados no BD: " + banhosRegistrados);
+
+                        if (banhosRegistrados > 0) {
+                            System.out.println("🗑️  DELETANDO TODOS OS BANHOS para dar flexibilidade total ao usuário");
+
+                            // Buscar todos os banhos e deletar TODOS
+                            List<BanhoIndividual> todosOsBanhos = banhoIndividualRepository.findByAnimalServicoIdOrderByNumeroBanho(animalServicoExistente.getId());
+
+                            for (BanhoIndividual banho : todosOsBanhos) {
+                                System.out.println("🗑️  Deletando banho #" + banho.getNumeroBanho() + " ID " + banho.getId() + " (data: " + banho.getDataBanho() + ")");
+                                banhoIndividualRepository.delete(banho);
+                            }
+
+                            System.out.println("✅ Todos os " + banhosRegistrados + " banhos foram deletados");
+                        }
+
+                        System.out.println("🔄 EXECUTANDO RESET: setBanhosUsados(0) - usuário pode registrar novos banhos");
+                        animalServicoExistente.setBanhosUsados(0);
+                        System.out.println("✅ RESET CONCLUÍDO - Banhos agora: " + animalServicoExistente.getBanhosUsados() + "/" + quantidadeNovoServico);
+                    } else {
+                        System.out.println("✅ RESET NÃO NECESSÁRIO - Banhos cabem no novo serviço");
+
+                        // ALTERNATIVA: Verificar se mudou de um tipo muito diferente de serviço
+                        if (servicoAnterior != null && !servicoAnterior.getId().equals(servicoNovo.getId())) {
+                            System.out.println("🤔 MAS... houve mudança de serviço. Vamos verificar se deve limpar mesmo assim:");
+
+                            // Verificar quantos banhos individuais existem no banco
+                            Long banhosRegistrados = banhoIndividualRepository.countByAnimalServicoId(animalServicoExistente.getId());
+                            System.out.println("🔍 Banhos registrados no BD: " + banhosRegistrados);
+
+                            // Se mudou de pacote para avulso ou vice-versa, pode ser interessante limpar
+                            boolean servicoAnteriorEhPacote = servicoAnterior.getQuantidade() > 1;
+                            boolean servicoNovoEhPacote = servicoNovo.getQuantidade() > 1;
+
+                            System.out.println("🔍 Análise de tipos:");
+                            System.out.println("  - Serviço anterior é pacote: " + servicoAnteriorEhPacote);
+                            System.out.println("  - Serviço novo é pacote: " + servicoNovoEhPacote);
+                            System.out.println("  - Mudança de tipo: " + (servicoAnteriorEhPacote != servicoNovoEhPacote));
+
+                            if (banhosRegistrados > 0 && servicoAnteriorEhPacote != servicoNovoEhPacote) {
+                                System.out.println("🧹 LIMPEZA POR MUDANÇA DE TIPO DE SERVIÇO!");
+
+                                // Buscar todos os banhos e deletar TODOS
+                                List<BanhoIndividual> todosOsBanhos = banhoIndividualRepository.findByAnimalServicoIdOrderByNumeroBanho(animalServicoExistente.getId());
+
+                                for (BanhoIndividual banho : todosOsBanhos) {
+                                    System.out.println("🗑️  Deletando banho #" + banho.getNumeroBanho() + " ID " + banho.getId() + " (mudança de tipo)");
+                                    banhoIndividualRepository.delete(banho);
+                                }
+
+                                System.out.println("✅ Todos os " + banhosRegistrados + " banhos foram deletados por mudança de tipo");
+                                System.out.println("🔄 Resetando contador para 0");
+                                animalServicoExistente.setBanhosUsados(0);
+                            }
+                        }
+                    }
+
+                    animalServicoExistente.setServico(servicoNovo);
+                    System.out.println("✅ Serviço atualizado de ID " + (servicoAnterior != null ? servicoAnterior.getId() : "null") + " para ID: " + servicoId);
+                    System.out.println("📊 Estado final - Banhos: " + animalServicoExistente.getBanhosUsados() + "/" + quantidadeNovoServico);
+                } else {
+                    System.err.println("❌ Serviço não encontrado com ID: " + servicoId);
+                    throw new RuntimeException("Serviço não encontrado com ID: " + servicoId);
+                }
+            }
+
+            // Atualizar usuário se fornecido
+            if (usuarioId != null) {
+                System.out.println("👤 Tentando atualizar usuário para ID: " + usuarioId);
+                Optional<Usuario> novoUsuario = usuarioRepository.findById(usuarioId);
+                if (novoUsuario.isPresent()) {
+                    Usuario usuarioAnterior = animalServicoExistente.getUsuario();
+                    animalServicoExistente.setUsuario(novoUsuario.get());
+                    System.out.println("✅ Usuário atualizado de ID " + (usuarioAnterior != null ? usuarioAnterior.getId() : "null") + " para ID: " + usuarioId);
+                } else {
+                    System.err.println("❌ Usuário não encontrado com ID: " + usuarioId);
+                    throw new RuntimeException("Usuário não encontrado com ID: " + usuarioId);
+                }
+            }
+
+            // Verificação de integridade
+            if (animalServicoExistente.getAnimal() == null ||
+                animalServicoExistente.getServico() == null ||
+                animalServicoExistente.getUsuario() == null) {
+
+                System.err.println("❌ ERRO CRÍTICO: Relacionamentos estão null após atualização!");
+                throw new RuntimeException("Relacionamentos críticos estão null - operação cancelada");
+            }
+
+            AnimalServico salvo = animalServicoRepository.save(animalServicoExistente);
+
+            System.out.println("✅ SALVO NO BANCO:");
+            System.out.println("  - ID salvo: " + salvo.getId());
+            System.out.println("  - Servico ID salvo: " + (salvo.getServico() != null ? salvo.getServico().getId() : "null"));
+            System.out.println("  - Usuario ID salvo: " + (salvo.getUsuario() != null ? salvo.getUsuario().getId() : "null"));
+            System.out.println("✅ AnimalServicoService.atualizarComIDs - Atualização concluída com sucesso!");
+
+            return salvo;
         } else {
             throw new RuntimeException("AnimalServico não encontrado com id: " + id);
         }

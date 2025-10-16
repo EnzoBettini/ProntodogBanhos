@@ -33,7 +33,7 @@
     <!-- 📋 Dropdown com resultados -->
     <Teleport to="body">
       <div
-        v-if="showDropdown && (filteredOptions.length > 0 || loading || searchTerm.length > 0)"
+        v-if="showDropdown && ((filteredOptions && filteredOptions.length > 0) || loading || (searchTerm && searchTerm.length > 0))"
         :style="dropdownStyle"
         class="absolute z-50 w-full max-h-60 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
       >
@@ -44,7 +44,7 @@
         </div>
 
         <!-- Sem resultados -->
-        <div v-else-if="searchTerm.length > 0 && filteredOptions.length === 0" class="p-4 text-center text-gray-500">
+        <div v-else-if="searchTerm && searchTerm.length > 0 && filteredOptions && filteredOptions.length === 0" class="p-4 text-center text-gray-500">
           <FontAwesomeIcon :icon="['fas', 'search']" class="mr-2" />
           Nenhum resultado encontrado
         </div>
@@ -114,6 +114,10 @@ const dropdownStyle = ref({})
 
 // 🧮 Computadas
 const filteredOptions = computed(() => {
+  if (!props.options || !Array.isArray(props.options)) {
+    return []
+  }
+
   if (!searchTerm.value || searchTerm.value.length < props.minSearchLength) {
     return props.options.slice(0, 10) // Mostra apenas os primeiros 10 se não está buscando
   }
@@ -176,7 +180,7 @@ const handleKeydown = (event: KeyboardEvent): void => {
   switch (event.key) {
     case 'ArrowDown':
       event.preventDefault()
-      selectedIndex.value = Math.min(selectedIndex.value + 1, filteredOptions.value.length - 1)
+      selectedIndex.value = Math.min(selectedIndex.value + 1, (filteredOptions.value?.length || 0) - 1)
       break
     case 'ArrowUp':
       event.preventDefault()
@@ -210,13 +214,23 @@ const selectOption = (option: any): void => {
 
 // 👀 Watchers
 watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
+  if (newValue && props.options && Array.isArray(props.options)) {
     const selectedOption = props.options.find(option => option[props.valueKey] === newValue)
     if (selectedOption) {
       searchTerm.value = selectedOption[props.labelKey]
     }
   } else {
     searchTerm.value = ''
+  }
+}, { immediate: true })
+
+// Watcher para quando as options chegam depois do modelValue
+watch(() => props.options, (newOptions) => {
+  if (props.modelValue && newOptions && Array.isArray(newOptions)) {
+    const selectedOption = newOptions.find(option => option[props.valueKey] === props.modelValue)
+    if (selectedOption) {
+      searchTerm.value = selectedOption[props.labelKey]
+    }
   }
 }, { immediate: true })
 

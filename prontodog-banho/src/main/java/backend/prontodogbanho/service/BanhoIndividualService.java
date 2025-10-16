@@ -66,20 +66,33 @@ public class BanhoIndividualService {
     // Registrar um novo banho
     @Transactional
     public BanhoIndividual registrarBanho(Long animalServicoId, LocalDate dataBanho, String observacoes, Long usuarioId) {
+        System.out.println("🛁 SERVICE - Registrando banho para AnimalServico ID: " + animalServicoId);
+
         // Busca o AnimalServico
         Optional<AnimalServico> animalServicoOpt = animalServicoRepository.findById(animalServicoId);
         if (animalServicoOpt.isEmpty()) {
+            System.err.println("❌ SERVICE - AnimalServico não encontrado: " + animalServicoId);
             throw new RuntimeException("AnimalServico não encontrado com ID: " + animalServicoId);
         }
 
         AnimalServico animalServico = animalServicoOpt.get();
+        System.out.println("🔍 SERVICE - AnimalServico encontrado:");
+        System.out.println("  - Serviço: " + animalServico.getServico().getNome());
+        System.out.println("  - Banhos usados (campo): " + animalServico.getBanhosUsados());
 
         // Verifica se ainda há banhos disponíveis no pacote
         Integer quantidadeTotal = animalServico.getServico().getQuantidade();
         Long banhosJaRealizados = banhoIndividualRepository.countByAnimalServicoId(animalServicoId);
 
+        System.out.println("🔍 SERVICE - Validação de banhos:");
+        System.out.println("  - Quantidade total do serviço: " + quantidadeTotal);
+        System.out.println("  - Banhos já registrados no BD: " + banhosJaRealizados);
+        System.out.println("  - Condição (banhosJaRealizados >= quantidadeTotal): " + (banhosJaRealizados >= quantidadeTotal));
+
         if (banhosJaRealizados >= quantidadeTotal) {
-            throw new RuntimeException("Todos os banhos do pacote já foram utilizados. Total: " + quantidadeTotal);
+            String mensagem = "Todos os banhos do pacote já foram utilizados. Registrados: " + banhosJaRealizados + ", Total permitido: " + quantidadeTotal;
+            System.err.println("❌ SERVICE - " + mensagem);
+            throw new RuntimeException(mensagem);
         }
 
         // Calcula o próximo número do banho (considera gaps na numeração)

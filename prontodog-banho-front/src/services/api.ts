@@ -293,6 +293,17 @@ export const servicosService = {
     }, 'Não foi possível carregar a lista de serviços.')
   },
 
+  // 📖 BUSCAR SERVIÇOS SIMPLES (sem relacionamentos problemáticos para modais)
+  // GET /servico/simples
+  async buscarTodosSimples(): Promise<ServicosResponse> {
+    return withErrorHandling(async () => {
+      devLog('🔍 Buscando todos os serviços (versão simples para modais)...')
+      const response = await api.get<ServicosResponse>('/servico/simples')
+      devLog(`✅ ${response.data.length} serviços encontrados (simples)!`)
+      return response.data
+    }, 'Não foi possível carregar a lista de serviços para edição.')
+  },
+
   // 📖 BUSCAR SERVIÇO POR ID
   // GET /servico/{id}
   async buscarPorId(id: number): Promise<ServicoCompleto> {
@@ -553,6 +564,76 @@ export const banhosIndividuaisService = {
       await api.delete(`/banho-individual/${id}`)
       devLog('✅ Banho individual excluído com sucesso!')
     }, 'Não foi possível excluir o banho. Tente novamente.')
+  }
+}
+
+// 🔧 SERVIÇOS ADICIONAIS
+// Aqui ficam todos os métodos relacionados aos serviços adicionais
+export const servicosAdicionaisService = {
+
+  // 📖 BUSCAR TODOS OS SERVIÇOS ADICIONAIS DE UM ANIMAL SERVIÇO
+  async buscarPorAnimalServico(animalServicoId: number): Promise<any[]> {
+    validateId(animalServicoId)
+    return withErrorHandling(async () => {
+      devLog('📋 Buscando serviços adicionais para animal serviço:', animalServicoId)
+      const response = await api.get(`/api/servicos-adicionais/animal-servico/${animalServicoId}`)
+      devLog(`✅ ${response.data.length} serviços adicionais encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os serviços adicionais.')
+  },
+
+  // 🔍 BUSCAR SERVIÇO ADICIONAL POR ID
+  async buscarPorId(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog('🔍 Buscando serviço adicional por ID:', id)
+      const response = await api.get(`/api/servicos-adicionais/${id}`)
+      devLog('✅ Serviço adicional encontrado!')
+      return response.data
+    }, 'Não foi possível buscar o serviço adicional.')
+  },
+
+  // 💾 CRIAR NOVO SERVIÇO ADICIONAL
+  async criar(novoServicoAdicional: any): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('💾 Criando novo serviço adicional...', novoServicoAdicional)
+      const response = await api.post('/api/servicos-adicionais', novoServicoAdicional)
+      devLog('✅ Serviço adicional criado com sucesso!')
+      return response.data
+    }, 'Não foi possível criar o serviço adicional.')
+  },
+
+  // 🗑️ REMOVER SERVIÇO ADICIONAL
+  async remover(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      await api.delete(`/api/servicos-adicionais/${id}`)
+      devLog('🗑️ Serviço adicional removido com sucesso!')
+    }, 'Não foi possível remover o serviço adicional.')
+  },
+
+  // 🔄 ATUALIZAR STATUS DE PAGAMENTO
+  async atualizarStatusPagamento(id: number, status: string, dataPagamento?: string): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      const params = new URLSearchParams({ status })
+      if (dataPagamento) {
+        params.append('dataPagamento', dataPagamento)
+      }
+
+      const response = await api.put(`/api/servicos-adicionais/${id}/status-pagamento?${params}`)
+      devLog('✅ Status de pagamento atualizado!')
+      return response.data
+    }, 'Não foi possível atualizar o status de pagamento.')
+  },
+
+  // 📊 CALCULAR VALOR TOTAL DOS SERVIÇOS ADICIONAIS
+  async calcularValorTotal(animalServicoId: number): Promise<number> {
+    validateId(animalServicoId)
+    return withErrorHandling(async () => {
+      const response = await api.get(`/api/servicos-adicionais/animal-servico/${animalServicoId}/valor-total`)
+      return response.data || 0
+    }, 'Não foi possível calcular o valor total dos serviços adicionais.')
   }
 }
 

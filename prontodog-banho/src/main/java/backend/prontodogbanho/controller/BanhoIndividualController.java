@@ -72,6 +72,8 @@ public class BanhoIndividualController {
     @PostMapping
     public ResponseEntity<BanhoIndividual> registrarBanho(@RequestBody Map<String, Object> dadosBanho) {
         try {
+            System.out.println("🛁 CONTROLLER - Registrando banho com dados: " + dadosBanho);
+
             Long animalServicoId = Long.valueOf(dadosBanho.get("animalServicoId").toString());
             LocalDate dataBanho = LocalDate.parse(dadosBanho.get("dataBanho").toString());
             String observacoes = dadosBanho.get("observacoes") != null ?
@@ -79,12 +81,23 @@ public class BanhoIndividualController {
             Long usuarioId = dadosBanho.get("usuarioId") != null ?
                             Long.valueOf(dadosBanho.get("usuarioId").toString()) : null;
 
+            System.out.println("🔍 CONTROLLER - Dados processados:");
+            System.out.println("  - animalServicoId: " + animalServicoId);
+            System.out.println("  - dataBanho: " + dataBanho);
+            System.out.println("  - observacoes: " + observacoes);
+            System.out.println("  - usuarioId: " + usuarioId);
+
             BanhoIndividual novoBanho = banhoIndividualService.registrarBanho(
                 animalServicoId, dataBanho, observacoes, usuarioId);
 
+            System.out.println("✅ CONTROLLER - Banho registrado com sucesso: " + novoBanho.getId());
             return ResponseEntity.ok(novoBanho);
 
         } catch (Exception e) {
+            System.err.println("❌ CONTROLLER - Erro ao registrar banho:");
+            System.err.println("  - Mensagem: " + e.getMessage());
+            System.err.println("  - Tipo: " + e.getClass().getSimpleName());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }

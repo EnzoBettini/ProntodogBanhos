@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -38,11 +39,11 @@ public class Servico {
     @Column(name="categoria")
     private String categoria = "geral";
 
-    @OneToMany(mappedBy = "servico", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "servico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("servico-servico")
     private List<AnimalServico> servicosAnimais;
 
-    @OneToMany(mappedBy = "servicoAdicional", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "servicoAdicional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("servico-adicional")
     private List<ServicoAdicional> servicosComoAdicional;
 

@@ -5,7 +5,9 @@ import backend.prontodogbanho.service.ServicoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -33,6 +35,24 @@ public class ServicoController {
     public ResponseEntity<Servico> inserirServico(@RequestBody Servico servico) {
         Servico novoServico = this.servicoService.salvar(servico);
         return ResponseEntity.ok(novoServico);
+    }
+
+    @GetMapping("/simples")
+    public List<Map<String, Object>> listarServicosSimples() {
+        return this.servicoService.listarTodos()
+            .stream()
+            .map(servico -> {
+                Map<String, Object> servicoSimples = new HashMap<>();
+                servicoSimples.put("id", servico.getId());
+                servicoSimples.put("nome", servico.getNome());
+                servicoSimples.put("descricao", servico.getDescricao());
+                servicoSimples.put("quantidade", servico.getQuantidade());
+                servicoSimples.put("valor", servico.getValor());
+                servicoSimples.put("podeSerAdicional", servico.getPodeSerAdicional());
+                servicoSimples.put("categoria", servico.getCategoria());
+                return servicoSimples;
+            })
+            .toList();
     }
 
     @PostMapping("/{id}")
