@@ -159,9 +159,63 @@
             </p>
           </div>
 
-          <!-- ⏰ Data de Expiração (apenas para pacotes) -->
+          <!-- ✅ Checkbox Serviço Único (APENAS para serviços que PODEM SER ADICIONAIS) -->
           <div
-            v-if="servicoSelecionado && servicoSelecionado.quantidade > 1"
+            v-if="servicoSelecionado && servicoSelecionado.podeSerAdicional === true"
+            class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-orange-50/50 to-red-50/50 border border-orange-200/50 hover:border-orange-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+          >
+            <div class="flex items-center justify-between">
+              <label class="flex items-center text-lg font-bold text-gray-800 group-hover:text-orange-700 transition-colors">
+                <div class="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
+                  <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-white text-sm" />
+                </div>
+                Tipo de Realização
+              </label>
+              <div class="flex items-center gap-1">
+                <div class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-1 h-1 bg-pink-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-4 p-4 bg-white/50 rounded-xl border border-orange-100">
+              <input
+                id="servicoUnico"
+                v-model="formulario.servicoUnico"
+                type="checkbox"
+                :disabled="loading"
+                class="w-5 h-5 text-orange-500 bg-white border-2 border-orange-300 rounded focus:ring-orange-500 focus:ring-2 transition-all duration-200 hover:border-orange-400 disabled:cursor-not-allowed"
+              />
+              <label
+                for="servicoUnico"
+                class="text-lg font-medium text-gray-800 cursor-pointer select-none flex-1"
+              >
+                📝 Cadastrar serviço único?
+                <span class="text-orange-600 font-semibold">(já realizado)</span>
+              </label>
+            </div>
+
+            <div class="p-3 rounded-lg" :class="formulario.servicoUnico ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'">
+              <div class="flex items-center gap-2">
+                <FontAwesomeIcon
+                  :icon="formulario.servicoUnico ? ['fas', 'check'] : ['fas', 'calendar']"
+                  :class="formulario.servicoUnico ? 'text-green-600' : 'text-blue-600'"
+                />
+                <p class="text-sm font-medium" :class="formulario.servicoUnico ? 'text-green-800' : 'text-blue-800'">
+                  <span v-if="formulario.servicoUnico">
+                    ✅ Serviço será marcado como <strong>realizado</strong> (ex: tosa, corte de unha)
+                  </span>
+                  <span v-else>
+                    📅 Serviço será <strong>agendado</strong> para banhos individuais (ex: pacotes)
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ⏰ Data de Expiração (APENAS para serviços NORMAIS com múltiplos banhos) -->
+          <div
+            v-if="servicoSelecionado && servicoSelecionado.podeSerAdicional !== true && servicoSelecionado.quantidade > 1"
             class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-violet-50/50 to-purple-50/50 border border-violet-200/50 hover:border-violet-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
           >
             <div class="flex items-center justify-between">
@@ -192,16 +246,16 @@
             </p>
           </div>
 
-          <!-- 💡 Aviso para banhos únicos -->
+          <!-- 💡 Aviso para serviços que podem ser únicos (quando NÃO estiver marcado como único) -->
           <div
-            v-if="servicoSelecionado && servicoSelecionado.quantidade === 1"
+            v-if="servicoSelecionado && servicoSelecionado.podeSerAdicional === true && !formulario.servicoUnico"
             class="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200"
           >
             <div class="flex items-center gap-3">
               <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-amber-600 text-lg" />
               <div>
-                <p class="text-amber-800 font-medium">Banho Único</p>
-                <p class="text-amber-700 text-sm">Este serviço não precisa de data de expiração, pois será realizado na data informada.</p>
+                <p class="text-amber-800 font-medium">Serviço Agendado</p>
+                <p class="text-amber-700 text-sm">Este serviço será agendado para a data informada. Use o checkbox acima se foi realizado imediatamente.</p>
               </div>
             </div>
           </div>
@@ -275,8 +329,11 @@
             </p>
           </div>
 
-          <!-- 🛁 Banhos Usados -->
-          <div class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-cyan-50/50 to-teal-50/50 border border-cyan-200/50 hover:border-cyan-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+          <!-- 🛁 Banhos Usados (APENAS para serviços NORMAIS - não únicos/adicionais) -->
+          <div
+            v-if="servicoSelecionado && servicoSelecionado.podeSerAdicional !== true"
+            class="group space-y-4 p-6 rounded-2xl bg-gradient-to-r from-cyan-50/50 to-teal-50/50 border border-cyan-200/50 hover:border-cyan-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+          >
             <div class="flex items-center justify-between">
               <label class="flex items-center text-lg font-bold text-gray-800 group-hover:text-cyan-700 transition-colors">
                 <div class="p-2 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
@@ -347,8 +404,8 @@
             </div>
           </div>
 
-          <!-- 📅 Datas dos Banhos Já Realizados (se banhosUsados > 0) -->
-          <div v-if="formulario.banhosUsados > 0" class="group space-y-6 p-6 rounded-2xl bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border border-indigo-200/50 hover:border-indigo-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+          <!-- 📅 Datas dos Banhos Já Realizados (APENAS para serviços NORMAIS com banhos > 0) -->
+          <div v-if="servicoSelecionado && servicoSelecionado.podeSerAdicional !== true && formulario.banhosUsados > 0" class="group space-y-6 p-6 rounded-2xl bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border border-indigo-200/50 hover:border-indigo-300/70 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
               <label class="flex items-center text-lg font-bold text-gray-800 group-hover:text-indigo-700 transition-colors">
                 <div class="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
@@ -1048,6 +1105,8 @@ const formulario = ref({
   dataExpiracao: '',
   banhosUsados: 0,
   usuarioId: '',
+  // ✅ NOVO: Campo para serviço único
+  servicoUnico: false,
   // Campos de pagamento
   statusPagamento: 'em_aberto',
   dataPagamento: '',
@@ -1099,6 +1158,24 @@ const servicoSelecionado = computed(() => {
 const maxBanhosPermitidos = computed(() => {
   return servicoSelecionado.value?.quantidade || 1
 })
+
+// 🐛 DEBUG: Computed para debugar as condições
+const debugVisibilidade = computed(() => {
+  return {
+    servicoSelecionado: !!servicoSelecionado.value,
+    servicoTipo: servicoSelecionado.value?.podeSerAdicional === true ? 'único/adicional' : 'normal',
+    podeSerAdicional: servicoSelecionado.value?.podeSerAdicional,
+    servicoUnico: formulario.value.servicoUnico,
+    mostrarCheckbox: servicoSelecionado.value?.podeSerAdicional === true,
+    // 🎯 NOVA LÓGICA: Serviços únicos/adicionais NUNCA mostram seções de banhos
+    mostrarBanhos: servicoSelecionado.value && servicoSelecionado.value?.podeSerAdicional !== true
+  }
+})
+
+// Log do debug (temporário)
+watch(debugVisibilidade, (debug) => {
+  console.log('🐛 DEBUG Visibilidade:', debug)
+}, { immediate: true, deep: true })
 
 // 🔧 Computadas para serviços adicionais
 const valorTotalAdicionais = computed(() => {
@@ -1533,9 +1610,13 @@ const cadastrarAnimalServico = async (): Promise<void> => {
 
     let resultado
 
-    // Usar API completa se há banhos já realizados
-    if (formulario.value.banhosUsados > 0) {
-      console.log('🔄 Tentando usar API completa para banhos já realizados...')
+    // Usar API completa se há banhos já realizados OU se é serviço único
+    if (formulario.value.banhosUsados > 0 || formulario.value.servicoUnico) {
+      if (formulario.value.servicoUnico) {
+        console.log('🔄 Usando API completa para SERVIÇO ÚNICO (marcado como realizado)...')
+      } else {
+        console.log('🔄 Usando API completa para banhos já realizados...')
+      }
 
       // Preparar serviços adicionais para envio
       const servicosAdicionaisParaEnvio: NovoServicoAdicional[] = formulario.value.servicosAdicionais.map(adicional => ({
@@ -1548,23 +1629,42 @@ const cadastrarAnimalServico = async (): Promise<void> => {
         usuarioId: Number(formulario.value.usuarioId) // Usar o mesmo usuário do serviço principal
       }))
 
+      // 🎯 NOVA LÓGICA: Se é serviço único, marcar como totalmente realizado
+      let banhosUsadosParaEnvio = formulario.value.banhosUsados
+      let datasParaEnvio = datasBanhosRealizados.value
+      let observacoesParaEnvio = observacoesBanhos.value.filter(obs => obs.trim() !== '')
+
+      if (formulario.value.servicoUnico) {
+        console.log('✅ SERVIÇO ÚNICO DETECTADO - Marcando como realizado')
+        const servicoInfo = servicosFiltrados.value.find(s => s.id === Number(formulario.value.servicoId))
+        if (servicoInfo) {
+          banhosUsadosParaEnvio = servicoInfo.quantidade
+          // Para serviço único, usar a data do serviço como data de realização
+          datasParaEnvio = Array(servicoInfo.quantidade).fill(formulario.value.dataServico)
+          observacoesParaEnvio = Array(servicoInfo.quantidade).fill('Serviço realizado no cadastro')
+          console.log(`📅 Configurado ${servicoInfo.quantidade} banhos como realizados na data ${formulario.value.dataServico}`)
+        }
+      }
+
       const dadosCompletos: CriarAnimalServicoCompleto = {
         dataServico: formulario.value.dataServico,
         dataExpiracao: formulario.value.dataExpiracao || undefined,
-        banhosUsados: formulario.value.banhosUsados,
+        banhosUsados: banhosUsadosParaEnvio,
         animalId: Number(formulario.value.animalId),
         servicoId: Number(formulario.value.servicoId),
         usuarioId: Number(formulario.value.usuarioId),
         statusPagamento: formulario.value.statusPagamento,
         dataPagamento: formulario.value.dataPagamento || undefined,
-        datasBanhosRealizados: datasBanhosRealizados.value,
-        observacoesBanhos: observacoesBanhos.value.filter(obs => obs.trim() !== ''),
+        datasBanhosRealizados: datasParaEnvio,
+        observacoesBanhos: observacoesParaEnvio,
         servicosAdicionais: servicosAdicionaisParaEnvio.length > 0 ? servicosAdicionaisParaEnvio : undefined
       }
 
       console.log('📤 DADOS ENVIADOS PARA BACKEND:')
+      console.log('  - SERVIÇO ÚNICO:', formulario.value.servicoUnico)
       console.log('  - Data do Serviço (frontend):', formulario.value.dataServico)
-      console.log('  - Datas dos Banhos (frontend):', datasBanhosRealizados.value)
+      console.log('  - Banhos Usados (enviando):', banhosUsadosParaEnvio)
+      console.log('  - Datas dos Banhos (enviando):', datasParaEnvio)
       console.log('  - Objeto completo:', dadosCompletos)
       console.log('  - Formato JSON:', JSON.stringify(dadosCompletos, null, 2))
 
@@ -1699,6 +1799,8 @@ const cadastrarOutroServico = (): void => {
     dataExpiracao: '',
     banhosUsados: 0,
     usuarioId: '',
+    // ✅ Campo para serviço único
+    servicoUnico: false,
     // Campos de pagamento
     statusPagamento: 'em_aberto',
     dataPagamento: '',
@@ -1727,6 +1829,18 @@ watch(servicoSelecionado, (novoServico) => {
   if (novoServico && novoServico.quantidade === 1) {
     console.log('🔄 Banho único detectado - limpando data de expiração')
     formulario.value.dataExpiracao = ''
+  }
+
+  // 🎯 RESETAR checkbox serviço único quando mudar para serviço que NÃO pode ser adicional
+  if (novoServico && novoServico.podeSerAdicional !== true && formulario.value.servicoUnico) {
+    console.log('🔄 Mudou para serviço normal - resetando checkbox serviço único')
+    formulario.value.servicoUnico = false
+  }
+
+  // 🎯 RESETAR checkbox quando trocar entre serviços que podem ser adicionais
+  if (novoServico && novoServico.podeSerAdicional === true) {
+    console.log('🔄 Novo serviço adicional selecionado - resetando checkbox para permitir escolha')
+    formulario.value.servicoUnico = false
   }
 })
 
