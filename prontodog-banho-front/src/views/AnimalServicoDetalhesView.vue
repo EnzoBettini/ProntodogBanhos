@@ -1,10 +1,10 @@
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-amber-50 via-white to-green-50 p-4 pb-32">
+  <div class="relative min-h-screen bg-gradient-to-br from-amber-50 via-white to-green-50 p-4 pb-32 overflow-x-hidden">
     <!-- 🎨 Background decorativo -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
       <div class="absolute top-20 left-10 w-72 h-72 bg-amber-200/20 rounded-full blur-3xl"></div>
       <div class="absolute bottom-20 right-10 w-96 h-96 bg-green-200/20 rounded-full blur-3xl"></div>
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-amber-100/10 to-green-100/10 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 bg-gradient-to-r from-amber-100/10 to-green-100/10 rounded-full blur-3xl"></div>
     </div>
 
     <div class="relative z-20 max-w-7xl mx-auto pt-8">
@@ -32,18 +32,18 @@
       <!-- 📋 Conteúdo Principal -->
       <div v-else-if="animalServico">
         <!-- Header com navegação -->
-        <div class="flex items-center gap-4 mb-8">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
           <BaseButton @click="voltarParaLista" variant="ghost" class="flex items-center gap-2">
             <FontAwesomeIcon :icon="['fas', 'arrow-left']" />
             <span class="hidden sm:inline">Voltar para Lista</span>
           </BaseButton>
 
-          <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-800">Detalhes do Serviço</h1>
-            <p class="text-gray-600">Animal: {{ animal?.nome || 'N/A' }} • Serviço: {{ servico?.nome || 'N/A' }}</p>
+          <div class="flex-1 min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 break-words">Detalhes do Serviço</h1>
+            <p class="text-gray-600 text-sm sm:text-base break-words">Animal: {{ animal?.nome || 'N/A' }} • Serviço: {{ servico?.nome || 'N/A' }}</p>
           </div>
 
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
             <!-- Status do Serviço -->
             <BaseBadge
               :variant="isServicoCompleto ? 'success' : 'warning'"
@@ -78,7 +78,7 @@
               <!-- Dropdown de Pagamento -->
               <div
                 v-if="mostrarMenuPagamento"
-                class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
+                class="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
                 @click.stop
               >
                 <div class="px-4 py-2 border-b border-gray-100">
@@ -140,10 +140,10 @@
         </div>
 
         <!-- Grid principal reorganizado -->
-        <div class="flex flex-col xl:flex-row lg:flex-row gap-6 items-start xl:items-stretch">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full overflow-hidden">
 
           <!-- 📊 Coluna 1: Informações Principais -->
-          <BaseCard class="shadow-xl border-0 w-full xl:w-1/3 lg:w-1/2 flex-shrink-0">
+          <BaseCard class="shadow-xl border-0 w-full min-w-0">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-green-500 rounded-xl flex items-center justify-center">
                 <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-white text-xl" />
@@ -165,7 +165,7 @@
                   <div>
                     <p class="text-red-800 font-bold text-sm">⚠️ PACOTE VENCIDO</p>
                     <p class="text-red-600 text-sm">
-                      Expirou em {{ formatarData(animalServico.dataExpiracao!) }}
+                      Expirou em {{ formatarData(animalServico?.dataExpiracao!) }}
                       <span class="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
                         {{ diasVencido }} dia{{ diasVencido !== 1 ? 's' : '' }} atrás
                       </span>
@@ -180,7 +180,7 @@
                   <FontAwesomeIcon :icon="['fas', 'hashtag']" class="text-gray-600" />
                   <div>
                     <p class="text-sm font-medium text-gray-600">ID do Registro</p>
-                    <p class="text-lg font-mono font-bold text-gray-800 tracking-wider">#{{ animalServico.id }}</p>
+                    <p class="text-lg font-mono font-bold text-gray-800 tracking-wide break-all">#{{ animalServico?.id }}</p>
                   </div>
                 </div>
               </div>
@@ -191,7 +191,7 @@
                   <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="text-amber-600" />
                   <div>
                     <p class="text-sm font-medium text-gray-600">Data do Serviço</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ formatarData(animalServico.dataServico) }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ formatarData(animalServico?.dataServico) }}</p>
                   </div>
                 </div>
                 <BaseButton @click="editarData = true" variant="ghost" size="sm">
@@ -209,7 +209,7 @@
                   <div>
                     <p class="text-sm font-medium text-gray-600">Progresso dos Banhos</p>
                     <p class="text-lg font-semibold text-gray-800">
-                      {{ animalServico.banhosUsados }} de {{ totalBanhos }} banhos
+                      {{ animalServico?.banhosUsados }} de {{ totalBanhos }} banhos
                     </p>
                   </div>
                 </div>
@@ -274,7 +274,7 @@
           </BaseCard>
 
           <!-- 💳 Coluna 2: Pagamento & Expiração -->
-          <BaseCard class="shadow-xl border-0 w-full xl:w-1/3 lg:w-1/2 flex-shrink-0">
+          <BaseCard class="shadow-xl border-0 w-full min-w-0">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-xl flex items-center justify-center">
                 <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-white text-xl" />
@@ -289,42 +289,42 @@
               <!-- 💳 Informações de Pagamento (movido para cá) -->
               <div class="p-4 rounded-xl border"
                    :class="{
-                     'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200': animalServico.statusPagamento === 'pago',
-                     'bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200': animalServico.statusPagamento === 'em_aberto',
-                     'bg-gradient-to-r from-red-50 to-pink-50 border-red-200': animalServico.statusPagamento === 'cancelado'
+                     'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200': animalServico?.statusPagamento === 'pago',
+                     'bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200': animalServico?.statusPagamento === 'em_aberto',
+                     'bg-gradient-to-r from-red-50 to-pink-50 border-red-200': animalServico?.statusPagamento === 'cancelado'
                    }">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
                     <FontAwesomeIcon
-                      :icon="getStatusPagamentoIcon(animalServico.statusPagamento)"
+                      :icon="getStatusPagamentoIcon(animalServico?.statusPagamento)"
                       :class="{
-                        'text-emerald-600': animalServico.statusPagamento === 'pago',
-                        'text-orange-600': animalServico.statusPagamento === 'em_aberto',
-                        'text-red-600': animalServico.statusPagamento === 'cancelado'
+                        'text-emerald-600': animalServico?.statusPagamento === 'pago',
+                        'text-orange-600': animalServico?.statusPagamento === 'em_aberto',
+                        'text-red-600': animalServico?.statusPagamento === 'cancelado'
                       }"
                     />
                     <div>
                       <p class="text-sm font-medium"
                          :class="{
-                           'text-emerald-700': animalServico.statusPagamento === 'pago',
-                           'text-orange-700': animalServico.statusPagamento === 'em_aberto',
-                           'text-red-700': animalServico.statusPagamento === 'cancelado'
+                           'text-emerald-700': animalServico?.statusPagamento === 'pago',
+                           'text-orange-700': animalServico?.statusPagamento === 'em_aberto',
+                           'text-red-700': animalServico?.statusPagamento === 'cancelado'
                          }">
                         Status do Pagamento
                       </p>
                       <p class="text-lg font-semibold"
                          :class="{
-                           'text-emerald-800': animalServico.statusPagamento === 'pago',
-                           'text-orange-800': animalServico.statusPagamento === 'em_aberto',
-                           'text-red-800': animalServico.statusPagamento === 'cancelado'
+                           'text-emerald-800': animalServico?.statusPagamento === 'pago',
+                           'text-orange-800': animalServico?.statusPagamento === 'em_aberto',
+                           'text-red-800': animalServico?.statusPagamento === 'cancelado'
                          }">
-                        {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
+                        {{ getStatusPagamentoTexto(animalServico?.statusPagamento) }}
                       </p>
                     </div>
                   </div>
 
                   <!-- Data de Pagamento (se existe) -->
-                  <div v-if="animalServico.dataPagamento" class="text-right">
+                  <div v-if="animalServico?.dataPagamento" class="text-right">
                     <div class="flex items-center gap-2">
                       <div>
                         <p class="text-xs font-medium text-gray-600">Data do Pagamento</p>
@@ -332,7 +332,7 @@
                         <!-- Modo Visualização -->
                         <div v-if="!editandoDataPagamento" class="flex items-center gap-2">
                           <p class="text-sm font-semibold text-gray-800">
-                            {{ formatarData(animalServico.dataPagamento) }}
+                            {{ formatarData(animalServico?.dataPagamento) }}
                           </p>
                           <button
                             @click="iniciarEdicaoDataPagamento"
@@ -374,7 +374,7 @@
                   </div>
 
                   <!-- Opção para definir data (se não existe) -->
-                  <div v-else-if="animalServico.statusPagamento === 'pago'" class="text-right">
+                  <div v-else-if="animalServico?.statusPagamento === 'pago'" class="text-right">
                     <div v-if="!editandoDataPagamento" class="flex items-center gap-2">
                       <div>
                         <p class="text-xs font-medium text-gray-600">Data do Pagamento</p>
@@ -423,7 +423,7 @@
               </div>
 
               <!-- Data de Expiração (movido para cá) -->
-              <div v-if="animalServico.dataExpiracao" class="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200"
+              <div v-if="animalServico?.dataExpiracao" class="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200"
                    :class="{
                      'border-red-300 bg-gradient-to-r from-red-50 to-orange-50': isPackageExpired,
                      'border-yellow-300 bg-gradient-to-r from-yellow-50 to-amber-50': isPackageExpiringSoon && !isPackageExpired,
@@ -452,7 +452,7 @@
                          'text-yellow-800': isPackageExpiringSoon && !isPackageExpired,
                          'text-gray-800': !isPackageExpired && !isPackageExpiringSoon
                        }">
-                      {{ formatarData(animalServico.dataExpiracao) }}
+                      {{ formatarData(animalServico?.dataExpiracao) }}
                     </p>
                   </div>
                   <div v-if="!isPackageExpired" class="text-right">
@@ -497,7 +497,7 @@
           </BaseCard>
 
           <!-- 🐕 Coluna 3: Informações do Animal -->
-          <BaseCard class="shadow-xl border-0 w-full xl:w-1/3 lg:w-full flex-shrink-0">
+          <BaseCard class="shadow-xl border-0 w-full lg:col-span-2 xl:col-span-1 min-w-0">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center">
                 <FontAwesomeIcon :icon="['fas', 'paw']" class="text-white text-xl" />
@@ -565,7 +565,7 @@
         </div>
 
         <!-- 🛁 Histórico de Banhos (se for pacote) -->
-        <div v-if="servico && servico.quantidade > 1" class="mt-6 w-full">
+        <div v-if="servico && servico.quantidade > 1" class="mt-6 w-full min-w-0">
           <BaseCard class="shadow-xl border-0">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
