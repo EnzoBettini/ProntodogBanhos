@@ -21,6 +21,27 @@ public class ServicoAdicionalController {
     @Autowired
     private ServicoAdicionalService servicoAdicionalService;
 
+    // Construtor para log de inicialização
+    public ServicoAdicionalController() {
+        System.out.println("🏗️ ServicoAdicionalController inicializado!");
+        System.out.println("📍 Endpoints disponíveis:");
+        System.out.println("  - POST   /api/servicos-adicionais");
+        System.out.println("  - GET    /api/servicos-adicionais");
+        System.out.println("  - GET    /api/servicos-adicionais/{id}");
+        System.out.println("  - PUT    /api/servicos-adicionais/{id}");
+        System.out.println("  - PUT    /api/servicos-adicionais/{id}/status-pagamento");
+        System.out.println("  - DELETE /api/servicos-adicionais/{id}");
+    }
+
+    /**
+     * Endpoint de teste para verificar se o controller está funcionando
+     */
+    @GetMapping("/teste-put")
+    public ResponseEntity<String> testePut() {
+        System.out.println("🧪 Endpoint de teste chamado!");
+        return ResponseEntity.ok("Endpoint PUT está funcionando! Controller carregado corretamente. ✅");
+    }
+
     /**
      * Criar um novo serviço adicional
      */
@@ -77,6 +98,34 @@ public class ServicoAdicionalController {
             return ResponseEntity.ok(servicosAdicionais);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    /**
+     * Atualizar serviço adicional completo
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarServicoAdicional(
+            @PathVariable Long id,
+            @RequestBody CriarServicoAdicionalDTO dto) {
+        try {
+            System.out.println("🔄 DEBUG: Atualizando serviço adicional completo");
+            System.out.println("  - ID: " + id);
+            System.out.println("  - DTO: " + dto);
+
+            ServicoAdicionalCompletoDTO resultado = servicoAdicionalService.atualizarServicoAdicional(id, dto);
+
+            System.out.println("✅ Serviço adicional atualizado com sucesso!");
+            return ResponseEntity.ok(resultado);
+        } catch (RuntimeException e) {
+            System.err.println("❌ Erro runtime: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Erro ao atualizar serviço adicional: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("❌ Erro interno: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno do servidor: " + e.getMessage());
         }
     }
 

@@ -18,8 +18,9 @@ public record CriarServicoAdicionalDTO(
         @NotNull(message = "O valor do serviço adicional é obrigatório.")
         BigDecimal valorUnitario, // Mudado para coincidir com o frontend
 
-        String statusPagamento, // "em_aberto", "pago", "cancelado"
-        String dataPagamento, // String para coincidir com o frontend
         String observacoes,
         Long usuarioId // Opcional, pode ser preenchido pelo sistema
+
+        // ❌ Removidos: statusPagamento e dataPagamento
+        // 🎯 Sempre herdam automaticamente do serviço pai
 ) {}

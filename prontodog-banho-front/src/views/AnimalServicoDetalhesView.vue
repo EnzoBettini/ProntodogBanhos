@@ -973,41 +973,15 @@
         </div>
 
         <!-- 🎯 Informação sobre herança de dados -->
-        <div v-if="animalServico?.statusPagamento === 'pago'" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <!-- 🎯 Informação sobre herança automática -->
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div class="flex items-start gap-2">
             <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-blue-600 mt-0.5 flex-shrink-0" />
             <div class="text-sm text-blue-800">
-              <p class="font-medium">Dados herdados do serviço principal</p>
-              <p class="text-blue-600">Status e data de pagamento foram copiados automaticamente. Você pode alterá-los se necessário.</p>
+              <p class="font-medium">Status e Data de Pagamento</p>
+              <p>Serão automaticamente herdados do serviço principal ({{ getStatusPagamentoTexto(animalServico?.statusPagamento || 'em_aberto') }}).</p>
             </div>
           </div>
-        </div>
-
-        <!-- Status de pagamento -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Status de Pagamento
-          </label>
-          <select
-            v-model="formularioServicoAdicional.statusPagamento"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="em_aberto">Em Aberto</option>
-            <option value="pago">Pago</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-        </div>
-
-        <!-- Data de pagamento -->
-        <div v-if="formularioServicoAdicional.statusPagamento === 'pago'">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Data do Pagamento
-          </label>
-          <input
-            v-model="formularioServicoAdicional.dataPagamento"
-            type="date"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
         </div>
 
         <!-- Observações -->
@@ -1082,31 +1056,15 @@
           />
         </div>
 
-        <!-- Status de pagamento -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Status de Pagamento
-          </label>
-          <select
-            v-model="formularioServicoAdicional.statusPagamento"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="em_aberto">Em Aberto</option>
-            <option value="pago">Pago</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-        </div>
-
-        <!-- Data de pagamento -->
-        <div v-if="formularioServicoAdicional.statusPagamento === 'pago'">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Data do Pagamento
-          </label>
-          <input
-            v-model="formularioServicoAdicional.dataPagamento"
-            type="date"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <!-- 🎯 Informação sobre herança automática -->
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex items-start gap-2">
+            <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-blue-600 mt-0.5 flex-shrink-0" />
+            <div class="text-sm text-blue-800">
+              <p class="font-medium">Status e Data de Pagamento</p>
+              <p>Sempre herdam automaticamente do serviço principal ({{ getStatusPagamentoTexto(animalServico?.statusPagamento || 'em_aberto') }}).</p>
+            </div>
+          </div>
         </div>
 
         <!-- Observações -->
@@ -1376,10 +1334,9 @@ const formularioServicoAdicional = ref({
   quantidade: 1,
   valorUnitario: 0,
   valorOriginal: 0,
-  statusPagamento: 'em_aberto',
-  dataPagamento: '',
   observacoes: '',
   alterarValor: false
+  // ❌ Removidos: statusPagamento e dataPagamento (sempre herdam do pai)
 })
 
 // Computadas
@@ -1537,78 +1494,38 @@ const getStatusPagamentoBadgeVariant = (status: string): 'success' | 'warning' |
 
 // 🔄 Função para sincronizar serviços adicionais com o pai
 const sincronizarServicosAdicionaisComPai = async (novoStatus: 'pago' | 'em_aberto' | 'cancelado', dataPagamento?: string): Promise<void> => {
-  console.log('🔍 DEBUG: Iniciando sincronização...')
-  console.log('  - animalServico.value:', !!animalServico.value)
-  console.log('  - servicosAdicionais.value.length:', servicosAdicionais.value?.length || 0)
-  console.log('  - novoStatus:', novoStatus)
-  console.log('  - dataPagamento:', dataPagamento)
-
-  if (!animalServico.value || servicosAdicionais.value.length === 0) {
-    console.log('❌ DEBUG: Condições não atendidas para sincronização')
-    return
-  }
+  if (!animalServico.value || servicosAdicionais.value.length === 0) return
 
   try {
     console.log(`🔄 Sincronizando ${servicosAdicionais.value.length} serviços adicionais com status: ${novoStatus}`)
 
     // Atualizar cada serviço adicional para seguir o pai
-    const promessas = servicosAdicionais.value.map(async (adicional, index) => {
+    const promessas = servicosAdicionais.value.map(async (adicional) => {
       try {
-        console.log(`📝 [${index + 1}/${servicosAdicionais.value.length}] Atualizando serviço adicional:`)
-        console.log(`  - ID: ${adicional.id}`)
-        console.log(`  - Nome: ${adicional.nomeServicoAdicional}`)
-        console.log(`  - Status atual: ${adicional.statusPagamento}`)
-        console.log(`  - Novo status: ${novoStatus}`)
+        console.log(`📝 Atualizando serviço adicional ID ${adicional.id} (${adicional.nomeServicoAdicional}) para: ${novoStatus}`)
 
-        const resultado = await servicosAdicionaisService.atualizarStatusPagamento(
+        await servicosAdicionaisService.atualizarStatusPagamento(
           adicional.id,
           novoStatus,
           novoStatus === 'pago' ? dataPagamento : undefined
         )
 
-        console.log(`✅ [${index + 1}/${servicosAdicionais.value.length}] Serviço adicional ${adicional.nomeServicoAdicional} sincronizado!`)
-        console.log('  - Resultado do backend:', resultado)
-        return resultado
+        console.log(`✅ Serviço adicional ${adicional.nomeServicoAdicional} sincronizado!`)
       } catch (error) {
-        console.error(`❌ [${index + 1}/${servicosAdicionais.value.length}] Erro ao sincronizar serviço adicional ${adicional.nomeServicoAdicional}:`)
-        console.error('  - Error object:', error)
-        console.error('  - Error message:', error instanceof Error ? error.message : 'Erro desconhecido')
-        throw error
+        console.error(`❌ Erro ao sincronizar serviço adicional ${adicional.nomeServicoAdicional}:`, error)
       }
     })
 
     // Aguardar todas as atualizações
-    console.log('⏳ Aguardando conclusão de todas as atualizações...')
-    const resultados = await Promise.allSettled(promessas)
-
-    // Analisar resultados
-    const sucessos = resultados.filter(r => r.status === 'fulfilled').length
-    const falhas = resultados.filter(r => r.status === 'rejected').length
-
-    console.log(`📊 Resultados da sincronização:`)
-    console.log(`  - Sucessos: ${sucessos}`)
-    console.log(`  - Falhas: ${falhas}`)
-
-    if (falhas > 0) {
-      console.error('❌ Detalhes das falhas:')
-      resultados.forEach((resultado, index) => {
-        if (resultado.status === 'rejected') {
-          console.error(`  [${index + 1}] ${resultado.reason}`)
-        }
-      })
-    }
+    await Promise.allSettled(promessas)
 
     // Recarregar serviços adicionais para mostrar as mudanças
-    console.log('🔄 Recarregando serviços adicionais...')
     await recarregarServicosAdicionais()
 
     console.log('🎉 Sincronização de serviços adicionais concluída!')
 
   } catch (error) {
-    console.error('❌ Erro geral na sincronização de serviços adicionais:')
-    console.error('  - Error object:', error)
-    console.error('  - Error message:', error instanceof Error ? error.message : 'Erro desconhecido')
-    console.error('  - Stack trace:', error instanceof Error ? error.stack : 'N/A')
+    console.error('❌ Erro geral na sincronização de serviços adicionais:', error)
   }
 }
 
@@ -1764,10 +1681,9 @@ const editarServicoAdicional = (adicional: any): void => {
     quantidade: adicional.quantidade,
     valorUnitario: adicional.valorUnitario,
     valorOriginal: adicional.valorUnitario,
-    statusPagamento: adicional.statusPagamento,
-    dataPagamento: adicional.dataPagamento || '',
     observacoes: adicional.observacoes || '',
     alterarValor: false
+    // ❌ Removidos: statusPagamento e dataPagamento (sempre herdam do pai)
   }
   mostrarModalEditarAdicional.value = true
 }
@@ -1789,10 +1705,6 @@ const removerServicoAdicional = async (adicional: any): Promise<void> => {
 }
 
 const adicionarNovoServicoAdicional = (): void => {
-  // 🎯 HERDAR dados do serviço principal por padrão
-  const statusPagamentoPai = animalServico.value?.statusPagamento || 'em_aberto'
-  const dataPagamentoPai = animalServico.value?.dataPagamento || ''
-
   formularioServicoAdicional.value = {
     id: null,
     servicoId: 0,
@@ -1800,19 +1712,12 @@ const adicionarNovoServicoAdicional = (): void => {
     quantidade: 1,
     valorUnitario: 0,
     valorOriginal: 0,
-    // 🎯 Status e data herdam do serviço principal
-    statusPagamento: statusPagamentoPai,
-    dataPagamento: statusPagamentoPai === 'pago' ? dataPagamentoPai : '',
     observacoes: '',
     alterarValor: false
+    // ❌ Removidos: statusPagamento e dataPagamento (sempre herdam do pai automaticamente)
   }
 
-  console.log('🎯 Serviço adicional criado com dados herdados do pai:', {
-    statusPagamentoPai,
-    dataPagamentoPai,
-    statusHerdado: formularioServicoAdicional.value.statusPagamento,
-    dataHerdada: formularioServicoAdicional.value.dataPagamento
-  })
+  console.log('🎯 Novo serviço adicional (status e data herdarão do pai automaticamente)')
 
   mostrarModalAdicionarExtra.value = true
 }
@@ -1828,17 +1733,18 @@ const salvarServicoAdicional = async (): Promise<void> => {
       servicoAdicionalId: formularioServicoAdicional.value.servicoId,
       quantidade: formularioServicoAdicional.value.quantidade,
       valorUnitario: formularioServicoAdicional.value.valorUnitario,
-      statusPagamento: formularioServicoAdicional.value.statusPagamento,
-      dataPagamento: formularioServicoAdicional.value.dataPagamento || null,
       observacoes: formularioServicoAdicional.value.observacoes,
       usuarioId: usuario.value?.id || null
+      // ❌ Removidos: statusPagamento e dataPagamento (herdarão do pai no backend)
     }
 
     if (formularioServicoAdicional.value.id) {
-      // Editar existente - precisa implementar endpoint de atualização
+      // Editar existente
       console.log('🔄 Editando serviço adicional...', dadosServico)
-      // TODO: Implementar endpoint de edição
-      alert('Funcionalidade de edição ainda não implementada no backend')
+      const resultado = await servicosAdicionaisService.atualizar(formularioServicoAdicional.value.id, dadosServico)
+      console.log('✅ Serviço adicional editado!')
+
+      // ✅ Status e data são automaticamente herdados do pai no backend
     } else {
       // Criar novo
       await servicosAdicionaisService.criar(dadosServico)

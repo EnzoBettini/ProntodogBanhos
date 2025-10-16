@@ -603,6 +603,17 @@ export const servicosAdicionaisService = {
     }, 'Não foi possível criar o serviço adicional.')
   },
 
+  // ✏️ ATUALIZAR SERVIÇO ADICIONAL COMPLETO
+  async atualizar(id: number, dadosServico: any): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando serviço adicional ID ${id}...`, dadosServico)
+      const response = await api.put(`/api/servicos-adicionais/${id}`, dadosServico)
+      devLog('✅ Serviço adicional atualizado com sucesso!')
+      return response.data
+    }, 'Não foi possível atualizar o serviço adicional.')
+  },
+
   // 🗑️ REMOVER SERVIÇO ADICIONAL
   async remover(id: number): Promise<void> {
     validateId(id)
@@ -616,11 +627,6 @@ export const servicosAdicionaisService = {
   async atualizarStatusPagamento(id: number, status: string, dataPagamento?: string): Promise<any> {
     validateId(id)
     return withErrorHandling(async () => {
-      console.log('🔍 DEBUG: servicosAdicionaisService.atualizarStatusPagamento')
-      console.log('  - id:', id)
-      console.log('  - status:', status)
-      console.log('  - dataPagamento original:', dataPagamento)
-
       const params = new URLSearchParams({ status })
       if (dataPagamento) {
         // Converter data para formato ISO DateTime se necessário
@@ -628,15 +634,11 @@ export const servicosAdicionaisService = {
         if (dataPagamento && !dataPagamento.includes('T')) {
           dataFormatada = `${dataPagamento}T00:00:00`
         }
-        console.log('  - dataPagamento formatada:', dataFormatada)
         params.append('dataPagamento', dataFormatada)
       }
 
-      const url = `/api/servicos-adicionais/${id}/status-pagamento?${params}`
-      console.log('  - URL final:', url)
-
-      const response = await api.put(url)
-      console.log('✅ Status de pagamento atualizado! Resposta:', response.data)
+      const response = await api.put(`/api/servicos-adicionais/${id}/status-pagamento?${params}`)
+      devLog('✅ Status de pagamento atualizado!')
       return response.data
     }, 'Não foi possível atualizar o status de pagamento.')
   },

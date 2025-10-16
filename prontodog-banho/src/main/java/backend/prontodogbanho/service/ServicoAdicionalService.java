@@ -58,17 +58,17 @@ public class ServicoAdicionalService {
         servicoAdicional.setServicoAdicional(servico);
         servicoAdicional.setQuantidadeAdicional(dto.quantidade() != null ? dto.quantidade() : 1);
         servicoAdicional.setValorUnitario(dto.valorUnitario());
-        servicoAdicional.setStatusPagamento(dto.statusPagamento() != null ? dto.statusPagamento() : "em_aberto");
 
-        // Converter string para LocalDate se fornecida
-        if (dto.dataPagamento() != null && !dto.dataPagamento().trim().isEmpty()) {
-            try {
-                servicoAdicional.setDataPagamento(java.time.LocalDate.parse(dto.dataPagamento()));
-            } catch (Exception e) {
-                System.err.println("❌ Erro ao parsear data de pagamento: " + dto.dataPagamento());
-                // Data inválida, deixa null
-            }
-        }
+        // 🎯 HERDAR STATUS E DATA DE PAGAMENTO DO PAI AUTOMATICAMENTE
+        System.out.println("💡 Herdando status e data de pagamento do pai:");
+        System.out.println("  - Status do pai: " + animalServico.getStatusPagamento());
+        System.out.println("  - Data do pai: " + animalServico.getDataPagamento());
+
+        servicoAdicional.setStatusPagamento(animalServico.getStatusPagamento());
+        servicoAdicional.setDataPagamento(animalServico.getDataPagamento());
+
+        System.out.println("✅ Status e data herdados com sucesso!");
+
         servicoAdicional.setObservacoes(dto.observacoes());
         servicoAdicional.setUsuario(usuario);
         servicoAdicional.setDataAdicao(LocalDateTime.now());
@@ -147,6 +147,74 @@ public class ServicoAdicionalService {
 
         ServicoAdicionalCompletoDTO resultado = new ServicoAdicionalCompletoDTO(salvo);
         System.out.println("🎯 Retornando DTO: " + resultado);
+
+        return resultado;
+    }
+
+    /**
+     * Atualizar serviço adicional completo
+     */
+    @Transactional
+    public ServicoAdicionalCompletoDTO atualizarServicoAdicional(Long id, CriarServicoAdicionalDTO dto) {
+        System.out.println("🔄 SERVICE: Atualizando serviço adicional completo");
+        System.out.println("  - ID: " + id);
+        System.out.println("  - DTO: " + dto);
+
+        // Buscar o serviço adicional existente
+        ServicoAdicional servicoAdicional = servicoAdicionalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço Adicional não encontrado com ID: " + id));
+
+        System.out.println("📋 Serviço adicional encontrado:");
+        System.out.println("  - Nome atual: " + (servicoAdicional.getServicoAdicional() != null ? servicoAdicional.getServicoAdicional().getNome() : "N/A"));
+        System.out.println("  - Quantidade atual: " + servicoAdicional.getQuantidadeAdicional());
+        System.out.println("  - Valor atual: " + servicoAdicional.getValorUnitario());
+
+        // Buscar entidades relacionadas
+        Servico novoServicoAdicional = servicoRepository.findById(dto.servicoAdicionalId())
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado com ID: " + dto.servicoAdicionalId()));
+
+        Usuario usuario = usuarioRepository.findById(dto.usuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + dto.usuarioId()));
+
+        System.out.println("✅ Entidades relacionadas encontradas:");
+        System.out.println("  - Novo serviço: " + novoServicoAdicional.getNome());
+        System.out.println("  - Usuário: " + usuario.getNome());
+
+        // Atualizar dados do serviço adicional
+        servicoAdicional.setServicoAdicional(novoServicoAdicional);
+        servicoAdicional.setQuantidadeAdicional(dto.quantidade());
+        servicoAdicional.setValorUnitario(dto.valorUnitario());
+        servicoAdicional.setUsuario(usuario);
+        servicoAdicional.setObservacoes(dto.observacoes());
+
+        // 🎯 HERDAR STATUS E DATA DE PAGAMENTO DO PAI AUTOMATICAMENTE
+        AnimalServico animalServicoPai = servicoAdicional.getAnimalServicoPrincipal();
+        System.out.println("💡 Herdando status e data de pagamento do pai (atualização):");
+        System.out.println("  - Status do pai: " + animalServicoPai.getStatusPagamento());
+        System.out.println("  - Data do pai: " + animalServicoPai.getDataPagamento());
+
+        servicoAdicional.setStatusPagamento(animalServicoPai.getStatusPagamento());
+        servicoAdicional.setDataPagamento(animalServicoPai.getDataPagamento());
+
+        System.out.println("✅ Status e data herdados do pai na atualização!");
+
+        // Recalcular valor total
+        servicoAdicional.calcularValorTotal();
+
+        System.out.println("💾 Salvando alterações...");
+        ServicoAdicional salvo = servicoAdicionalRepository.save(servicoAdicional);
+
+        System.out.println("✅ Serviço adicional atualizado:");
+        System.out.println("  - Nome final: " + salvo.getServicoAdicional().getNome());
+        System.out.println("  - Quantidade final: " + salvo.getQuantidadeAdicional());
+        System.out.println("  - Valor unitário final: " + salvo.getValorUnitario());
+        System.out.println("  - Valor total final: " + salvo.getValorTotal());
+        System.out.println("  - Status final: " + salvo.getStatusPagamento());
+        System.out.println("  - Data pagamento final: " + salvo.getDataPagamento());
+
+        // Converter para DTO
+        ServicoAdicionalCompletoDTO resultado = new ServicoAdicionalCompletoDTO(salvo);
+        System.out.println("🎯 Retornando DTO atualizado");
 
         return resultado;
     }
