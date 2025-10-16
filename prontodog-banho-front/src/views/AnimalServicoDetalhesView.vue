@@ -972,6 +972,17 @@
           />
         </div>
 
+        <!-- 🎯 Informação sobre herança de dados -->
+        <div v-if="animalServico?.statusPagamento === 'pago'" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex items-start gap-2">
+            <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-blue-600 mt-0.5 flex-shrink-0" />
+            <div class="text-sm text-blue-800">
+              <p class="font-medium">Dados herdados do serviço principal</p>
+              <p class="text-blue-600">Status e data de pagamento foram copiados automaticamente. Você pode alterá-los se necessário.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Status de pagamento -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -1524,6 +1535,83 @@ const getStatusPagamentoBadgeVariant = (status: string): 'success' | 'warning' |
   }
 }
 
+// 🔄 Função para sincronizar serviços adicionais com o pai
+const sincronizarServicosAdicionaisComPai = async (novoStatus: 'pago' | 'em_aberto' | 'cancelado', dataPagamento?: string): Promise<void> => {
+  console.log('🔍 DEBUG: Iniciando sincronização...')
+  console.log('  - animalServico.value:', !!animalServico.value)
+  console.log('  - servicosAdicionais.value.length:', servicosAdicionais.value?.length || 0)
+  console.log('  - novoStatus:', novoStatus)
+  console.log('  - dataPagamento:', dataPagamento)
+
+  if (!animalServico.value || servicosAdicionais.value.length === 0) {
+    console.log('❌ DEBUG: Condições não atendidas para sincronização')
+    return
+  }
+
+  try {
+    console.log(`🔄 Sincronizando ${servicosAdicionais.value.length} serviços adicionais com status: ${novoStatus}`)
+
+    // Atualizar cada serviço adicional para seguir o pai
+    const promessas = servicosAdicionais.value.map(async (adicional, index) => {
+      try {
+        console.log(`📝 [${index + 1}/${servicosAdicionais.value.length}] Atualizando serviço adicional:`)
+        console.log(`  - ID: ${adicional.id}`)
+        console.log(`  - Nome: ${adicional.nomeServicoAdicional}`)
+        console.log(`  - Status atual: ${adicional.statusPagamento}`)
+        console.log(`  - Novo status: ${novoStatus}`)
+
+        const resultado = await servicosAdicionaisService.atualizarStatusPagamento(
+          adicional.id,
+          novoStatus,
+          novoStatus === 'pago' ? dataPagamento : undefined
+        )
+
+        console.log(`✅ [${index + 1}/${servicosAdicionais.value.length}] Serviço adicional ${adicional.nomeServicoAdicional} sincronizado!`)
+        console.log('  - Resultado do backend:', resultado)
+        return resultado
+      } catch (error) {
+        console.error(`❌ [${index + 1}/${servicosAdicionais.value.length}] Erro ao sincronizar serviço adicional ${adicional.nomeServicoAdicional}:`)
+        console.error('  - Error object:', error)
+        console.error('  - Error message:', error instanceof Error ? error.message : 'Erro desconhecido')
+        throw error
+      }
+    })
+
+    // Aguardar todas as atualizações
+    console.log('⏳ Aguardando conclusão de todas as atualizações...')
+    const resultados = await Promise.allSettled(promessas)
+
+    // Analisar resultados
+    const sucessos = resultados.filter(r => r.status === 'fulfilled').length
+    const falhas = resultados.filter(r => r.status === 'rejected').length
+
+    console.log(`📊 Resultados da sincronização:`)
+    console.log(`  - Sucessos: ${sucessos}`)
+    console.log(`  - Falhas: ${falhas}`)
+
+    if (falhas > 0) {
+      console.error('❌ Detalhes das falhas:')
+      resultados.forEach((resultado, index) => {
+        if (resultado.status === 'rejected') {
+          console.error(`  [${index + 1}] ${resultado.reason}`)
+        }
+      })
+    }
+
+    // Recarregar serviços adicionais para mostrar as mudanças
+    console.log('🔄 Recarregando serviços adicionais...')
+    await recarregarServicosAdicionais()
+
+    console.log('🎉 Sincronização de serviços adicionais concluída!')
+
+  } catch (error) {
+    console.error('❌ Erro geral na sincronização de serviços adicionais:')
+    console.error('  - Error object:', error)
+    console.error('  - Error message:', error instanceof Error ? error.message : 'Erro desconhecido')
+    console.error('  - Stack trace:', error instanceof Error ? error.stack : 'N/A')
+  }
+}
+
 // 🎯 Função para alterar status de pagamento
 const alterarStatusPagamento = async (novoStatus: 'pago' | 'em_aberto' | 'cancelado'): Promise<void> => {
   if (!animalServico.value) return
@@ -1535,11 +1623,12 @@ const alterarStatusPagamento = async (novoStatus: 'pago' | 'em_aberto' | 'cancel
     console.log(`💳 Alterando status de pagamento para: ${novoStatus}`)
 
     let animalServicoAtualizado: AnimalServico
+    let dataPagamento: string | undefined
 
     switch (novoStatus) {
       case 'pago':
-        const dataAtual = new Date().toISOString().split('T')[0]
-        animalServicoAtualizado = await animalServicoService.marcarComoPago(animalServico.value.id, dataAtual as string)
+        dataPagamento = new Date().toISOString().split('T')[0]
+        animalServicoAtualizado = await animalServicoService.marcarComoPago(animalServico.value.id, dataPagamento as string)
         break
       case 'em_aberto':
         animalServicoAtualizado = await animalServicoService.reativarServico(animalServico.value.id)
@@ -1556,6 +1645,17 @@ const alterarStatusPagamento = async (novoStatus: 'pago' | 'em_aberto' | 'cancel
     animalServico.value = animalServicoAtualizado
 
     console.log(`✅ Status de pagamento alterado para: ${getStatusPagamentoTexto(novoStatus)}`)
+
+    // 🎯 SINCRONIZAR TODOS OS SERVIÇOS ADICIONAIS COM O PAI
+    if (servicosAdicionais.value.length > 0) {
+      console.log(`🔄 Iniciando sincronização de ${servicosAdicionais.value.length} serviços adicionais...`)
+      await sincronizarServicosAdicionaisComPai(novoStatus, dataPagamento)
+
+      // Notificar usuário sobre a sincronização
+      const statusTexto = getStatusPagamentoTexto(novoStatus).toUpperCase()
+      alert(`✅ Status alterado para "${statusTexto}"!\n\n🔄 Todos os ${servicosAdicionais.value.length} serviços adicionais foram automaticamente sincronizados com o mesmo status.`)
+    }
+
   } catch (error) {
     console.error('❌ Erro ao alterar status de pagamento:', error)
     alert('Erro ao alterar status de pagamento. Tente novamente.')
@@ -1630,8 +1730,17 @@ const salvarDataPagamento = async (): Promise<void> => {
       novaDataPagamento: animalServicoAtualizado.dataPagamento
     })
 
-    // Feedback visual para o usuário
-    alert('✅ Data de pagamento atualizada com sucesso!')
+    // 🎯 SINCRONIZAR SERVIÇOS ADICIONAIS QUANDO DATA DE PAGAMENTO MUDA
+    if (servicosAdicionais.value.length > 0) {
+      console.log(`🔄 Sincronizando data de pagamento para ${servicosAdicionais.value.length} serviços adicionais...`)
+      await sincronizarServicosAdicionaisComPai('pago', novaDataPagamento.value)
+
+      // Feedback visual para o usuário
+      alert(`✅ Data de pagamento atualizada com sucesso!\n\n🔄 Todos os ${servicosAdicionais.value.length} serviços adicionais foram sincronizados com a nova data.`)
+    } else {
+      // Feedback visual normal se não há serviços adicionais
+      alert('✅ Data de pagamento atualizada com sucesso!')
+    }
 
   } catch (error) {
     console.error('❌ Erro detalhado ao atualizar data de pagamento:', {
@@ -1680,6 +1789,10 @@ const removerServicoAdicional = async (adicional: any): Promise<void> => {
 }
 
 const adicionarNovoServicoAdicional = (): void => {
+  // 🎯 HERDAR dados do serviço principal por padrão
+  const statusPagamentoPai = animalServico.value?.statusPagamento || 'em_aberto'
+  const dataPagamentoPai = animalServico.value?.dataPagamento || ''
+
   formularioServicoAdicional.value = {
     id: null,
     servicoId: 0,
@@ -1687,11 +1800,20 @@ const adicionarNovoServicoAdicional = (): void => {
     quantidade: 1,
     valorUnitario: 0,
     valorOriginal: 0,
-    statusPagamento: 'em_aberto',
-    dataPagamento: '',
+    // 🎯 Status e data herdam do serviço principal
+    statusPagamento: statusPagamentoPai,
+    dataPagamento: statusPagamentoPai === 'pago' ? dataPagamentoPai : '',
     observacoes: '',
     alterarValor: false
   }
+
+  console.log('🎯 Serviço adicional criado com dados herdados do pai:', {
+    statusPagamentoPai,
+    dataPagamentoPai,
+    statusHerdado: formularioServicoAdicional.value.statusPagamento,
+    dataHerdada: formularioServicoAdicional.value.dataPagamento
+  })
+
   mostrarModalAdicionarExtra.value = true
 }
 
@@ -1835,13 +1957,28 @@ const salvarEdicaoServico = async (): Promise<void> => {
     // Recarregar dados
     await carregarDados()
 
+    // 🎯 VERIFICAR SE STATUS DE PAGAMENTO MUDOU PARA SINCRONIZAR SERVIÇOS ADICIONAIS
+    const statusPagamentoMudou = formularioEditarServico.value.statusPagamento !== animalServico.value?.statusPagamento
+    if (statusPagamentoMudou && servicosAdicionais.value.length > 0) {
+      console.log(`🔄 Status de pagamento mudou para ${formularioEditarServico.value.statusPagamento}, sincronizando ${servicosAdicionais.value.length} serviços adicionais...`)
+
+      await sincronizarServicosAdicionaisComPai(
+        formularioEditarServico.value.statusPagamento as 'pago' | 'em_aberto' | 'cancelado',
+        formularioEditarServico.value.statusPagamento === 'pago' ? formularioEditarServico.value.dataPagamento : undefined
+      )
+    }
+
     // Verificar se houve mudanças nos banhos
     const banhosUsadosDepois = animalServico.value?.banhosUsados || 0
 
     if (servicoMudou && servicoNovo && servicoAnterior) {
+      const mensagemSync = statusPagamentoMudou && servicosAdicionais.value.length > 0
+        ? `\n\n🔄 ${servicosAdicionais.value.length} serviços adicionais foram sincronizados com o novo status de pagamento.`
+        : '';
+
       if (banhosUsadosAntes > servicoNovo.quantidade) {
         // Caso onde banhos foram deletados e resetados
-        alert(`🔄 Serviço alterado com limpeza automática!\n\n` +
+        alert(`🔄 Serviço alterado com limpeza automática!${mensagemSync}\n\n` +
               `📋 Alteração realizada:\n` +
               `• De: "${servicoAnterior.nome}" (${servicoAnterior.quantidade} banhos)\n` +
               `• Para: "${servicoNovo.nome}" (${servicoNovo.quantidade} banhos)\n\n` +
@@ -1852,11 +1989,18 @@ const salvarEdicaoServico = async (): Promise<void> => {
               `✅ Pronto! Agora você pode registrar os banhos do novo serviço.`)
       } else if (banhosUsadosAntes > banhosUsadosDepois) {
         // Caso onde apenas o contador foi resetado
-        alert(`🔄 Contador ajustado!\n\n` +
+        alert(`🔄 Contador ajustado!${mensagemSync}\n\n` +
               `Novo serviço "${servicoNovo.nome}" (${servicoNovo.quantidade} banhos).\n` +
               `Contador: ${banhosUsadosAntes} → ${banhosUsadosDepois}\n\n` +
               `✅ Você pode registrar novos banhos.`)
+      } else if (statusPagamentoMudou && servicosAdicionais.value.length > 0) {
+        // Caso onde só mudou status de pagamento
+        alert(`✅ Serviço alterado com sucesso!${mensagemSync}`)
       }
+    } else if (statusPagamentoMudou && servicosAdicionais.value.length > 0) {
+      // Caso onde só mudou status de pagamento sem alterar serviço
+      const statusTexto = getStatusPagamentoTexto(formularioEditarServico.value.statusPagamento as 'pago' | 'em_aberto' | 'cancelado').toUpperCase()
+      alert(`✅ Status alterado para "${statusTexto}"!\n\n🔄 ${servicosAdicionais.value.length} serviços adicionais foram sincronizados.`)
     }
 
     mostrarModalEditarServico.value = false

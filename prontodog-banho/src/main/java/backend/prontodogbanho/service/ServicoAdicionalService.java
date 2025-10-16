@@ -112,16 +112,43 @@ public class ServicoAdicionalService {
      */
     @Transactional
     public ServicoAdicionalCompletoDTO atualizarStatusPagamento(Long id, String novoStatus, LocalDateTime dataPagamento) {
+        System.out.println("🔄 SERVICE: Atualizando status de pagamento");
+        System.out.println("  - ID: " + id);
+        System.out.println("  - Novo Status: " + novoStatus);
+        System.out.println("  - Data Pagamento: " + dataPagamento);
+
         ServicoAdicional servicoAdicional = servicoAdicionalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Serviço Adicional não encontrado com ID: " + id));
 
+        System.out.println("📋 Serviço encontrado:");
+        System.out.println("  - Nome: " + (servicoAdicional.getServicoAdicional() != null ? servicoAdicional.getServicoAdicional().getNome() : "N/A"));
+        System.out.println("  - Status atual: " + servicoAdicional.getStatusPagamento());
+        System.out.println("  - Data pagamento atual: " + servicoAdicional.getDataPagamento());
+
+        // Atualizar status
         servicoAdicional.setStatusPagamento(novoStatus);
+        System.out.println("✏️ Status atualizado para: " + novoStatus);
+
+        // Atualizar data se necessário
         if ("pago".equals(novoStatus) && dataPagamento != null) {
             servicoAdicional.setDataPagamento(dataPagamento.toLocalDate());
+            System.out.println("📅 Data de pagamento atualizada para: " + dataPagamento.toLocalDate());
+        } else if (!"pago".equals(novoStatus)) {
+            servicoAdicional.setDataPagamento(null);
+            System.out.println("🗑️ Data de pagamento removida (status não é 'pago')");
         }
 
+        System.out.println("💾 Salvando alterações...");
         ServicoAdicional salvo = servicoAdicionalRepository.save(servicoAdicional);
-        return new ServicoAdicionalCompletoDTO(salvo);
+
+        System.out.println("✅ Alterações salvas:");
+        System.out.println("  - Status final: " + salvo.getStatusPagamento());
+        System.out.println("  - Data final: " + salvo.getDataPagamento());
+
+        ServicoAdicionalCompletoDTO resultado = new ServicoAdicionalCompletoDTO(salvo);
+        System.out.println("🎯 Retornando DTO: " + resultado);
+
+        return resultado;
     }
 
     /**

@@ -89,17 +89,38 @@ public class ServicoAdicionalController {
             @RequestParam String status,
             @RequestParam(required = false) String dataPagamento) {
         try {
+            System.out.println("🔍 DEBUG: Recebendo requisição para atualizar status de pagamento");
+            System.out.println("  - ID: " + id);
+            System.out.println("  - Status: " + status);
+            System.out.println("  - Data Pagamento (string): " + dataPagamento);
+
             LocalDateTime data = null;
             if (dataPagamento != null && !dataPagamento.isEmpty()) {
-                data = LocalDateTime.parse(dataPagamento);
+                try {
+                    data = LocalDateTime.parse(dataPagamento);
+                    System.out.println("  - Data Pagamento (parsed): " + data);
+                } catch (Exception e) {
+                    System.err.println("❌ Erro ao parsear data: " + dataPagamento);
+                    System.err.println("  - Erro: " + e.getMessage());
+                    throw new RuntimeException("Formato de data inválido: " + dataPagamento);
+                }
             }
 
+            System.out.println("📞 Chamando service para atualizar status...");
             ServicoAdicionalCompletoDTO resultado =
                 servicoAdicionalService.atualizarStatusPagamento(id, status, data);
+
+            System.out.println("✅ Status atualizado com sucesso!");
+            System.out.println("  - Resultado: " + resultado);
+
             return ResponseEntity.ok(resultado);
         } catch (RuntimeException e) {
+            System.err.println("❌ Erro runtime: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Erro ao atualizar status: " + e.getMessage());
         } catch (Exception e) {
+            System.err.println("❌ Erro interno: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erro interno do servidor: " + e.getMessage());
         }
