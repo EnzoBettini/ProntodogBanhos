@@ -313,28 +313,38 @@
             :key="animalServico.id"
             class="group relative rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden border-2"
             :class="{
+              // 🎯 SERVIÇOS ÚNICOS - Estilos específicos
+              // ✅ Serviço único realizado
+              'bg-gradient-to-r from-green-50 via-green-50 to-emerald-100 border-green-200':
+                isServicoUnico(animalServico) && getStatusServicoUnico(animalServico) === 'realizado',
+
+              // ⏳ Serviço único pendente
+              'bg-gradient-to-r from-gray-50 via-gray-50 to-slate-100 border-gray-200':
+                isServicoUnico(animalServico) && getStatusServicoUnico(animalServico) === 'pendente',
+
+              // 📦 PACOTES - Estilos existentes (apenas para não-únicos)
               // 🚨 Card urgente - vencido (apenas para pacotes)
               'bg-gradient-to-r from-red-50 via-red-50 to-red-100 border-red-200 animate-pulse animate-urgent-glow':
-                getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'vencido',
+                !isServicoUnico(animalServico) && getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'vencido',
 
               // ⚠️ Card atenção - vencendo (apenas pacotes) ou poucos banhos
               'bg-gradient-to-r from-yellow-50 via-yellow-50 to-yellow-100 border-yellow-200':
-                (getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'vencendo') ||
-                (!isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1),
+                !isServicoUnico(animalServico) && ((getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'vencendo') ||
+                (!isServicoCompleto(animalServico) && getBanhosRestantes(animalServico) <= 1)),
 
-              // ✅ Card completo
+              // ✅ Card completo (apenas pacotes)
               'bg-gradient-to-r from-green-50 via-green-50 to-green-100 border-green-200':
-                isServicoCompleto(animalServico),
+                !isServicoUnico(animalServico) && isServicoCompleto(animalServico),
 
-              // 🔵 Card normal (incluindo banhos únicos válidos)
+              // 🔵 Card normal (apenas pacotes)
               'bg-gradient-to-r from-white via-white to-amber-50 border-gray-200':
-                !isServicoCompleto(animalServico) &&
+                !isServicoUnico(animalServico) && !isServicoCompleto(animalServico) &&
                 (getTotalBanhos(animalServico) === 1 ||
                  (getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'valido' && getBanhosRestantes(animalServico) > 1)),
 
               // 📅 Card sem expiração (apenas para pacotes)
               'bg-gradient-to-r from-slate-50 via-slate-50 to-gray-100 border-slate-200':
-                getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'sem-expiracao'
+                !isServicoUnico(animalServico) && getTotalBanhos(animalServico) > 1 && getExpirationStatus(animalServico) === 'sem-expiracao'
             }"
           >
             <div class="p-6">
@@ -343,11 +353,30 @@
                 <div class="flex items-center gap-4 flex-1">
                   <!-- Avatar com gradiente -->
                   <div class="relative">
-                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200">
+                    <!-- 🎯 Avatar para SERVIÇOS ÚNICOS -->
+                    <div v-if="isServicoUnico(animalServico)" class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200">
+                      <FontAwesomeIcon :icon="['fas', 'star']" class="text-2xl text-white" />
+                    </div>
+                    <!-- 📦 Avatar para PACOTES (mantém original) -->
+                    <div v-else class="w-16 h-16 bg-gradient-to-br from-amber-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200">
                       <FontAwesomeIcon :icon="['fas', 'clipboard-list']" class="text-2xl text-white" />
                     </div>
-                    <!-- Badge de banhos usados -->
-                    <div class="absolute -top-1 -right-1 w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+
+                    <!-- Badge condicional -->
+                    <!-- 🎯 Badge para SERVIÇOS ÚNICOS (status) -->
+                    <div v-if="isServicoUnico(animalServico)" class="absolute -top-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-md"
+                      :class="{
+                        'bg-gradient-to-r from-green-400 to-emerald-500': getStatusServicoUnico(animalServico) === 'realizado',
+                        'bg-gradient-to-r from-gray-400 to-slate-500': getStatusServicoUnico(animalServico) === 'pendente'
+                      }"
+                    >
+                      <FontAwesomeIcon
+                        :icon="getStatusServicoUnico(animalServico) === 'realizado' ? 'check' : 'clock'"
+                        class="text-white text-xs"
+                      />
+                    </div>
+                    <!-- 📦 Badge para PACOTES (banhos usados - mantém original) -->
+                    <div v-else class="absolute -top-1 -right-1 w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
                       <span class="text-xs font-bold text-white">{{ animalServico.banhosUsados }}</span>
                     </div>
                   </div>
@@ -355,12 +384,33 @@
                   <!-- Informações do serviço -->
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-1">
-                      <h3 class="text-xl font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors duration-300">
+                      <!-- 🎯 Título diferente para SERVIÇOS ÚNICOS -->
+                      <h3 v-if="isServicoUnico(animalServico)" class="text-xl font-bold text-gray-900 truncate group-hover:text-purple-700 transition-colors duration-300">
+                        {{ getAnimalNome(animalServico) }} - {{ getServicoNome(animalServico) }}
+                      </h3>
+                      <!-- 📦 Título original para PACOTES -->
+                      <h3 v-else class="text-xl font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors duration-300">
                         {{ getAnimalNome(animalServico) }}
                       </h3>
+
                       <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
-                        <!-- 🎯 Badge de Status do Pacote (Completo vs Em Andamento) -->
-                        <div
+                        <!-- 🎯 Badge de Status para SERVIÇOS ÚNICOS -->
+                        <div v-if="isServicoUnico(animalServico)"
+                          class="px-3 py-1 rounded-lg text-sm font-medium shadow-sm border-2 transition-all duration-300"
+                          :class="{
+                            'bg-green-50 border-green-300 text-green-700': getStatusServicoUnico(animalServico) === 'realizado',
+                            'bg-gray-50 border-gray-300 text-gray-700': getStatusServicoUnico(animalServico) === 'pendente'
+                          }"
+                        >
+                          <FontAwesomeIcon
+                            :icon="getStatusServicoUnico(animalServico) === 'realizado' ? 'check-circle' : 'clock'"
+                            class="mr-2 opacity-70"
+                          />
+                          {{ getStatusServicoUnico(animalServico) === 'realizado' ? '✅ REALIZADO' : '⏳ PENDENTE' }}
+                        </div>
+
+                        <!-- 📦 Badge de Status para PACOTES (mantém original) -->
+                        <div v-else
                           class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
                           :class="{
                             'bg-green-50 border-green-200 text-green-700': isServicoCompleto(animalServico),
@@ -374,9 +424,9 @@
                           {{ isServicoCompleto(animalServico) ? 'Completo' : 'Em Andamento' }}
                         </div>
 
-                        <!-- 🛁 Badge de Banhos Restantes -->
+                        <!-- 🛁 Badge de Banhos Restantes (APENAS para PACOTES) -->
                         <div
-                          v-if="!isServicoCompleto(animalServico)"
+                          v-if="!isServicoUnico(animalServico) && !isServicoCompleto(animalServico)"
                           class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
                           :class="{
                             'bg-red-50 border-red-200 text-red-600 animate-pulse': getBanhosRestantes(animalServico) <= 1,
@@ -397,9 +447,9 @@
                           {{ getServicoDescricao(animalServico) }}
                         </div>
 
-                        <!-- 🗓️ Badge de Status de Expiração (apenas para pacotes) -->
+                        <!-- 🗓️ Badge de Status de Expiração (APENAS para PACOTES) -->
                         <div
-                          v-if="animalServico.dataExpiracao && getTotalBanhos(animalServico) > 1"
+                          v-if="!isServicoUnico(animalServico) && animalServico.dataExpiracao && getTotalBanhos(animalServico) > 1"
                           class="px-2 py-1 rounded-lg text-xs font-medium shadow-sm border transition-all duration-300"
                           :class="{
                             'bg-red-50 border-red-200 text-red-600 animate-bounce': getExpirationStatus(animalServico) === 'vencido',
@@ -455,8 +505,8 @@
                       </span>
                     </div>
 
-                    <!-- Progress bar de banhos com cores dinâmicas -->
-                    <div class="flex items-center gap-3">
+                    <!-- Progress bar de banhos (APENAS para PACOTES) -->
+                    <div v-if="!isServicoUnico(animalServico)" class="flex items-center gap-3">
                       <div class="flex-1 bg-gray-200 rounded-full h-3 shadow-inner">
                         <div
                           class="h-3 rounded-full transition-all duration-300 ease-out"
@@ -496,7 +546,18 @@
                 <!-- 🎯 Status e Ícone Clicável -->
                 <div class="flex items-center gap-3 ml-4">
                   <!-- Status badge -->
+                  <!-- 🎯 Status para SERVIÇOS ÚNICOS -->
                   <BaseBadge
+                    v-if="isServicoUnico(animalServico)"
+                    :variant="getStatusServicoUnico(animalServico) === 'realizado' ? 'success' : 'secondary'"
+                    size="md"
+                  >
+                    {{ getStatusServicoUnico(animalServico) === 'realizado' ? 'Realizado' : 'Pendente' }}
+                  </BaseBadge>
+
+                  <!-- 📦 Status para PACOTES (mantém original) -->
+                  <BaseBadge
+                    v-else
                     :variant="isServicoCompleto(animalServico) ? 'success' : 'warning'"
                     size="md"
                   >
@@ -505,17 +566,26 @@
 
                   <!-- 🚀 Ações Rápidas -->
                   <div class="flex items-center gap-2">
-                    <!-- Registrar Banho (só aparece se não estiver completo) -->
+                    <!-- 🎯 Botão para SERVIÇOS ÚNICOS - Marcar como Realizado -->
                     <button
-                      v-if="!isServicoCompleto(animalServico)"
+                      v-if="isServicoUnico(animalServico) && getStatusServicoUnico(animalServico) === 'pendente'"
+                      @click.stop="abrirModalBanhoRapido(animalServico)"
+                      class="group/btn flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+                      title="Marcar como realizado"
+                    >
+                      <FontAwesomeIcon :icon="['fas', 'check']" class="text-sm" />
+                      <span class="text-xs font-bold hidden sm:inline">Realizado</span>
+                    </button>
+
+                    <!-- 📦 Botão para PACOTES - Registrar Banho (mantém original) -->
+                    <button
+                      v-if="!isServicoUnico(animalServico) && !isServicoCompleto(animalServico)"
                       @click.stop="abrirModalBanhoRapido(animalServico)"
                       class="group/btn flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg hover:from-violet-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
-                      :title="getTotalBanhos(animalServico) === 1 ? 'Registrar banho único' : 'Registrar banho do pacote'"
+                      title="Registrar banho do pacote"
                     >
                       <FontAwesomeIcon :icon="['fas', 'bath']" class="text-sm" />
-                      <span class="text-xs font-bold hidden sm:inline">
-                        {{ getTotalBanhos(animalServico) === 1 ? 'Registrar' : 'Banho' }}
-                      </span>
+                      <span class="text-xs font-bold hidden sm:inline">Banho</span>
                     </button>
 
                     <!-- Ver detalhes -->
@@ -1192,6 +1262,17 @@ const getFiltroExpiracaoTexto = (): string => {
 const limparTodosFiltros = (): void => {
   filtroTexto.value = ''
   filtroExpiracao.value = 'todos'
+}
+
+// 🎯 Funções utilitárias para detectar tipo de serviço
+const isServicoUnico = (animalServico: AnimalServico): boolean => {
+  const servico = getServicoCompleto(animalServico)
+  return servico?.podeSerAdicional === true
+}
+
+const getStatusServicoUnico = (animalServico: AnimalServico): 'realizado' | 'pendente' => {
+  // Para serviços únicos, consideramos "realizado" se banhosUsados >= 1
+  return animalServico.banhosUsados >= 1 ? 'realizado' : 'pendente'
 }
 
 // 🔧 Funções auxiliares - Busca reversa devido ao @JsonBackReference

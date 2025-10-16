@@ -200,10 +200,52 @@
                 </BaseButton>
               </div>
 
+              <!-- 🎯 Status do Serviço Único -->
+              <div v-if="isServicoUnico" class="p-4 rounded-xl border-2"
+                :class="{
+                  'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200': getStatusServicoUnico === 'realizado',
+                  'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200': getStatusServicoUnico === 'pendente'
+                }"
+              >
+                <div class="flex items-center gap-3 mb-3">
+                  <FontAwesomeIcon
+                    :icon="getStatusServicoUnico === 'realizado' ? 'check-circle' : 'clock'"
+                    :class="{
+                      'text-green-600': getStatusServicoUnico === 'realizado',
+                      'text-gray-600': getStatusServicoUnico === 'pendente'
+                    }"
+                  />
+                  <div>
+                    <p class="text-sm font-medium text-gray-600">Status do Serviço</p>
+                    <p class="text-lg font-semibold"
+                      :class="{
+                        'text-green-800': getStatusServicoUnico === 'realizado',
+                        'text-gray-800': getStatusServicoUnico === 'pendente'
+                      }"
+                    >
+                      {{ getStatusServicoUnico === 'realizado' ? '✅ REALIZADO' : '⏳ PENDENTE' }}
+                    </p>
+                  </div>
+                </div>
 
+                <!-- Botão marcar como realizado -->
+                <BaseButton
+                  v-if="getStatusServicoUnico === 'pendente'"
+                  @click="mostrarModalBanho = true"
+                  variant="primary"
+                  size="sm"
+                  class="w-full bg-green-600 hover:bg-green-700"
+                >
+                  <FontAwesomeIcon :icon="['fas', 'check']" class="mr-2" />
+                  Marcar como Realizado
+                </BaseButton>
+                <p v-else class="text-center text-green-600 text-sm font-medium">
+                  ✅ Serviço já foi realizado
+                </p>
+              </div>
 
-              <!-- Progresso dos banhos -->
-              <div class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
+              <!-- Progresso dos banhos (APENAS para PACOTES) -->
+              <div v-if="!isServicoUnico" class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
                 <div class="flex items-center gap-3 mb-3">
                   <FontAwesomeIcon :icon="['fas', 'bath']" class="text-blue-600" />
                   <div>
@@ -720,8 +762,8 @@
           </BaseCard>
         </div>
 
-        <!-- 🛁 Histórico de Banhos (se for pacote) -->
-        <div v-if="servico && servico.quantidade > 1" class="mt-6 w-full min-w-0">
+        <!-- 🛁 Histórico de Banhos (APENAS para PACOTES) -->
+        <div v-if="!isServicoUnico && servico && servico.quantidade > 1" class="mt-6 w-full min-w-0">
           <BaseCard class="shadow-xl border-0">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
@@ -1356,6 +1398,16 @@ const valorTotalGeral = computed(() => {
 
 const temServicosAdicionais = computed(() => {
   return servicosAdicionais.value.length > 0
+})
+
+// 🎯 Funções utilitárias para detectar tipo de serviço
+const isServicoUnico = computed(() => {
+  return servico.value?.podeSerAdicional === true
+})
+
+const getStatusServicoUnico = computed(() => {
+  // Para serviços únicos, consideramos "realizado" se banhosUsados >= 1
+  return animalServico.value && animalServico.value.banhosUsados >= 1 ? 'realizado' : 'pendente'
 })
 
 // Computadas para controle de expiração

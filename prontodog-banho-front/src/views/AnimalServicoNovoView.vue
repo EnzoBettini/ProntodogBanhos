@@ -1159,23 +1159,6 @@ const maxBanhosPermitidos = computed(() => {
   return servicoSelecionado.value?.quantidade || 1
 })
 
-// 🐛 DEBUG: Computed para debugar as condições
-const debugVisibilidade = computed(() => {
-  return {
-    servicoSelecionado: !!servicoSelecionado.value,
-    servicoTipo: servicoSelecionado.value?.podeSerAdicional === true ? 'único/adicional' : 'normal',
-    podeSerAdicional: servicoSelecionado.value?.podeSerAdicional,
-    servicoUnico: formulario.value.servicoUnico,
-    mostrarCheckbox: servicoSelecionado.value?.podeSerAdicional === true,
-    // 🎯 NOVA LÓGICA: Serviços únicos/adicionais NUNCA mostram seções de banhos
-    mostrarBanhos: servicoSelecionado.value && servicoSelecionado.value?.podeSerAdicional !== true
-  }
-})
-
-// Log do debug (temporário)
-watch(debugVisibilidade, (debug) => {
-  console.log('🐛 DEBUG Visibilidade:', debug)
-}, { immediate: true, deep: true })
 
 // 🔧 Computadas para serviços adicionais
 const valorTotalAdicionais = computed(() => {
