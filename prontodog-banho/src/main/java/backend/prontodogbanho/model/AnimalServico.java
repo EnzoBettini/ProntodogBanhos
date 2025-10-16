@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -60,4 +61,45 @@ public class AnimalServico {
     @OneToMany(mappedBy="animalServico", cascade=CascadeType.ALL)
     @JsonManagedReference("animalservico-banho")
     private List<BanhoIndividual> banhosIndividuais;
+
+    @OneToMany(mappedBy="animalServicoPrincipal", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+    @JsonManagedReference("animal-servico-adicional")
+    private List<ServicoAdicional> servicosAdicionais;
+
+    // Métodos helper para cálculos financeiros
+    public BigDecimal getValorTotalComAdicionais() {
+        BigDecimal valorPrincipal = servico != null && servico.getValor() != null ?
+            BigDecimal.valueOf(servico.getValor()) : BigDecimal.ZERO;
+
+        BigDecimal valorAdicionais = servicosAdicionais != null ?
+            servicosAdicionais.stream()
+                .map(ServicoAdicional::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
+
+        return valorPrincipal.add(valorAdicionais);
+    }
+
+    public BigDecimal getValorAdicionaisPagos() {
+        return servicosAdicionais != null ?
+            servicosAdicionais.stream()
+                .filter(ServicoAdicional::isPago)
+                .map(ServicoAdicional::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getValorAdicionaisEmAberto() {
+        return servicosAdicionais != null ?
+            servicosAdicionais.stream()
+                .filter(sa -> "em_aberto".equals(sa.getStatusPagamento()))
+                .map(ServicoAdicional::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
+    }
+
+    public int getQuantidadeAdicionais() {
+        return servicosAdicionais != null ? servicosAdicionais.size() : 0;
+    }
+
+    public boolean temAdicionais() {
+        return servicosAdicionais != null && !servicosAdicionais.isEmpty();
+    }
 }

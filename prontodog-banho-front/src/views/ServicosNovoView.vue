@@ -86,18 +86,52 @@
           </div>
 
           <div class="p-6 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Nome do Serviço -->
+              <!-- Tipo de Serviço -->
               <div class="animate-slide-up">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <FontAwesomeIcon :icon="['fas', 'cog']" class="text-amber-600 mr-2" />
-                  Nome do Serviço *
+                  <FontAwesomeIcon :icon="['fas', 'tag']" class="text-blue-600 mr-2" />
+                  Tipo de Serviço *
                 </label>
-                <input
-                  v-model="formulario.nome"
-                  type="text"
-                  placeholder="Ex: Banho e Tosa Completa"
-                  required
+                <div class="relative">
+                  <select
+                    v-model="formulario.tipoServico"
+                    class="w-full px-4 py-3 pr-12 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 bg-white appearance-none cursor-pointer hover:border-blue-400"
+                    :class="{ 'border-red-300 focus:border-red-500': erros.tipoServico }"
+                    required
+                  >
+                    <option value="">Selecione o tipo de serviço</option>
+                    <option value="principal">🎯 Serviço Principal (com pacotes)</option>
+                    <option value="adicional">➕ Serviço Adicional (único)</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-blue-500" />
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <p v-if="formulario.tipoServico === 'principal'" class="text-xs text-blue-600 flex items-center gap-1">
+                    <FontAwesomeIcon :icon="['fas', 'info-circle']" />
+                    Serviços principais podem ter pacotes (ex: 4 banhos por R$ 120)
+                  </p>
+                  <p v-else-if="formulario.tipoServico === 'adicional'" class="text-xs text-green-600 flex items-center gap-1">
+                    <FontAwesomeIcon :icon="['fas', 'info-circle']" />
+                    Serviços adicionais são únicos (ex: tosa, perfumaria, corte de unhas)
+                  </p>
+                </div>
+                <span v-if="erros.tipoServico" class="text-sm text-red-600">{{ erros.tipoServico }}</span>
+              </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nome do Serviço -->
+                <div class="animate-slide-up">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <FontAwesomeIcon :icon="['fas', 'cog']" class="text-amber-600 mr-2" />
+                    Nome do Serviço *
+                  </label>
+                  <input
+                    v-model="formulario.nome"
+                    type="text"
+                    :placeholder="formulario.tipoServico === 'adicional' ? 'Ex: Tosa Completa, Corte de Unhas' : 'Ex: Banho e Tosa Completa'"
+                    required
                   class="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 bg-white"
                   :class="{ 'border-red-300 focus:border-red-500': erros.nome }"
                 >
@@ -214,8 +248,8 @@
                 </div>
               </div>
 
-              <!-- Banhos por Pacote -->
-              <div class="animate-slide-up">
+              <!-- Banhos por Pacote - Apenas para Serviços Principais -->
+              <div v-if="formulario.tipoServico === 'principal'" class="animate-slide-up">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   <FontAwesomeIcon :icon="['fas', 'calculator']" class="text-green-600 mr-2" />
                   Banhos por Pacote *
@@ -256,10 +290,44 @@
                   </span>
                 </div>
               </div>
+
+              <!-- Categoria - Apenas para Serviços Adicionais -->
+              <div v-if="formulario.tipoServico === 'adicional'" class="animate-slide-up">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <FontAwesomeIcon :icon="['fas', 'tags']" class="text-purple-600 mr-2" />
+                  Categoria do Serviço Adicional *
+                </label>
+                <div class="relative">
+                  <select
+                    v-model="formulario.categoria"
+                    class="w-full px-4 py-3 pr-12 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 bg-white appearance-none cursor-pointer hover:border-purple-400"
+                    :class="{ 'border-red-300 focus:border-red-500': erros.categoria }"
+                    required
+                  >
+                    <option value="">Selecione a categoria</option>
+                    <option value="tosa">✂️ Tosa (completa, higiênica, artística)</option>
+                    <option value="estetica">💅 Estética (unhas, pelos, limpeza)</option>
+                    <option value="perfumaria">🌸 Perfumaria (colônia, hidratação)</option>
+                    <option value="saude">🏥 Saúde (limpeza dental, ouvidos)</option>
+                    <option value="transporte">🚗 Transporte (busca e entrega)</option>
+                    <option value="outros">🔧 Outros serviços</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-purple-500" />
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <p class="text-xs text-purple-600 flex items-center gap-1">
+                    <FontAwesomeIcon :icon="['fas', 'info-circle']" />
+                    A categoria ajuda na organização e busca dos serviços adicionais
+                  </p>
+                </div>
+                <span v-if="erros.categoria" class="text-sm text-red-600">{{ erros.categoria }}</span>
+              </div>
             </div>
 
             <!-- Cálculo Automático -->
-            <div v-if="formulario.valor && formulario.quantidade" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 animate-slide-up">
+            <div v-if="formulario.valor && formulario.tipoServico" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 animate-slide-up">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
@@ -267,15 +335,30 @@
                   </div>
                   <div>
                     <h4 class="font-semibold text-gray-800">
-                      {{ formulario.quantidade == 1 ? 'Serviço Único' : 'Pacote de Banhos' }}
+                      {{ formulario.tipoServico === 'adicional' ? 'Serviço Adicional' :
+                         formulario.quantidade === 1 ? 'Serviço Único' : 'Pacote de Banhos' }}
                     </h4>
                     <p class="text-sm text-gray-600">
-                      {{ formulario.quantidade == 1 ? 'Valor por serviço' : `${formulario.quantidade} banhos por R$ ${formatarValor(formulario.valor)}` }}
+                      <span v-if="formulario.tipoServico === 'adicional'">
+                        Valor fixo: R$ {{ formatarValor(formulario.valor) }}
+                      </span>
+                      <span v-else-if="formulario.quantidade === 1">
+                        Valor por serviço: R$ {{ formatarValor(formulario.valor) }}
+                      </span>
+                      <span v-else>
+                        {{ formulario.quantidade }} banhos por R$ {{ formatarValor(formulario.valor) }}
+                      </span>
                     </p>
                   </div>
                 </div>
                 <div class="text-right">
-                  <template v-if="formulario.quantidade > 1">
+                  <template v-if="formulario.tipoServico === 'adicional'">
+                    <div class="text-lg font-bold text-purple-600">
+                      R$ {{ formatarValor(formulario.valor) }}
+                    </div>
+                    <div class="text-sm text-gray-500">valor adicional</div>
+                  </template>
+                  <template v-else-if="formulario.quantidade > 1">
                     <div class="text-lg font-bold text-blue-600">
                       R$ {{ formatarValor(formulario.valor / formulario.quantidade) }}
                     </div>
@@ -491,7 +574,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { BaseCard, BaseButton, BaseInput, BaseModal } from '@/components/UI'
 import { servicosService } from '@/services/api'
@@ -510,16 +593,20 @@ const servicoCriado = ref<ServicoCompleto | null>(null)
 const formulario = reactive({
   nome: '',
   descricao: '',
+  tipoServico: '', // 'principal' ou 'adicional'
   quantidade: 4, // Padrão: Pacote de 4 banhos
-  valor: 0
+  valor: 0,
+  categoria: '' // Categoria para serviços adicionais
 })
 
 // ⚠️ Controle de erros
 const erros = reactive({
   nome: '',
   descricao: '',
+  tipoServico: '',
   quantidade: '',
-  valor: ''
+  valor: '',
+  categoria: ''
 })
 
 // 📊 Status do formulário
@@ -574,6 +661,12 @@ const validarFormulario = (): boolean => {
 
   let valido = true
 
+  // Validar tipo de serviço
+  if (!formulario.tipoServico) {
+    erros.tipoServico = 'Selecione o tipo de serviço'
+    valido = false
+  }
+
   // Validar nome
   if (!formulario.nome.trim()) {
     erros.nome = 'Nome do serviço é obrigatório'
@@ -589,10 +682,20 @@ const validarFormulario = (): boolean => {
     valido = false
   }
 
-  // Validar quantidade (banhos por pacote)
-  if (!formulario.quantidade || formulario.quantidade < 1 || formulario.quantidade > 10) {
-    erros.quantidade = 'Selecione entre 1 e 10 banhos por pacote'
-    valido = false
+  // Validar quantidade - apenas para serviços principais
+  if (formulario.tipoServico === 'principal') {
+    if (!formulario.quantidade || formulario.quantidade < 1 || formulario.quantidade > 10) {
+      erros.quantidade = 'Selecione entre 1 e 10 banhos por pacote'
+      valido = false
+    }
+  }
+
+  // Validar categoria - apenas para serviços adicionais
+  if (formulario.tipoServico === 'adicional') {
+    if (!formulario.categoria) {
+      erros.categoria = 'Selecione a categoria do serviço adicional'
+      valido = false
+    }
   }
 
   // Validar valor
@@ -607,8 +710,10 @@ const validarFormulario = (): boolean => {
 const limparFormulario = () => {
   formulario.nome = ''
   formulario.descricao = ''
+  formulario.tipoServico = ''
   formulario.quantidade = 4 // Resetar para padrão de 4 banhos
   formulario.valor = 0
+  formulario.categoria = ''
 
   Object.keys(erros).forEach(key => {
     erros[key as keyof typeof erros] = ''
@@ -635,8 +740,10 @@ const submeterFormulario = async () => {
     const dadosServico: NovoServico = {
       nome: formulario.nome.trim(),
       descricao: formulario.descricao.trim(),
-      quantidade: Number(formulario.quantidade),
-      valor: Number(formulario.valor)
+      quantidade: formulario.tipoServico === 'adicional' ? 1 : Number(formulario.quantidade),
+      valor: Number(formulario.valor),
+      podeSerAdicional: formulario.tipoServico === 'adicional',
+      categoria: formulario.tipoServico === 'adicional' ? formulario.categoria : undefined
     }
 
     const resultado = await servicosService.criar(dadosServico)
@@ -666,6 +773,26 @@ const adicionarOutroServico = () => {
 const voltarParaLista = () => {
   router.push('/servicos')
 }
+
+// 👀 Watchers
+// Automaticamente ajustar quantidade quando tipo de serviço mudar
+watch(() => formulario.tipoServico, (novoTipo) => {
+  if (novoTipo === 'adicional') {
+    // Serviços adicionais são sempre quantidade = 1
+    formulario.quantidade = 1
+    // Limpar categoria quando mudar para principal
+    if (formulario.categoria) {
+      formulario.categoria = ''
+    }
+  } else if (novoTipo === 'principal') {
+    // Serviços principais voltam ao padrão de 4 banhos
+    if (formulario.quantidade === 1) {
+      formulario.quantidade = 4
+    }
+    // Limpar categoria quando mudar para principal
+    formulario.categoria = ''
+  }
+})
 </script>
 
 <style scoped>

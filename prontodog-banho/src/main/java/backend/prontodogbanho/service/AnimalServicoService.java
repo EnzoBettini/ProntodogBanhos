@@ -1,14 +1,17 @@
 package backend.prontodogbanho.service;
 
 import backend.prontodogbanho.dto.CriarAnimalServicoDTO;
+import backend.prontodogbanho.dto.CriarServicoAdicionalDTO;
 import backend.prontodogbanho.model.Animal;
 import backend.prontodogbanho.model.AnimalServico;
 import backend.prontodogbanho.model.BanhoIndividual;
 import backend.prontodogbanho.model.Servico;
+import backend.prontodogbanho.model.ServicoAdicional;
 import backend.prontodogbanho.model.Usuario;
 import backend.prontodogbanho.repository.AnimalRepository;
 import backend.prontodogbanho.repository.AnimalServicoRepository;
 import backend.prontodogbanho.repository.BanhoIndividualRepository;
+import backend.prontodogbanho.repository.ServicoAdicionalRepository;
 import backend.prontodogbanho.repository.ServicoRepository;
 import backend.prontodogbanho.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
@@ -26,17 +29,20 @@ public class AnimalServicoService {
     private final AnimalRepository animalRepository;
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ServicoAdicionalRepository servicoAdicionalRepository;
 
     public AnimalServicoService(AnimalServicoRepository animalServicoRepository,
                               BanhoIndividualRepository banhoIndividualRepository,
                               AnimalRepository animalRepository,
                               ServicoRepository servicoRepository,
-                              UsuarioRepository usuarioRepository) {
+                              UsuarioRepository usuarioRepository,
+                              ServicoAdicionalRepository servicoAdicionalRepository) {
         this.animalServicoRepository = animalServicoRepository;
         this.banhoIndividualRepository = banhoIndividualRepository;
         this.animalRepository = animalRepository;
         this.servicoRepository = servicoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.servicoAdicionalRepository = servicoAdicionalRepository;
     }
 
     public List<AnimalServico> listarTodos() {
@@ -147,7 +153,71 @@ public class AnimalServicoService {
             }
         }
 
+        // Criar serviços adicionais se fornecidos
+        if (dto.getServicosAdicionais() != null && !dto.getServicosAdicionais().isEmpty()) {
+            System.out.println("🔧 Criando " + dto.getServicosAdicionais().size() + " serviços adicionais...");
+
+            for (CriarServicoAdicionalDTO servicoAdicionalDTO : dto.getServicosAdicionais()) {
+                try {
+                    // Criar um novo DTO com o animalServicoPrincipalId correto
+                    CriarServicoAdicionalDTO dtoCompleto = new CriarServicoAdicionalDTO(
+                        animalServicoSalvo.getId(), // ← adicionar o ID que faltava
+                        servicoAdicionalDTO.servicoAdicionalId(),
+                        servicoAdicionalDTO.quantidade(),
+                        servicoAdicionalDTO.valorUnitario(), // ← usar valorUnitario
+                        servicoAdicionalDTO.statusPagamento(),
+                        servicoAdicionalDTO.dataPagamento(),
+                        servicoAdicionalDTO.observacoes(),
+                        servicoAdicionalDTO.usuarioId()
+                    );
+
+                    // Usar o service para criar o serviço adicional
+                    ServicoAdicional servicoAdicionalSalvo = servicoAdicionalRepository.save(criarServicoAdicionalEntity(dtoCompleto, animalServicoSalvo, usuario));
+
+                    System.out.println("✅ Serviço adicional salvo: " + servicoAdicionalSalvo.getServicoAdicional().getNome() +
+                                     " - Valor: R$ " + servicoAdicionalSalvo.getValorTotal());
+                } catch (Exception e) {
+                    System.err.println("❌ Erro ao criar serviço adicional ID " + servicoAdicionalDTO.servicoAdicionalId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // Não falha a transação inteira, apenas loga o erro
+                }
+            }
+        }
+
         return animalServicoSalvo;
+    }
+
+    /**
+     * Método helper para criar entidade ServicoAdicional a partir do DTO
+     */
+    private ServicoAdicional criarServicoAdicionalEntity(CriarServicoAdicionalDTO dto, AnimalServico animalServico, Usuario usuario) {
+        // Buscar o serviço adicional
+        Servico servicoAdicional = servicoRepository.findById(dto.servicoAdicionalId())
+                .orElseThrow(() -> new RuntimeException("Serviço adicional não encontrado com ID: " + dto.servicoAdicionalId()));
+
+        // Criar ServicoAdicional
+        ServicoAdicional servicoAdicionalEntity = new ServicoAdicional();
+        servicoAdicionalEntity.setAnimalServicoPrincipal(animalServico);
+        servicoAdicionalEntity.setServicoAdicional(servicoAdicional);
+        servicoAdicionalEntity.setQuantidadeAdicional(dto.quantidade() != null ? dto.quantidade() : 1);
+        servicoAdicionalEntity.setValorUnitario(dto.valorUnitario());
+        servicoAdicionalEntity.setStatusPagamento(dto.statusPagamento() != null ? dto.statusPagamento() : "em_aberto");
+
+        // Converter string para LocalDate se fornecida
+        if (dto.dataPagamento() != null && !dto.dataPagamento().trim().isEmpty()) {
+            try {
+                servicoAdicionalEntity.setDataPagamento(java.time.LocalDate.parse(dto.dataPagamento()));
+            } catch (Exception e) {
+                System.err.println("❌ Erro ao parsear data de pagamento: " + dto.dataPagamento());
+                // Data inválida, deixa null
+            }
+        }
+
+        servicoAdicionalEntity.setObservacoes(dto.observacoes());
+        servicoAdicionalEntity.setUsuario(usuario);
+        servicoAdicionalEntity.setDataAdicao(java.time.LocalDateTime.now());
+
+        return servicoAdicionalEntity;
     }
 
     public void deletar(Long id) {

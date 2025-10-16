@@ -32,7 +32,40 @@ public class Servico {
     @Column(name="valor")
     private Double valor;
 
+    @Column(name="pode_ser_adicional")
+    private Boolean podeSerAdicional = true;
+
+    @Column(name="categoria")
+    private String categoria = "geral";
+
     @OneToMany(mappedBy = "servico", cascade = CascadeType.ALL)
     @JsonManagedReference("servico-servico")
     private List<AnimalServico> servicosAnimais;
+
+    @OneToMany(mappedBy = "servicoAdicional", cascade = CascadeType.ALL)
+    @JsonManagedReference("servico-adicional")
+    private List<ServicoAdicional> servicosComoAdicional;
+
+    // Métodos helper
+    public boolean isPacote() {
+        return quantidade != null && quantidade > 1;
+    }
+
+    public boolean podeSerUsadoComoAdicional() {
+        return podeSerAdicional != null && podeSerAdicional;
+    }
+
+    public String getCategoria() {
+        if (categoria == null || categoria.isEmpty()) {
+            // Auto-categorização baseada no nome se categoria não estiver definida
+            if (nome != null) {
+                String nomeLower = nome.toLowerCase();
+                if (nomeLower.contains("banho")) return "banho";
+                if (nomeLower.contains("tosa")) return "tosa";
+                if (isPacote()) return "pacote";
+            }
+            return "geral";
+        }
+        return categoria;
+    }
 }

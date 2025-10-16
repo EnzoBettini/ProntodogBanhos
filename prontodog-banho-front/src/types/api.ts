@@ -35,11 +35,13 @@ export interface AnimalServico {
   banhosUsados: number
   statusPagamento: string // "pago", "em_aberto", "cancelado"
   dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
+  valorTotalServico?: number // Valor total do serviço principal (novo campo)
   animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)
   servicoId?: number   // ID do serviço (não vem o objeto completo devido ao @JsonBackReference)
   usuarioId?: number   // ID do usuário (não vem o objeto completo devido ao @JsonBackReference)
   animal?: Animal      // Para compatibilidade, mas pode ser undefined
   servico?: ServicoCompleto // Para compatibilidade, mas pode ser undefined
+  servicosAdicionais?: ServicoAdicional[] // Lista de serviços adicionais associados
 }
 
 // 💼 Serviço principal (entity Servico)
@@ -49,7 +51,25 @@ export interface ServicoCompleto {
   descricao: string
   quantidade: number
   valor: number
+  podeSerAdicional?: boolean // Nova propriedade para indicar se pode ser adicional
+  categoria?: string // Nova propriedade para categorizar serviços
   servicosAnimais?: AnimalServico[]
+}
+
+// 🔧 Serviço Adicional (entity ServicoAdicional)
+export interface ServicoAdicional {
+  id: number
+  animalServicoPrincipalId: number
+  servicoAdicional: ServicoCompleto
+  quantidade: number
+  valorUnitario: number
+  valorTotal: number
+  statusPagamento: string // "pago", "em_aberto", "cancelado"
+  dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
+  observacoes?: string
+  usuario?: Usuario
+  createdAt: string
+  updatedAt: string
 }
 
 // 👤 Usuário do sistema (vendedores/funcionários)
@@ -126,6 +146,8 @@ export interface NovoServico {
   descricao: string
   quantidade: number // Representa banhos por pacote (1 = banho único, 4 = pacote 4 banhos)
   valor: number // Valor total do pacote/serviço
+  podeSerAdicional?: boolean // Indica se pode ser usado como serviço adicional
+  categoria?: string // Categoria do serviço (ex: "banho", "tosa", "perfumaria")
 }
 
 // 🛁 Animal Serviço para criação (sem ID)
@@ -154,6 +176,19 @@ export interface CriarAnimalServicoCompleto {
   datasBanhosRealizados?: string[] // formato: "YYYY-MM-DD"
   // Observações para cada banho (opcional)
   observacoesBanhos?: string[]
+  // Serviços adicionais para criar junto
+  servicosAdicionais?: NovoServicoAdicional[]
+}
+
+// 🔧 Serviço Adicional para criação (sem ID)
+export interface NovoServicoAdicional {
+  servicoAdicionalId: number
+  quantidade: number
+  valorUnitario: number
+  statusPagamento: string // "pago", "em_aberto", "cancelado"
+  dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
+  observacoes?: string
+  usuarioId?: number
 }
 
 // 📋 Dados do formulário (estrutura interna do componente)

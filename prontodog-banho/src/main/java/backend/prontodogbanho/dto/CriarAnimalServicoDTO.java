@@ -35,6 +35,9 @@ public class CriarAnimalServicoDTO {
     // Lista de observações para cada banho (opcional)
     private List<String> observacoesBanhos;
 
+    // Lista de serviços adicionais para criar junto com o animal serviço
+    private List<CriarServicoAdicionalDTO> servicosAdicionais;
+
     // Métodos auxiliares para conversão segura de datas
     public LocalDate getDataServicoAsLocalDate() {
         if (dataServico == null || dataServico.trim().isEmpty()) {
