@@ -680,24 +680,28 @@ const metricas = computed(() => {
     statusPagamento: s.statusPagamento
   })))
 
-  // Função helper para encontrar valor do serviço
+  // Função helper para encontrar valor TOTAL do serviço (principal + adicionais)
   const obterValorServico = (animalServico: any) => {
     const servicoId = animalServico.servicoId || animalServico.servico?.id
 
-    console.log(`🔍 Buscando valor para AnimalServico ${animalServico.id}:`, {
+    console.log(`🔍 Buscando valor TOTAL para AnimalServico ${animalServico.id}:`, {
       servicoId: animalServico.servicoId,
       servicoObjectId: animalServico.servico?.id,
       servicoIdFinal: servicoId,
       hasServicoEmbed: !!animalServico.servico,
-      servicoEmbedValor: animalServico.servico?.valor
+      servicoEmbedValor: animalServico.servico?.valor,
+      valorTotalComAdicionais: animalServico.valorTotalComAdicionais,
+      quantidadeAdicionais: animalServico.quantidadeAdicionais || 0
     })
+
+    let valorPrincipal = 0
 
     // Primeiro tenta pelo servicoId (ou servico.id)
     if (servicoId) {
       const servicoInfo = servicos.value.find(s => s.id === servicoId)
       if (servicoInfo) {
-        console.log(`✅ Valor encontrado via servicoId/servico.id: R$ ${servicoInfo.valor}`)
-        return servicoInfo.valor
+        valorPrincipal = servicoInfo.valor
+        console.log(`✅ Valor principal encontrado via servicoId/servico.id: R$ ${valorPrincipal}`)
       } else {
         console.log(`⚠️ ServiceId ${servicoId} não encontrado na lista de serviços`)
         console.log('🔍 Serviços disponíveis:', servicos.value.map(s => s.id))
@@ -705,13 +709,40 @@ const metricas = computed(() => {
     }
 
     // Se não encontrou, tenta pelo objeto servico embed valor direto
-    if (animalServico.servico?.valor) {
-      console.log(`✅ Valor encontrado via embed direto: R$ ${animalServico.servico.valor}`)
-      return animalServico.servico.valor
+    if (valorPrincipal === 0 && animalServico.servico?.valor) {
+      valorPrincipal = animalServico.servico.valor
+      console.log(`✅ Valor principal encontrado via embed direto: R$ ${valorPrincipal}`)
     }
 
-    console.log(`❌ FALHA: Valor não encontrado para AnimalServico ID ${animalServico.id}`)
-    return 0
+    // 🎯 NOVO: Verificar se temos valor total com adicionais do backend
+    if (animalServico.valorTotalComAdicionais !== undefined) {
+      console.log(`🎉 VALOR TOTAL (c/ adicionais) encontrado no objeto: R$ ${animalServico.valorTotalComAdicionais}`)
+      return animalServico.valorTotalComAdicionais
+    }
+
+    // 🎯 NOVO: Se não tem valor calculado pelo backend, calcular aqui
+    let valorAdicionais = 0
+    if (animalServico.servicosAdicionais && Array.isArray(animalServico.servicosAdicionais)) {
+      valorAdicionais = animalServico.servicosAdicionais.reduce((total: number, adicional: any) => {
+        const valorAdicional = adicional.valorTotal || (adicional.valorUnitario * (adicional.quantidadeAdicional || 1))
+        console.log(`💰 Adicional encontrado: R$ ${valorAdicional} (${adicional.servicoAdicional?.nome || 'sem nome'})`)
+        return total + valorAdicional
+      }, 0)
+    }
+
+    const valorTotal = valorPrincipal + valorAdicionais
+    console.log(`🧮 CÁLCULO FINAL - AnimalServico ${animalServico.id}:`, {
+      valorPrincipal,
+      valorAdicionais,
+      valorTotal,
+      quantidadeAdicionais: animalServico.servicosAdicionais?.length || 0
+    })
+
+    if (valorTotal === 0) {
+      console.log(`❌ FALHA: Valor total = 0 para AnimalServico ID ${animalServico.id}`)
+    }
+
+    return valorTotal
   }
 
   const receitaTotal = servicosPagos.reduce((total, servico) => {
