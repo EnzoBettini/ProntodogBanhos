@@ -162,6 +162,56 @@ export const animaisService = {
       await api.delete(`/animal/${id}`)
       devLog('✅ Animal excluído com sucesso!')
     }, 'Não foi possível excluir o animal. Tente novamente.')
+  },
+
+  // 📊 BUSCAR HISTÓRICO COMPLETO DO ANIMAL
+  // GET /animal/{id}/historico
+  async buscarHistorico(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`📊 Buscando histórico completo do animal ID ${id}...`)
+      const response = await api.get(`/animal/${id}/historico`)
+      devLog('✅ Histórico carregado com sucesso!')
+      return response.data
+    }, 'Não foi possível carregar o histórico do animal.')
+  },
+
+  // 🔍 BUSCAR ANIMAIS COM FILTROS E PAGINAÇÃO
+  // GET /animal/buscar
+  async buscarComFiltros(filtros: {
+    nome?: string
+    tipo?: string
+    raca?: string
+    codigoSimplesVet?: string
+    clienteNome?: string
+    page?: number
+    size?: number
+    sortBy?: string
+    sortDir?: string
+  } = {}): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('🔍 Buscando animais com filtros:', filtros)
+
+      // Construir parâmetros de query
+      const params = new URLSearchParams()
+
+      if (filtros.nome) params.append('nome', filtros.nome)
+      if (filtros.tipo) params.append('tipo', filtros.tipo)
+      if (filtros.raca) params.append('raca', filtros.raca)
+      if (filtros.codigoSimplesVet) params.append('codigoSimplesVet', filtros.codigoSimplesVet)
+      if (filtros.clienteNome) params.append('clienteNome', filtros.clienteNome)
+
+      params.append('page', (filtros.page || 0).toString())
+      params.append('size', (filtros.size || 20).toString())
+      params.append('sortBy', filtros.sortBy || 'nome')
+      params.append('sortDir', filtros.sortDir || 'asc')
+
+      const response = await api.get(`/animal/buscar?${params}`)
+
+      devLog(`✅ Encontrados ${response.data.totalElements} animais (página ${response.data.number + 1} de ${response.data.totalPages})`)
+
+      return response.data
+    }, 'Não foi possível buscar os animais.')
   }
 }
 

@@ -74,6 +74,11 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/historico',
+      name: 'historico',
+      component: () => import('../views/HistoricoAnimalView.vue'),
+    },
+    {
       path: '/configuracoes',
       name: 'configuracoes',
       component: () => import('../views/ConfiguracoesView.vue'),

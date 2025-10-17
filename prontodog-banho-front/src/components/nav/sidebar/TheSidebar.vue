@@ -43,11 +43,12 @@
         title="Animais"
         icon="dog"
         basePath="/animais"
+        :additionalPaths="['/historico']"
         :collapsed="!sidebarStore.isOpen"
       >
         <SidebarItem title="Lista" icon="list" to="/animais" :collapsed="false" />
         <SidebarItem title="Novo" icon="plus" to="/animais/novo" :collapsed="false" />
-        <SidebarItem title="Histórico" icon="clock" to="/animais/historico" :collapsed="false" />
+        <SidebarItem title="Histórico" icon="chart-line" to="/historico" :collapsed="false" />
       </SidebarDropdown>
 
       <SidebarDropdown

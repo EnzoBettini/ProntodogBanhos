@@ -2,10 +2,12 @@ package backend.prontodogbanho.controller;
 
 import backend.prontodogbanho.model.Animal;
 import backend.prontodogbanho.service.AnimalService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -21,6 +23,44 @@ public class AnimalController {
     @GetMapping
     public List<Animal> listarAnimals(){
         return this.animalService.listarTodos();
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<Page<Animal>> buscarAnimaisFiltrado(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String raca,
+            @RequestParam(required = false) String codigoSimplesVet,
+            @RequestParam(required = false) String clienteNome,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "nome") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        try {
+            System.out.println("🔍 Buscando animais com filtros:");
+            System.out.println("  - Nome: " + nome);
+            System.out.println("  - Tipo: " + tipo);
+            System.out.println("  - Raça: " + raca);
+            System.out.println("  - Código: " + codigoSimplesVet);
+            System.out.println("  - Cliente: " + clienteNome);
+            System.out.println("  - Página: " + page + " | Tamanho: " + size);
+            System.out.println("  - Ordenação: " + sortBy + " " + sortDir);
+
+            Page<Animal> resultado = this.animalService.buscarAnimaisComFiltros(
+                nome, tipo, raca, codigoSimplesVet, clienteNome,
+                page, size, sortBy, sortDir
+            );
+
+            System.out.println("✅ Encontrados " + resultado.getTotalElements() + " animais (página " +
+                             (page + 1) + " de " + resultado.getTotalPages() + ")");
+
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao buscar animais: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/{id}")
@@ -70,5 +110,22 @@ public class AnimalController {
     public ResponseEntity<Animal> atualizarCompleto(@PathVariable Long id, @RequestBody Animal novoAnimal) {
         Animal animalAtualizado = this.animalService.atualizarCompleto(id, novoAnimal);
         return ResponseEntity.ok(animalAtualizado);
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<Map<String, Object>> buscarHistoricoPorAnimal(@PathVariable Long id) {
+        try {
+            System.out.println("📊 Buscando histórico para animal ID: " + id);
+            Map<String, Object> historico = this.animalService.buscarHistoricoCompleto(id);
+            System.out.println("✅ Histórico encontrado com sucesso!");
+            return ResponseEntity.ok(historico);
+        } catch (RuntimeException e) {
+            System.err.println("❌ Erro ao buscar histórico: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("❌ Erro interno: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("erro", "Erro interno do servidor"));
+        }
     }
 }

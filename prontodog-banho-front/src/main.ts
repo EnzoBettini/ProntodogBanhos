@@ -71,7 +71,15 @@ import {
   faCalendarAlt,
   faWrench,
   faHistory,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  // ✅ Novos ícones para o Histórico por Animal
+  faChartPie,
+  faMoneyBillWave,
+  faCalendarPlus,
+  faInbox,
+  faCircle,
+  faTag,
+  faShower
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -136,7 +144,15 @@ library.add(
   faCalendarAlt,
   faWrench,
   faHistory,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  // ✅ Novos ícones para o Histórico por Animal
+  faChartPie,
+  faMoneyBillWave,
+  faCalendarPlus,
+  faInbox,
+  faCircle,
+  faTag,
+  faShower
 )
 
 const app = createApp(App)
