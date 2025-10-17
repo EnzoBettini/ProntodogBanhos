@@ -165,10 +165,9 @@ public class AnimalServicoService {
                         servicoAdicionalDTO.servicoAdicionalId(),
                         servicoAdicionalDTO.quantidade(),
                         servicoAdicionalDTO.valorUnitario(), // ← usar valorUnitario
-                        servicoAdicionalDTO.statusPagamento(),
-                        servicoAdicionalDTO.dataPagamento(),
                         servicoAdicionalDTO.observacoes(),
                         servicoAdicionalDTO.usuarioId()
+                        // ❌ Removidos: statusPagamento e dataPagamento (herdam do pai automaticamente)
                     );
 
                     // Usar o service para criar o serviço adicional
@@ -201,17 +200,16 @@ public class AnimalServicoService {
         servicoAdicionalEntity.setServicoAdicional(servicoAdicional);
         servicoAdicionalEntity.setQuantidadeAdicional(dto.quantidade() != null ? dto.quantidade() : 1);
         servicoAdicionalEntity.setValorUnitario(dto.valorUnitario());
-        servicoAdicionalEntity.setStatusPagamento(dto.statusPagamento() != null ? dto.statusPagamento() : "em_aberto");
 
-        // Converter string para LocalDate se fornecida
-        if (dto.dataPagamento() != null && !dto.dataPagamento().trim().isEmpty()) {
-            try {
-                servicoAdicionalEntity.setDataPagamento(java.time.LocalDate.parse(dto.dataPagamento()));
-            } catch (Exception e) {
-                System.err.println("❌ Erro ao parsear data de pagamento: " + dto.dataPagamento());
-                // Data inválida, deixa null
-            }
-        }
+        // 🎯 HERDAR STATUS E DATA DE PAGAMENTO DO PAI AUTOMATICAMENTE
+        System.out.println("💡 Herdando status e data de pagamento do pai (AnimalServicoService):");
+        System.out.println("  - Status do pai: " + animalServico.getStatusPagamento());
+        System.out.println("  - Data do pai: " + animalServico.getDataPagamento());
+
+        servicoAdicionalEntity.setStatusPagamento(animalServico.getStatusPagamento());
+        servicoAdicionalEntity.setDataPagamento(animalServico.getDataPagamento());
+
+        System.out.println("✅ Status e data herdados do pai automaticamente!");
 
         servicoAdicionalEntity.setObservacoes(dto.observacoes());
         servicoAdicionalEntity.setUsuario(usuario);

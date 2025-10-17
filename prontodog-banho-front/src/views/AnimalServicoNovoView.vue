@@ -556,13 +556,8 @@
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
                       <span class="font-semibold text-gray-800">{{ adicional.servicoNome }}</span>
-                      <span :class="{
-                        'bg-green-100 text-green-700': adicional.statusPagamento === 'pago',
-                        'bg-yellow-100 text-yellow-700': adicional.statusPagamento === 'em_aberto',
-                        'bg-red-100 text-red-700': adicional.statusPagamento === 'cancelado'
-                      }" class="px-2 py-1 rounded-full text-xs font-medium">
-                        {{ adicional.statusPagamento === 'pago' ? '✅ Pago' :
-                           adicional.statusPagamento === 'em_aberto' ? '⏳ Em Aberto' : '❌ Cancelado' }}
+                      <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        📋 Herda status do pai
                       </span>
                     </div>
                     <div class="flex items-center gap-4 text-sm text-gray-600">
@@ -871,34 +866,15 @@
           </div>
         </div>
 
-        <!-- Status de Pagamento -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Status de Pagamento *
-          </label>
-          <select
-            v-model="formularioAdicional.statusPagamento"
-            :disabled="loading"
-            required
-            class="w-full px-4 py-3 bg-white/80 border-2 border-gray-200/50 rounded-xl focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all duration-300 text-base font-medium hover:border-pink-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:shadow-lg focus:shadow-lg backdrop-blur-sm"
-          >
-            <option value="em_aberto">💳 Em Aberto</option>
-            <option value="pago">✅ Pago</option>
-            <option value="cancelado">❌ Cancelado</option>
-          </select>
-        </div>
-
-        <!-- Data de Pagamento (se pago) -->
-        <div v-if="formularioAdicional.statusPagamento === 'pago'">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Data de Pagamento
-          </label>
-          <input
-            v-model="formularioAdicional.dataPagamento"
-            type="date"
-            :disabled="loading"
-            class="w-full px-4 py-3 bg-white/80 border-2 border-gray-200/50 rounded-xl focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all duration-300 text-base font-medium hover:border-pink-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:shadow-lg focus:shadow-lg backdrop-blur-sm"
-          />
+        <!-- 🎯 Informação sobre herança automática -->
+        <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div class="flex items-start gap-2">
+            <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-blue-600 mt-0.5 flex-shrink-0" />
+            <div class="text-sm text-blue-800">
+              <p class="font-medium">Status e Data de Pagamento</p>
+              <p>Este serviço adicional herdará automaticamente o status e data de pagamento do serviço principal.</p>
+            </div>
+          </div>
         </div>
 
         <!-- Observações -->
@@ -1117,9 +1093,8 @@ const formulario = ref({
     quantidade: number
     valorUnitario: number
     valorTotal: number
-    statusPagamento: string
-    dataPagamento?: string
     observacoes?: string
+    // ❌ Removidos: statusPagamento e dataPagamento (herdam do pai automaticamente)
   }>
 })
 
@@ -1131,10 +1106,9 @@ const formularioAdicional = ref({
   valorUnitario: 0,
   valorUnitarioOriginal: 0, // Valor original do serviço
   valorTotal: 0,
-  statusPagamento: 'em_aberto',
-  dataPagamento: '',
   observacoes: '',
   alterarValor: false // Checkbox para permitir alteração do valor
+  // ❌ Removidos: statusPagamento e dataPagamento (herdam do pai automaticamente)
 })
 
 // 📅 Datas dos banhos já realizados
@@ -1170,8 +1144,8 @@ const valorTotalAdicionais = computed(() => {
 const formularioAdicionalValido = computed(() => {
   return formularioAdicional.value.servicoId &&
          formularioAdicional.value.quantidade > 0 &&
-         formularioAdicional.value.valorUnitario >= 0 &&
-         formularioAdicional.value.statusPagamento
+         formularioAdicional.value.valorUnitario >= 0
+  // ❌ Removido: validação de statusPagamento (herda do pai automaticamente)
 })
 
 // 📝 Adicionar descrições dinâmicas aos dados
@@ -1501,9 +1475,8 @@ const adicionarServicoExtra = (): void => {
     quantidade: formularioAdicional.value.quantidade,
     valorUnitario: formularioAdicional.value.valorUnitario,
     valorTotal: formularioAdicional.value.valorTotal,
-    statusPagamento: formularioAdicional.value.statusPagamento,
-    dataPagamento: formularioAdicional.value.dataPagamento || undefined,
     observacoes: observacoes || undefined
+    // ❌ Removidos: statusPagamento e dataPagamento (herdarão do pai automaticamente)
   }
 
   formulario.value.servicosAdicionais.push(novoAdicional)
@@ -1523,10 +1496,9 @@ const cancelarAdicionalServico = (): void => {
     valorUnitario: 0,
     valorUnitarioOriginal: 0,
     valorTotal: 0,
-    statusPagamento: 'em_aberto',
-    dataPagamento: '',
     observacoes: '',
     alterarValor: false
+    // ❌ Removidos: statusPagamento e dataPagamento (herdam do pai automaticamente)
   }
   mostrarModalAdicional.value = false
 }
@@ -1606,10 +1578,9 @@ const cadastrarAnimalServico = async (): Promise<void> => {
         servicoAdicionalId: adicional.servicoId,
         quantidade: adicional.quantidade,
         valorUnitario: adicional.valorUnitario,
-        statusPagamento: adicional.statusPagamento,
-        dataPagamento: adicional.dataPagamento,
         observacoes: adicional.observacoes,
         usuarioId: Number(formulario.value.usuarioId) // Usar o mesmo usuário do serviço principal
+        // ❌ Removidos: statusPagamento e dataPagamento (herdarão do pai no backend)
       }))
 
       // 🎯 NOVA LÓGICA: Se é serviço único, marcar como totalmente realizado
@@ -1683,10 +1654,9 @@ const cadastrarAnimalServico = async (): Promise<void> => {
           servicoAdicionalId: adicional.servicoId,
           quantidade: adicional.quantidade,
           valorUnitario: adicional.valorUnitario,
-          statusPagamento: adicional.statusPagamento,
-          dataPagamento: adicional.dataPagamento,
           observacoes: adicional.observacoes,
           usuarioId: Number(formulario.value.usuarioId)
+          // ❌ Removidos: statusPagamento e dataPagamento (herdarão do pai no backend)
         }))
 
         const dadosCompletos: CriarAnimalServicoCompleto = {

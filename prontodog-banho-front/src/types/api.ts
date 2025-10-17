@@ -185,10 +185,9 @@ export interface NovoServicoAdicional {
   servicoAdicionalId: number
   quantidade: number
   valorUnitario: number
-  statusPagamento: string // "pago", "em_aberto", "cancelado"
-  dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
   observacoes?: string
   usuarioId?: number
+  // ❌ Removidos: statusPagamento e dataPagamento (herdam do pai automaticamente)
 }
 
 // 📋 Dados do formulário (estrutura interna do componente)
