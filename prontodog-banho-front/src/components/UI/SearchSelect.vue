@@ -10,7 +10,7 @@
         :disabled="disabled"
         :required="required"
         class="w-full px-4 py-4 pr-12 bg-white border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all duration-300 text-lg font-medium hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed"
-        @focus="showDropdown = true"
+        @focus="handleFocus"
         @blur="handleBlur"
         @input="handleInput"
         @keydown="handleKeydown"
@@ -33,7 +33,7 @@
     <!-- 📋 Dropdown com resultados -->
     <Teleport to="body">
       <div
-        v-if="showDropdown && ((filteredOptions && filteredOptions.length > 0) || loading || (searchTerm && searchTerm.length > 0))"
+        v-if="showDropdown && (filteredOptions.length > 0 || loading)"
         :style="dropdownStyle"
         class="absolute z-50 w-full max-h-60 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
       >
@@ -86,7 +86,6 @@ interface Props {
   labelKey?: string
   descriptionKey?: string
   searchFunction?: (term: string) => void
-  minSearchLength?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -96,7 +95,6 @@ const props = withDefaults(defineProps<Props>(), {
   valueKey: 'id',
   labelKey: 'name',
   descriptionKey: 'description',
-  minSearchLength: 2
 })
 
 const emit = defineEmits<{
@@ -111,15 +109,30 @@ const searchTerm = ref('')
 const showDropdown = ref(false)
 const selectedIndex = ref(-1)
 const dropdownStyle = ref({})
+const isEditing = ref(false)
+const selectedOption = ref<any>(null)
 
 // 🧮 Computadas
+const displayValue = computed(() => {
+  if (isEditing.value) {
+    return searchTerm.value
+  }
+  return selectedOption.value ? selectedOption.value[props.labelKey] : searchTerm.value
+})
+
 const filteredOptions = computed(() => {
   if (!props.options || !Array.isArray(props.options)) {
     return []
   }
 
-  if (!searchTerm.value || searchTerm.value.length < props.minSearchLength) {
-    return props.options.slice(0, 10) // Mostra apenas os primeiros 10 se não está buscando
+  // Se não estiver editando e tiver uma seleção, não mostra opções
+  if (!isEditing.value && selectedOption.value) {
+    return []
+  }
+
+  // Se o campo estiver vazio, mostra todas as opções
+  if (!searchTerm.value) {
+    return props.options.slice(0, 20) // Limita a 20 resultados para performance
   }
 
   const term = searchTerm.value.toLowerCase()
@@ -153,14 +166,29 @@ const updateDropdownPosition = async (): Promise<void> => {
   }
 }
 
+const handleFocus = (): void => {
+  isEditing.value = true
+  showDropdown.value = true
+  if (selectedOption.value) {
+    searchTerm.value = selectedOption.value[props.labelKey]
+  }
+  updateDropdownPosition()
+}
+
 const handleInput = (): void => {
   selectedIndex.value = -1
+  showDropdown.value = true
+  isEditing.value = true
 
-  if (searchTerm.value.length >= props.minSearchLength) {
-    emit('search', searchTerm.value)
-    if (props.searchFunction) {
-      props.searchFunction(searchTerm.value)
-    }
+  // Se o termo de busca foi limpo completamente
+  if (!searchTerm.value) {
+    selectedOption.value = null
+    emit('update:modelValue', null)
+    // Força a atualização do estado de edição
+    isEditing.value = false
+    nextTick(() => {
+      isEditing.value = true
+    })
   }
 
   updateDropdownPosition()
@@ -171,14 +199,28 @@ const handleBlur = (): void => {
   setTimeout(() => {
     showDropdown.value = false
     selectedIndex.value = -1
+    
+    // Se não houver seleção ou o campo estiver vazio, limpa tudo
+    if (!selectedOption.value || !searchTerm.value) {
+      searchTerm.value = ''
+      selectedOption.value = null
+      emit('update:modelValue', null)
+      isEditing.value = false
+    } else {
+      // Restaura o texto para o valor selecionado apenas se houver uma seleção válida
+      searchTerm.value = selectedOption.value[props.labelKey]
+      isEditing.value = false
+    }
   }, 200)
 }
 
 const handleKeydown = (event: KeyboardEvent): void => {
-  if (!showDropdown.value) return
-
   switch (event.key) {
     case 'ArrowDown':
+      if (!showDropdown.value) {
+        showDropdown.value = true
+        return
+      }
       event.preventDefault()
       selectedIndex.value = Math.min(selectedIndex.value + 1, (filteredOptions.value?.length || 0) - 1)
       break
@@ -193,21 +235,38 @@ const handleKeydown = (event: KeyboardEvent): void => {
       }
       break
     case 'Escape':
+      event.preventDefault()
       showDropdown.value = false
       selectedIndex.value = -1
       inputRef.value?.blur()
       break
+    case 'Backspace':
+      if (searchTerm.value === '' && selectedOption.value) {
+        // Se o campo está vazio e tem uma seleção, limpa a seleção
+        selectedOption.value = null
+        emit('update:modelValue', null)
+      }
+      break
   }
 }
 
-const selectOption = (option: any): void => {
-  const selectedValue = option[props.valueKey]
-  const selectedLabel = option[props.labelKey]
+const selectOption = (option: any | null): void => {
+  if (!option) {
+    selectedOption.value = null
+    searchTerm.value = ''
+    isEditing.value = false
+    showDropdown.value = true
+    selectedIndex.value = -1
+    emit('update:modelValue', null)
+    return
+  }
 
-  searchTerm.value = selectedLabel
+  selectedOption.value = option
+  const selectedValue = option[props.valueKey]
+  searchTerm.value = option[props.labelKey]
+  isEditing.value = false
   showDropdown.value = false
   selectedIndex.value = -1
-
   emit('update:modelValue', selectedValue)
   emit('select', option)
 }
@@ -215,21 +274,30 @@ const selectOption = (option: any): void => {
 // 👀 Watchers
 watch(() => props.modelValue, (newValue) => {
   if (newValue && props.options && Array.isArray(props.options)) {
-    const selectedOption = props.options.find(option => option[props.valueKey] === newValue)
-    if (selectedOption) {
-      searchTerm.value = selectedOption[props.labelKey]
+    const option = props.options.find(opt => opt[props.valueKey] === newValue)
+    if (option) {
+      selectedOption.value = option
+      if (!isEditing.value) {
+        searchTerm.value = option[props.labelKey]
+      }
     }
-  } else {
-    searchTerm.value = ''
+  } else if (newValue === null) {
+    selectedOption.value = null
+    if (!isEditing.value) {
+      searchTerm.value = ''
+    }
   }
 }, { immediate: true })
 
 // Watcher para quando as options chegam depois do modelValue
 watch(() => props.options, (newOptions) => {
   if (props.modelValue && newOptions && Array.isArray(newOptions)) {
-    const selectedOption = newOptions.find(option => option[props.valueKey] === props.modelValue)
-    if (selectedOption) {
-      searchTerm.value = selectedOption[props.labelKey]
+    const option = newOptions.find(opt => opt[props.valueKey] === props.modelValue)
+    if (option) {
+      selectedOption.value = option
+      if (!isEditing.value) {
+        searchTerm.value = option[props.labelKey]
+      }
     }
   }
 }, { immediate: true })
