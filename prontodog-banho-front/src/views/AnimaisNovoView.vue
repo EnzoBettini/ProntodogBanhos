@@ -207,7 +207,7 @@
                     Código SimplesVet
                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">opcional</span>
                   </label>
-                  <div class="relative group max-w-md">
+                  <div class="relative group">
                     <input
                       v-model="formulario.codigoSimplesVet"
                       :class="[
