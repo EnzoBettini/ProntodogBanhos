@@ -72,7 +72,7 @@
                 <div class="p-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
                   <FontAwesomeIcon :icon="['fas', 'dog']" class="text-white text-sm" />
                 </div>
-                Animal *
+                Animal*
               </label>
               <div class="flex items-center gap-1">
                 <div class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
@@ -105,7 +105,7 @@
                 <div class="p-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
                   <FontAwesomeIcon :icon="['fas', 'wrench']" class="text-white text-sm" />
                 </div>
-                Serviço *
+                Serviço*
               </label>
               <div class="flex items-center gap-1">
                 <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -138,7 +138,7 @@
                 <div class="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
                   <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="text-white text-sm" />
                 </div>
-                Data do Serviço *
+                Data do Serviço*
               </label>
               <div class="flex items-center gap-1">
                 <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
@@ -281,7 +281,7 @@
               <!-- Status de Pagamento -->
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  Status de Pagamento *
+                  Status de Pagamento*
                 </label>
                 <select
                   v-model="formulario.statusPagamento"
@@ -442,7 +442,7 @@
                   <div class="flex-grow space-y-3">
                     <div>
                       <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Data do {{ index + 1 }}º Banho *
+                        Data do {{ index + 1 }}º Banho*
                       </label>
                       <input
                         v-model="datasBanhosRealizados[index]"
@@ -503,7 +503,7 @@
                 <div class="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg mr-3 shadow-md group-hover:shadow-lg transition-all">
                   <FontAwesomeIcon :icon="['fas', 'user']" class="text-white text-sm" />
                 </div>
-                Usuário Responsável *
+                Usuário Responsável*
               </label>
               <div class="flex items-center gap-1">
                 <div class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
@@ -773,7 +773,7 @@
         <!-- Seleção do Serviço -->
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Serviço Adicional *
+            Serviço Adicional*
           </label>
           <SearchSelect
             v-model="formularioAdicional.servicoId"
@@ -792,7 +792,7 @@
         <!-- Quantidade -->
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Quantidade *
+            Quantidade*
           </label>
           <input
             v-model.number="formularioAdicional.quantidade"
@@ -847,7 +847,7 @@
           <!-- Valor Personalizado (apenas se checkbox marcado) -->
           <div v-if="formularioAdicional.alterarValor">
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Valor Personalizado *
+              Valor Personalizado*
             </label>
             <input
               v-model.number="formularioAdicional.valorUnitario"

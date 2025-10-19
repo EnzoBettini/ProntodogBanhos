@@ -95,7 +95,7 @@
           <FontAwesomeIcon icon="bath" class="text-primary-500 text-sm" />
           <span class="font-semibold">ProntoDog</span>
         </div>
-        <div class="opacity-75">v1.0.0</div>
+        <div class="opacity-75">v0.1.0</div>
       </div>
     </div>
   </div>
