@@ -483,6 +483,24 @@
                           />
                           {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
                         </div>
+
+                        <!-- 🧾 Badge de Venda Relacionada -->
+                        <router-link
+                          v-if="animalServico.vendaId"
+                          :to="`/vendas/${animalServico.vendaId}`"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm border transition-all duration-300 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-300 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 hover:border-indigo-400 hover:shadow-lg hover:scale-105 flex items-center gap-1.5 whitespace-nowrap"
+                          title="Clique para ver a venda completa"
+                        >
+                          <FontAwesomeIcon
+                            :icon="['fas', 'receipt']"
+                            class="text-sm"
+                          />
+                          <span>Venda #{{ animalServico.vendaId }}</span>
+                          <FontAwesomeIcon
+                            :icon="['fas', 'external-link-alt']"
+                            class="text-[10px] opacity-60"
+                          />
+                        </router-link>
                       </div>
                     </div>
 

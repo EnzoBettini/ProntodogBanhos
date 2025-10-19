@@ -26,6 +26,8 @@ public class VendaService {
     private final FormaPagamentoRepository formaPagamentoRepository;
     private final AnimalRepository animalRepository;
     private final ServicoRepository servicoRepository;
+    private final BanhoIndividualRepository banhoIndividualRepository;
+    private final ServicoAdicionalRepository servicoAdicionalRepository;
 
     public VendaService(
             VendaRepository vendaRepository,
@@ -36,7 +38,9 @@ public class VendaService {
             AnimalServicoRepository animalServicoRepository,
             FormaPagamentoRepository formaPagamentoRepository,
             AnimalRepository animalRepository,
-            ServicoRepository servicoRepository) {
+            ServicoRepository servicoRepository,
+            BanhoIndividualRepository banhoIndividualRepository,
+            ServicoAdicionalRepository servicoAdicionalRepository) {
         this.vendaRepository = vendaRepository;
         this.vendaItemRepository = vendaItemRepository;
         this.vendaBaixaRepository = vendaBaixaRepository;
@@ -46,6 +50,8 @@ public class VendaService {
         this.formaPagamentoRepository = formaPagamentoRepository;
         this.animalRepository = animalRepository;
         this.servicoRepository = servicoRepository;
+        this.banhoIndividualRepository = banhoIndividualRepository;
+        this.servicoAdicionalRepository = servicoAdicionalRepository;
     }
 
     // ============================================
@@ -311,10 +317,76 @@ public class VendaService {
 
         // Salvar o AnimalServico primeiro
         animalServico = animalServicoRepository.save(animalServico);
+        System.out.println("✅ AnimalServico salvo na venda: ID=" + animalServico.getId() + ", banhosUsados=" + animalServico.getBanhosUsados());
 
-        // Nota: O desconto será registrado no VendaItem, não no AnimalServico
-        // TODO: Criar banhos individuais se datasBanhosRealizados fornecidas
-        // TODO: Criar serviços adicionais se fornecidos
+        // Criar banhos individuais se datasBanhosRealizados fornecidas
+        if (itemDTO.getDatasBanhosRealizados() != null && !itemDTO.getDatasBanhosRealizados().isEmpty()) {
+            System.out.println("🛁 Criando " + itemDTO.getDatasBanhosRealizados().size() + " banhos individuais...");
+
+            for (int i = 0; i < itemDTO.getDatasBanhosRealizados().size(); i++) {
+                String dataString = itemDTO.getDatasBanhosRealizados().get(i);
+
+                try {
+                    LocalDate dataBanho = LocalDate.parse(dataString);
+
+                    BanhoIndividual banho = new BanhoIndividual();
+                    banho.setAnimalServico(animalServico);
+                    banho.setDataBanho(dataBanho);
+                    banho.setNumeroBanho(i + 1);
+                    banho.setUsuario(usuario);
+
+                    // Adicionar observação se fornecida
+                    if (itemDTO.getObservacoesBanhos() != null &&
+                        i < itemDTO.getObservacoesBanhos().size() &&
+                        itemDTO.getObservacoesBanhos().get(i) != null) {
+                        banho.setObservacoes(itemDTO.getObservacoesBanhos().get(i));
+                    }
+
+                    BanhoIndividual banhoSalvo = banhoIndividualRepository.save(banho);
+                    System.out.println("  ✅ Banho " + (i + 1) + " salvo: data=" + banhoSalvo.getDataBanho() + ", ID=" + banhoSalvo.getId());
+
+                } catch (Exception e) {
+                    System.err.println("  ❌ Erro ao criar banho " + (i + 1) + " com data " + dataString + ": " + e.getMessage());
+                }
+            }
+        }
+
+        // Criar serviços adicionais se fornecidos
+        if (itemDTO.getServicosAdicionais() != null && !itemDTO.getServicosAdicionais().isEmpty()) {
+            System.out.println("🔧 Criando " + itemDTO.getServicosAdicionais().size() + " serviços adicionais...");
+
+            for (CriarVendaDTO.ServicoAdicionalDTO adicionalDTO : itemDTO.getServicosAdicionais()) {
+                try {
+                    // Buscar o serviço adicional do catálogo
+                    Servico servicoAdicional = servicoRepository.findById(adicionalDTO.getServicoId())
+                            .orElseThrow(() -> new RuntimeException("Serviço adicional não encontrado com ID: " + adicionalDTO.getServicoId()));
+
+                    // Criar ServicoAdicional
+                    ServicoAdicional servicoAdicionalEntity = new ServicoAdicional();
+                    servicoAdicionalEntity.setAnimalServicoPrincipal(animalServico);
+                    servicoAdicionalEntity.setServicoAdicional(servicoAdicional);
+                    servicoAdicionalEntity.setQuantidadeAdicional(adicionalDTO.getQuantidade() != null ? adicionalDTO.getQuantidade() : 1);
+                    servicoAdicionalEntity.setValorUnitario(adicionalDTO.getValorUnitario());
+
+                    // Herdar status e data de pagamento do pai
+                    servicoAdicionalEntity.setStatusPagamento(animalServico.getStatusPagamento());
+                    servicoAdicionalEntity.setDataPagamento(animalServico.getDataPagamento());
+
+                    servicoAdicionalEntity.setObservacoes(adicionalDTO.getObservacoes());
+                    servicoAdicionalEntity.setUsuario(usuario);
+                    servicoAdicionalEntity.setDataAdicao(java.time.LocalDateTime.now());
+
+                    ServicoAdicional servicoAdicionalSalvo = servicoAdicionalRepository.save(servicoAdicionalEntity);
+                    System.out.println("  ✅ Serviço adicional salvo: " + servicoAdicional.getNome() +
+                                     " (qtd=" + servicoAdicionalSalvo.getQuantidadeAdicional() +
+                                     ", valor=" + servicoAdicionalSalvo.getValorTotal() + ")");
+
+                } catch (Exception e) {
+                    System.err.println("  ❌ Erro ao criar serviço adicional ID " + adicionalDTO.getServicoId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
 
         return animalServico;
     }
@@ -338,8 +410,8 @@ public class VendaService {
         System.out.println("    - Valor pago venda: R$ " + venda.getValorPago());
         System.out.println("    - Valor total venda: R$ " + venda.getValorTotal());
 
-        // Guardar o valor pago deste item para ajustar a venda
-        BigDecimal valorPagoItem = item.getValorPagoItem();
+        // Guardar o valor pago total da venda ANTES de remover o item
+        BigDecimal valorPagoTotal = venda.getValorPago();
 
         // Deletar o animal_servico completamente (e seus banhos em cascata)
         if (item.getAnimalServico() != null) {
@@ -353,19 +425,46 @@ public class VendaService {
             vendaItemRepository.delete(item);
         }
 
-        // Ajustar o valor pago da venda (remover o que foi pago neste item)
-        BigDecimal novoValorPago = venda.getValorPago().subtract(valorPagoItem);
-        if (novoValorPago.compareTo(BigDecimal.ZERO) < 0) {
-            novoValorPago = BigDecimal.ZERO;
-        }
-        venda.setValorPago(novoValorPago);
-
-        System.out.println("  💸 Ajustando valor pago da venda: R$ " + venda.getValorPago() + " - R$ " + valorPagoItem + " = R$ " + novoValorPago);
-
         // Recalcular valores da venda (atualiza valor bruto, total e pendente)
         recalcularValoresVenda(venda);
 
-        System.out.println("  ✅ Valores após remoção:");
+        // IMPORTANTE: Redistribuir o pagamento total entre os itens restantes
+        // Não subtraímos do valor pago, apenas redistribuímos proporcionalmente
+        System.out.println("  💸 Redistribuindo pagamento de R$ " + valorPagoTotal + " entre os itens restantes...");
+
+        // Zerar valorPagoItem de todos os itens restantes
+        List<VendaItem> itensRestantes = vendaItemRepository.findByVenda_Id(vendaId);
+        for (VendaItem itemRestante : itensRestantes) {
+            itemRestante.setValorPagoItem(BigDecimal.ZERO);
+            vendaItemRepository.save(itemRestante);
+        }
+
+        // Agora redistribuir o pagamento proporcionalmente aos itens restantes
+        if (!itensRestantes.isEmpty() && valorPagoTotal.compareTo(BigDecimal.ZERO) > 0) {
+            // Garantir que o valor pago não exceda o novo total
+            BigDecimal novoValorPago = valorPagoTotal;
+            if (novoValorPago.compareTo(venda.getValorTotal()) > 0) {
+                novoValorPago = venda.getValorTotal();
+                System.out.println("  ⚠️  Valor pago (R$ " + valorPagoTotal + ") excede novo total (R$ " + venda.getValorTotal() + "), ajustando para R$ " + novoValorPago);
+            }
+
+            venda.setValorPago(novoValorPago);
+            venda.recalcularValores();
+            vendaRepository.save(venda);
+
+            // Distribuir aos itens
+            distribuirPagamentoAosItens(vendaId, novoValorPago);
+
+            // Atualizar status dos AnimalServico
+            atualizarStatusItensBaseadoEmPagamento(vendaId);
+        } else {
+            // Se não há mais itens, zerar o valor pago
+            venda.setValorPago(BigDecimal.ZERO);
+            venda.recalcularValores();
+            vendaRepository.save(venda);
+        }
+
+        System.out.println("  ✅ Valores após remoção e redistribuição:");
         System.out.println("    - Valor total venda: R$ " + venda.getValorTotal());
         System.out.println("    - Valor pago venda: R$ " + venda.getValorPago());
         System.out.println("    - Valor pendente venda: R$ " + venda.getValorPendente());
