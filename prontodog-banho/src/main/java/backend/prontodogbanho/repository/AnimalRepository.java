@@ -44,4 +44,8 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
     // 🔍 Busca simples por nome (para o SearchSelect)
     @Query("SELECT a FROM Animal a WHERE LOWER(a.nome) LIKE LOWER(CONCAT('%', :termo, '%')) ORDER BY a.nome ASC")
     Page<Animal> findByNomeContainingIgnoreCase(@Param("termo") String termo, Pageable pageable);
+
+    // 🔍 Buscar animais de um cliente específico
+    @Query("SELECT a FROM Animal a WHERE a.cliente.id = :clienteId ORDER BY a.nome ASC")
+    java.util.List<Animal> findByCliente_Id(@Param("clienteId") Long clienteId);
 }

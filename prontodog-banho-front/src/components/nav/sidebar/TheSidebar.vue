@@ -75,6 +75,17 @@
         <SidebarItem title="Novo" icon="plus" to="/animal-servico/novo" :collapsed="false" />
         <SidebarItem title="Relatórios" icon="chart-bar" to="/servicos/relatorios" :collapsed="false" />
       </SidebarDropdown>
+
+      <SidebarDropdown
+        title="Vendas"
+        icon="shopping-cart"
+        basePath="/vendas"
+        :collapsed="!sidebarStore.isOpen"
+      >
+        <SidebarItem title="Lista" icon="list" to="/vendas" :collapsed="false" />
+        <SidebarItem title="Nova Venda" icon="plus" to="/vendas/novo" :collapsed="false" />
+        <SidebarItem title="Formas de Pagamento" icon="credit-card" to="/formas-pagamento" :collapsed="false" />
+      </SidebarDropdown>
     </nav>
 
     <!-- ✨ Footer com gradiente sutil (apenas quando aberto) -->

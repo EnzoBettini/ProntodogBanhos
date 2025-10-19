@@ -93,6 +93,13 @@ public class AnimalService {
         return animalRepository.findById(id);
     }
 
+    public List<Animal> buscarPorCliente(Long clienteId) {
+        System.out.println("🐾 AnimalService.buscarPorCliente - Cliente ID: " + clienteId);
+        List<Animal> animais = animalRepository.findByCliente_Id(clienteId);
+        System.out.println("🐾 AnimalService.buscarPorCliente - Resultado: " + animais.size() + " animais");
+        return animais;
+    }
+
     @Transactional
     public Animal salvar(Animal animal) {
         if (animal.getCodigoAnimalSistema() == null) {

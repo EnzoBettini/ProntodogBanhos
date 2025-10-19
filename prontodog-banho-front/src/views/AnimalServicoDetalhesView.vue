@@ -653,9 +653,12 @@
                 </div>
                 <div class="text-right">
                   <p class="text-2xl font-bold text-indigo-600">
-                    R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}
+                    R$ {{ (animalServico?.valorTotalServico || servico?.valor || 0).toFixed(2).replace('.', ',') }}
                   </p>
                   <p class="text-sm text-gray-500">Serviço Principal</p>
+                  <p v-if="animalServico?.valorCobrado && servico?.valor !== animalServico?.valorCobrado" class="text-xs text-gray-500 line-through">
+                    Valor catálogo: R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}
+                  </p>
                 </div>
               </div>
 
@@ -1358,7 +1361,17 @@ const podeAdicionarBanho = computed(() => {
 })
 
 // Computadas para valores dos serviços
-const valorTotalPrincipal = computed(() => servico.value?.valor || 0)
+const valorTotalPrincipal = computed(() => {
+  const valor = animalServico.value?.valorTotalServico || servico.value?.valor || 0
+  console.log('💰 valorTotalPrincipal:', {
+    animalServicoId: animalServico.value?.id,
+    valorTotalServico: animalServico.value?.valorTotalServico,
+    valorCobrado: animalServico.value?.valorCobrado,
+    servicoValor: servico.value?.valor,
+    valorFinal: valor
+  })
+  return valor
+})
 
 const valorTotalGeral = computed(() => {
   return valorTotalPrincipal.value + valorTotalAdicionais.value

@@ -30,6 +30,7 @@ public class AnimalServicoService {
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ServicoAdicionalRepository servicoAdicionalRepository;
+    private VendaService vendaService;
 
     public AnimalServicoService(AnimalServicoRepository animalServicoRepository,
                               BanhoIndividualRepository banhoIndividualRepository,
@@ -43,6 +44,13 @@ public class AnimalServicoService {
         this.servicoRepository = servicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.servicoAdicionalRepository = servicoAdicionalRepository;
+    }
+
+    // Setter para injeção lazy e evitar dependência circular
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @org.springframework.context.annotation.Lazy
+    public void setVendaService(VendaService vendaService) {
+        this.vendaService = vendaService;
     }
 
     public List<AnimalServico> listarTodos() {
@@ -599,7 +607,14 @@ public class AnimalServicoService {
             animalServico.setStatusPagamento("pago");
             animalServico.setDataPagamento(dataPagamento != null ? dataPagamento : LocalDate.now());
 
-            return animalServicoRepository.save(animalServico);
+            AnimalServico saved = animalServicoRepository.save(animalServico);
+
+            // Se este AnimalServico faz parte de uma venda, verificar se a venda deve ser marcada como paga
+            if (vendaService != null) {
+                vendaService.verificarEMarcarVendaComoPaga(saved.getId());
+            }
+
+            return saved;
         } else {
             throw new RuntimeException("AnimalServico não encontrado com id: " + id);
         }

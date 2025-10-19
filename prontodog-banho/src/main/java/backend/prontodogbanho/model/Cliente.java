@@ -43,4 +43,8 @@ public class Cliente {
     @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
     @JsonManagedReference("cliente-animal")
     private List<Animal> animais;
+
+    @OneToMany(mappedBy="cliente", cascade=CascadeType.ALL)
+    @JsonManagedReference("cliente-venda")
+    private List<Venda> vendas;
 }

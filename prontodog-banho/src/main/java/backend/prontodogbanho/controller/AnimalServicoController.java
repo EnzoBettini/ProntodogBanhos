@@ -29,6 +29,13 @@ public class AnimalServicoController {
     @GetMapping("/{id}")
     public ResponseEntity<AnimalServico> buscaPorId(@PathVariable Long id) {
         Optional<AnimalServico> animalServicoOptional = this.animalServicoService.buscarPorId(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico as = animalServicoOptional.get();
+            System.out.println("📋 AnimalServico #" + id + " - valorCobrado: " + as.getValorCobrado() +
+                             " | valorTotalServico: " + as.getValorTotalServico());
+        }
+
         return animalServicoOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
