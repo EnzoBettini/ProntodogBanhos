@@ -234,11 +234,7 @@ public class VendaService {
         }
         // Cenário 2: Criar novo AnimalServico
         else if (itemDTO.getAnimalId() != null && itemDTO.getServicoId() != null) {
-            animalServico = criarAnimalServicoParaVenda(
-                    itemDTO.getAnimalId(),
-                    itemDTO.getServicoId(),
-                    venda.getUsuario().getId()
-            );
+            animalServico = criarAnimalServicoParaVenda(itemDTO, venda.getUsuario().getId());
         } else {
             throw new RuntimeException("Deve fornecer animalServicoId OU (animalId + servicoId)");
         }
@@ -271,14 +267,14 @@ public class VendaService {
     /**
      * Cria um novo AnimalServico para ser usado na venda
      */
-    private AnimalServico criarAnimalServicoParaVenda(Long animalId, Long servicoId, Long usuarioId) {
+    private AnimalServico criarAnimalServicoParaVenda(CriarVendaDTO.ItemVendaDTO itemDTO, Long usuarioId) {
         // Buscar animal
-        Animal animal = animalRepository.findById(animalId)
-                .orElseThrow(() -> new RuntimeException("Animal não encontrado com ID: " + animalId));
+        Animal animal = animalRepository.findById(itemDTO.getAnimalId())
+                .orElseThrow(() -> new RuntimeException("Animal não encontrado com ID: " + itemDTO.getAnimalId()));
 
         // Buscar serviço do catálogo
-        Servico servico = servicoRepository.findById(servicoId)
-                .orElseThrow(() -> new RuntimeException("Serviço não encontrado com ID: " + servicoId));
+        Servico servico = servicoRepository.findById(itemDTO.getServicoId())
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado com ID: " + itemDTO.getServicoId()));
 
         // Buscar usuário
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -290,12 +286,37 @@ public class VendaService {
         animalServico.setServico(servico);
         animalServico.setUsuario(usuario);
         animalServico.setDataServico(LocalDate.now());
-        animalServico.setBanhosUsados(0); // Nenhum banho usado ainda
+
+        // Configurações avançadas do DTO
+
+        // Se é serviço único, marca todos os banhos como usados
+        if (itemDTO.getServicoUnico() != null && itemDTO.getServicoUnico()) {
+            animalServico.setBanhosUsados(servico.getQuantidade());
+            System.out.println("✅ Serviço único: marcando " + servico.getQuantidade() + " banhos como usados");
+        } else {
+            animalServico.setBanhosUsados(itemDTO.getBanhosUsados() != null ? itemDTO.getBanhosUsados() : 0);
+        }
+
+        // Status de pagamento sempre inicia como "em_aberto" - será atualizado automaticamente quando houver baixas na venda
         animalServico.setStatusPagamento("em_aberto");
 
-        // Salvar e retornar
+        // Data de expiração
+        if (itemDTO.getDataExpiracao() != null && !itemDTO.getDataExpiracao().trim().isEmpty()) {
+            try {
+                animalServico.setDataExpiracao(LocalDate.parse(itemDTO.getDataExpiracao()));
+            } catch (Exception e) {
+                System.out.println("⚠️ Erro ao parsear dataExpiracao: " + itemDTO.getDataExpiracao());
+            }
+        }
+
+        // Salvar o AnimalServico primeiro
+        animalServico = animalServicoRepository.save(animalServico);
+
         // Nota: O desconto será registrado no VendaItem, não no AnimalServico
-        return animalServicoRepository.save(animalServico);
+        // TODO: Criar banhos individuais se datasBanhosRealizados fornecidas
+        // TODO: Criar serviços adicionais se fornecidos
+
+        return animalServico;
     }
 
     // ============================================
@@ -310,6 +331,16 @@ public class VendaService {
         VendaItem item = vendaItemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item não encontrado com ID: " + itemId));
 
+        System.out.println("🗑️ Removendo item #" + itemId + " da venda #" + vendaId);
+        System.out.println("  💰 Valores antes:");
+        System.out.println("    - Valor item: R$ " + item.getValorFinalItem());
+        System.out.println("    - Valor pago item: R$ " + item.getValorPagoItem());
+        System.out.println("    - Valor pago venda: R$ " + venda.getValorPago());
+        System.out.println("    - Valor total venda: R$ " + venda.getValorTotal());
+
+        // Guardar o valor pago deste item para ajustar a venda
+        BigDecimal valorPagoItem = item.getValorPagoItem();
+
         // Deletar o animal_servico completamente (e seus banhos em cascata)
         if (item.getAnimalServico() != null) {
             AnimalServico animalServico = item.getAnimalServico();
@@ -322,7 +353,22 @@ public class VendaService {
             vendaItemRepository.delete(item);
         }
 
+        // Ajustar o valor pago da venda (remover o que foi pago neste item)
+        BigDecimal novoValorPago = venda.getValorPago().subtract(valorPagoItem);
+        if (novoValorPago.compareTo(BigDecimal.ZERO) < 0) {
+            novoValorPago = BigDecimal.ZERO;
+        }
+        venda.setValorPago(novoValorPago);
+
+        System.out.println("  💸 Ajustando valor pago da venda: R$ " + venda.getValorPago() + " - R$ " + valorPagoItem + " = R$ " + novoValorPago);
+
+        // Recalcular valores da venda (atualiza valor bruto, total e pendente)
         recalcularValoresVenda(venda);
+
+        System.out.println("  ✅ Valores após remoção:");
+        System.out.println("    - Valor total venda: R$ " + venda.getValorTotal());
+        System.out.println("    - Valor pago venda: R$ " + venda.getValorPago());
+        System.out.println("    - Valor pendente venda: R$ " + venda.getValorPendente());
 
         return converterParaCompletoDTO(venda);
     }
@@ -681,79 +727,19 @@ public class VendaService {
     }
 
     /**
-     * Quando um AnimalServico individual é marcado como pago, atualiza o VendaItem correspondente
-     * e registra baixa proporcional na venda
+     * Verifica se um AnimalServico pode ser marcado como pago individualmente
+     * NOVO COMPORTAMENTO: AnimalServicos que fazem parte de uma venda NÃO podem ser marcados como pagos individualmente
+     * O pagamento deve ser feito pela venda
      */
-    public void verificarEMarcarVendaComoPaga(Long animalServicoId) {
-        System.out.println("🔍 Verificando pagamento individual do AnimalServico #" + animalServicoId);
+    public boolean podeMarcarComoPagoIndividual(Long animalServicoId) {
+        AnimalServico animalServico = animalServicoRepository.findById(animalServicoId).orElse(null);
 
-        // Buscar o AnimalServico
-        AnimalServico animalServico = animalServicoRepository.findById(animalServicoId)
-                .orElse(null);
-
-        if (animalServico == null || animalServico.getVenda() == null) {
-            System.out.println("  ⏭️ AnimalServico não está em uma venda, ignorando...");
-            return;
+        if (animalServico == null) {
+            return false;
         }
 
-        Venda venda = animalServico.getVenda();
-        System.out.println("  📋 Venda #" + venda.getId() + " encontrada");
-
-        // Buscar o item correspondente
-        List<VendaItem> itens = vendaItemRepository.findByVenda_Id(venda.getId());
-        VendaItem itemPago = itens.stream()
-                .filter(item -> item.getAnimalServico() != null &&
-                               item.getAnimalServico().getId().equals(animalServicoId))
-                .findFirst()
-                .orElse(null);
-
-        if (itemPago == null) {
-            System.out.println("  ⚠️ Item não encontrado na venda");
-            return;
-        }
-
-        // Calcular quanto falta pagar deste item
-        BigDecimal valorPendenteItem = itemPago.getValorPendente();
-        System.out.println("  💵 Valor pendente do item: R$ " + valorPendenteItem);
-
-        if (valorPendenteItem.compareTo(BigDecimal.ZERO) <= 0) {
-            System.out.println("  ⏭️ Item já está totalmente pago");
-            return;
-        }
-
-        // Registrar baixa automática pelo valor pendente deste item
-        FormaPagamento formaPagamento = formaPagamentoRepository.findById(1L)
-                .orElse(formaPagamentoRepository.findAll().get(0));
-
-        Usuario usuario = venda.getUsuario();
-
-        VendaBaixa baixa = new VendaBaixa();
-        baixa.setVenda(venda);
-        baixa.setFormaPagamento(formaPagamento);
-        baixa.setUsuario(usuario);
-        baixa.setValorBaixa(valorPendenteItem);
-        baixa.setNumeroParcelas(1);
-        baixa.setObservacoes("Baixa automática - item individual marcado como pago");
-        baixa.setDataBaixa(LocalDateTime.now());
-
-        vendaBaixaRepository.save(baixa);
-        System.out.println("  💾 Baixa de R$ " + valorPendenteItem + " registrada");
-
-        // Atualizar valores da venda
-        BigDecimal valorPagoAntes = venda.getValorPago();
-        venda.setValorPago(venda.getValorPago().add(valorPendenteItem));
-        venda.recalcularValores();
-        vendaRepository.save(venda);
-
-        System.out.println("  💰 Valor pago da venda: " + valorPagoAntes + " -> " + venda.getValorPago());
-
-        // Distribuir este pagamento aos itens (vai marcar este item como 100% pago)
-        distribuirPagamentoAosItens(venda.getId(), valorPendenteItem);
-
-        // Atualizar status de todos os itens
-        atualizarStatusItensBaseadoEmPagamento(venda.getId());
-
-        System.out.println("  ✅ Pagamento individual processado!");
+        // Se está em uma venda, NÃO pode marcar como pago individualmente
+        return animalServico.getVenda() == null;
     }
 
     // ============================================

@@ -62,70 +62,6 @@
               {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
             </BaseBadge>
 
-
-            <!-- Menu de Ações de Pagamento -->
-            <div class="relative">
-              <BaseButton
-                @click="mostrarMenuPagamento = !mostrarMenuPagamento"
-                variant="secondary"
-                class="flex items-center gap-2"
-              >
-                <FontAwesomeIcon :icon="['fas', 'dollar-sign']" />
-                <span class="hidden sm:inline">Pagamento</span>
-                <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-xs" />
-              </BaseButton>
-
-              <!-- Dropdown de Pagamento -->
-              <div
-                v-if="mostrarMenuPagamento"
-                class="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
-                @click.stop
-              >
-                <div class="px-4 py-2 border-b border-gray-100">
-                  <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Alterar Status</p>
-                </div>
-
-                <!-- Marcar como Pago -->
-                <button
-                  v-if="animalServico.statusPagamento !== 'pago'"
-                  @click="alterarStatusPagamento('pago')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-emerald-500" />
-                  <div>
-                    <p class="font-medium">Marcar como Pago</p>
-                    <p class="text-xs text-gray-500">Define data de pagamento para hoje</p>
-                  </div>
-                </button>
-
-                <!-- Marcar como Em Aberto -->
-                <button
-                  v-if="animalServico.statusPagamento !== 'em_aberto'"
-                  @click="alterarStatusPagamento('em_aberto')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-3"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-500" />
-                  <div>
-                    <p class="font-medium">Marcar como Em Aberto</p>
-                    <p class="text-xs text-gray-500">Remove data de pagamento</p>
-                  </div>
-                </button>
-
-                <!-- Marcar como Cancelado -->
-                <button
-                  v-if="animalServico.statusPagamento !== 'cancelado'"
-                  @click="alterarStatusPagamento('cancelado')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'times-circle']" class="text-red-500" />
-                  <div>
-                    <p class="font-medium">Marcar como Cancelado</p>
-                    <p class="text-xs text-gray-500">Cancela o pagamento</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-
             <!-- Botão Excluir -->
             <BaseButton
               @click="confirmarExclusaoAnimalServico"
@@ -2169,9 +2105,13 @@ const excluirAnimalServico = async (): Promise<void> => {
     // Redirecionar para lista
     voltarParaLista()
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('❌ Erro ao excluir animal serviço:', err)
-    alert(`❌ Erro ao excluir animal serviço: ${err instanceof Error ? err.message : 'Erro desconhecido'}\n\nTente novamente.`)
+
+    // apiHelpers já extraiu a mensagem do backend
+    const mensagem = err?.message || 'Erro desconhecido ao excluir serviço'
+
+    alert(`❌ Não foi possível excluir este serviço\n\n${mensagem}`)
   } finally {
     loading.value = false
   }

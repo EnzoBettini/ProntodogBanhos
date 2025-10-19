@@ -632,42 +632,6 @@
                             Duplicar Serviço
                           </button>
 
-                          <!-- Opções de Pagamento -->
-                          <hr class="my-1 border-gray-100">
-                          <div class="px-3 py-1">
-                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pagamento</p>
-                          </div>
-
-                          <!-- Marcar como Pago -->
-                          <button
-                            v-if="animalServico.statusPagamento !== 'pago'"
-                            @click="marcarComoPago(animalServico)"
-                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3"
-                          >
-                            <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-emerald-500" />
-                            Marcar como Pago
-                          </button>
-
-                          <!-- Marcar como Em Aberto -->
-                          <button
-                            v-if="animalServico.statusPagamento !== 'em_aberto'"
-                            @click="marcarComoEmAberto(animalServico)"
-                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-3"
-                          >
-                            <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-500" />
-                            Marcar como Em Aberto
-                          </button>
-
-                          <!-- Marcar como Cancelado -->
-                          <button
-                            v-if="animalServico.statusPagamento !== 'cancelado'"
-                            @click="marcarComoCancelado(animalServico)"
-                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
-                          >
-                            <FontAwesomeIcon :icon="['fas', 'times-circle']" class="text-red-500" />
-                            Marcar como Cancelado
-                          </button>
-
                           <hr class="my-1 border-gray-100">
 
                         <!-- Excluir -->
@@ -1416,9 +1380,13 @@ const excluirAnimalServico = async (animalServico: AnimalServico): Promise<void>
     // Recarregar dados para garantir consistência
     await carregarAnimalServicos()
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erro ao excluir animal serviço:', error)
-    alert(`❌ Erro ao excluir animal serviço: ${error instanceof Error ? error.message : 'Erro desconhecido'}\n\nTente novamente.`)
+
+    // apiHelpers já extraiu a mensagem do backend
+    const mensagem = error?.message || 'Erro desconhecido ao excluir serviço'
+
+    alert(`❌ Não foi possível excluir este serviço\n\n${mensagem}`)
   } finally {
     loading.value = false
   }
