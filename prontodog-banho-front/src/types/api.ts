@@ -35,6 +35,8 @@ export interface AnimalServico {
   banhosUsados: number
   statusPagamento: string // "pago", "em_aberto", "parcial", "cancelado"
   dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
+  dataRealizacao?: string | null // formato: "YYYY-MM-DD" (opcional) - Data em que o serviço foi realizado
+  statusServico?: string // "pendente", "realizado" - Status do serviço único
   valorTotalServico?: number // Valor total do serviço principal (calcula automaticamente com desconto se em venda)
   valorCobrado?: number // Valor efetivamente cobrado quando o serviço está em uma venda
   animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)

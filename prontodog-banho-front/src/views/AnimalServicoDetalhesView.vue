@@ -126,7 +126,7 @@
                 <div class="flex items-center gap-3">
                   <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="text-amber-600" />
                   <div>
-                    <p class="text-sm font-medium text-gray-600">Data do Serviço</p>
+                    <p class="text-sm font-medium text-gray-600">Data de Lançamento</p>
                     <p class="text-lg font-semibold text-gray-800">{{ formatarData(animalServico?.dataServico) }}</p>
                   </div>
                 </div>
@@ -143,41 +143,92 @@
                   'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200': getStatusServicoUnico === 'pendente'
                 }"
               >
-                <div class="flex items-center gap-3 mb-3">
-                  <FontAwesomeIcon
-                    :icon="getStatusServicoUnico === 'realizado' ? 'check-circle' : 'clock'"
-                    :class="{
-                      'text-green-600': getStatusServicoUnico === 'realizado',
-                      'text-gray-600': getStatusServicoUnico === 'pendente'
-                    }"
-                  />
-                  <div>
-                    <p class="text-sm font-medium text-gray-600">Status do Serviço</p>
-                    <p class="text-lg font-semibold"
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <FontAwesomeIcon
+                      :icon="getStatusServicoUnico === 'realizado' ? 'check-circle' : 'clock'"
                       :class="{
-                        'text-green-800': getStatusServicoUnico === 'realizado',
-                        'text-gray-800': getStatusServicoUnico === 'pendente'
+                        'text-green-600': getStatusServicoUnico === 'realizado',
+                        'text-gray-600': getStatusServicoUnico === 'pendente'
                       }"
-                    >
-                      {{ getStatusServicoUnico === 'realizado' ? '✅ REALIZADO' : '⏳ PENDENTE' }}
-                    </p>
+                    />
+                    <div>
+                      <p class="text-sm font-medium text-gray-600">Status do Serviço</p>
+                      <p class="text-lg font-semibold"
+                        :class="{
+                          'text-green-800': getStatusServicoUnico === 'realizado',
+                          'text-gray-800': getStatusServicoUnico === 'pendente'
+                        }"
+                      >
+                        {{ getStatusServicoUnico === 'realizado' ? 'Realizado' : '⏳ Pendente' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Data de Realização -->
+                  <div v-if="getStatusServicoUnico === 'realizado'" class="text-right">
+                    <p class="text-sm font-medium text-gray-600">Data de Realização</p>
+                    <div v-if="!editandoDataRealizacao" class="flex items-center gap-2">
+                      <p class="text-sm font-semibold text-gray-800">
+                        {{ animalServico?.dataRealizacao ? formatarData(animalServico.dataRealizacao) : '' }}
+                      </p>
+                      <button
+                        @click="iniciarEdicaoDataRealizacao"
+                        class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all duration-200"
+                        title="Editar data de realização"
+                      >
+                        <FontAwesomeIcon :icon="['fas', 'edit']" class="text-xs" />
+                      </button>
+                    </div>
+                    <div v-else class="space-y-2">
+                      <input
+                        v-model="novaDataRealizacao"
+                        type="date"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+                        :max="hoje"
+                      />
+                      <div class="flex items-center gap-1">
+                        <button
+                          @click="salvarDataRealizacao"
+                          class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <FontAwesomeIcon :icon="['fas', 'check']" />
+                        </button>
+                        <button
+                          @click="cancelarEdicaoDataRealizacao"
+                          class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
+                        >
+                          <FontAwesomeIcon :icon="['fas', 'times']" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Botão marcar como realizado -->
-                <BaseButton
-                  v-if="getStatusServicoUnico === 'pendente'"
-                  @click="mostrarModalBanho = true"
-                  variant="primary"
-                  size="sm"
-                  class="w-full bg-green-600 hover:bg-green-700"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'check']" class="mr-2" />
-                  Marcar como Realizado
-                </BaseButton>
-                <p v-else class="text-center text-green-600 text-sm font-medium">
-                  ✅ Serviço já foi realizado
-                </p>
+                <div class="flex gap-2">
+                  <!-- Botão marcar como realizado -->
+                  <BaseButton
+                    v-if="getStatusServicoUnico === 'pendente'"
+                    @click="confirmarRealizacaoServico(hoje)"
+                    variant="primary"
+                    size="sm"
+                    class="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    <FontAwesomeIcon :icon="['fas', 'check']" class="mr-2" />
+                    Marcar como Realizado
+                  </BaseButton>
+                  <!-- Botão marcar como pendente -->
+                  <BaseButton
+                    v-else
+                    @click="marcarComoPendente"
+                    variant="primary"
+                    size="sm"
+                    class="flex-1 bg-gray-600 hover:bg-gray-700"
+                  >
+                    <FontAwesomeIcon :icon="['fas', 'undo']" class="mr-2" />
+                    Marcar como Pendente
+                  </BaseButton>
+                </div>
               </div>
 
               <!-- Progresso dos banhos (APENAS para PACOTES) -->
@@ -835,7 +886,7 @@
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
               <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="mr-2 text-blue-600" />
-              Data do Banho *
+              Data do Serviço*
             </label>
             <input
               type="date"
@@ -1139,7 +1190,7 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
           <FontAwesomeIcon :icon="['fas', 'calendar']" class="text-green-600 mr-2" />
-          Data do Serviço *
+          Data do Serviço*
         </label>
         <input
           v-model="formularioEditarServico.dataServico"
@@ -1222,7 +1273,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import BaseCard from '@/components/UI/BaseCard.vue'
@@ -1259,6 +1310,9 @@ const valorTotalAdicionais = ref(0)
 const editarData = ref(false)
 const novaData = ref('')
 const salvandoData = ref(false)
+const editandoDataRealizacao = ref(false)
+const novaDataRealizacao = ref('')
+const hoje = ref(new Date().toISOString().split('T')[0])
 
 // Estados de pagamento
 const mostrarMenuPagamento = ref(false)
@@ -1362,8 +1416,8 @@ const isServicoUnico = computed(() => {
 })
 
 const getStatusServicoUnico = computed(() => {
-  // Para serviços únicos, consideramos "realizado" se banhosUsados >= 1
-  return animalServico.value && animalServico.value.banhosUsados >= 1 ? 'realizado' : 'pendente'
+  if (!animalServico.value) return 'pendente'
+  return animalServico.value.statusServico || 'pendente'
 })
 
 // Computadas para controle de expiração
@@ -1408,20 +1462,14 @@ const diasVencido = computed(() => {
   return Math.abs(Math.ceil((hoje.getTime() - dataExpiracao.getTime()) / (1000 * 60 * 60 * 24)))
 })
 
-// Funções
-const formatarData = (data: string): string => {
-  if (!data) return ''
-
-  try {
-    // Parse seguro: evitar timezone UTC
-    const [ano, mes, dia] = data.split('-')
-    const dataLocal = new Date(Number(ano), Number(mes) - 1, Number(dia))
-    return dataLocal.toLocaleDateString('pt-BR')
-  } catch (error) {
-    console.warn('⚠️ Erro ao formatar data:', data, error)
-    return data
-  }
+// Funções de exibição de dados
+const formatarData = (data: string | null): string => {
+  if (!data) return '-'
+  // Mantém a data exatamente como está, apenas formata para pt-BR
+  const [ano, mes, dia] = data.split('-')
+  return `${dia}/${mes}/${ano}`
 }
+// Funções de edição da data de realização e status
 
 const getAnimalIcon = (tipo: string) => {
   return getIconeTipoAnimal(tipo)
@@ -2045,6 +2093,12 @@ const carregarDados = async (): Promise<void> => {
 
     // Debug: mostrar estrutura dos dados para diagnosticar problemas
     console.log('🔍 Debug AnimalServico:', animalServico.value)
+    console.log('🔍 VERIFICAR CAMPOS:', {
+      statusServico: animalServico.value?.statusServico,
+      dataRealizacao: animalServico.value?.dataRealizacao,
+      hasStatusServico: 'statusServico' in (animalServico.value || {}),
+      hasDataRealizacao: 'dataRealizacao' in (animalServico.value || {})
+    })
     console.log('🔍 Debug Animal encontrado:', animal.value)
     console.log('🔍 Debug Serviço encontrado:', servico.value)
     console.log('🔍 Debug Todos os serviços:', servicosData.map(s => ({ id: s.id, nome: s.nome, servicosAnimais: s.servicosAnimais?.length })))
@@ -2073,13 +2127,125 @@ const verDetalhesCliente = (): void => {
   }
 }
 
+// Funções de edição da data de realização
+const iniciarEdicaoDataRealizacao = (): void => {
+  novaDataRealizacao.value = (animalServico.value?.dataRealizacao || hoje.value) as string
+  editandoDataRealizacao.value = true
+}
+
+const cancelarEdicaoDataRealizacao = (): void => {
+  editandoDataRealizacao.value = false
+  novaDataRealizacao.value = ''
+}
+
+const salvarDataRealizacao = async (): Promise<void> => {
+  try {
+    if (!animalServico.value || !novaDataRealizacao.value) return
+
+    // Envia a data exatamente como foi selecionada no input
+    console.log('🔄 Salvando data de realização:', novaDataRealizacao.value)
+
+    const response = await animalServicoService.atualizar(animalServico.value.id, {
+      dataRealizacao: novaDataRealizacao.value,
+      statusServico: 'realizado'
+    })
+
+    console.log('📥 Resposta do backend:', response)
+
+    // ⚠️ WORKAROUND: Backend não retorna statusServico/dataRealizacao
+    // Então atualizamos manualmente os campos locais
+    if (animalServico.value) {
+      animalServico.value.dataRealizacao = novaDataRealizacao.value
+      animalServico.value.statusServico = 'realizado'
+    }
+    
+    editandoDataRealizacao.value = false
+
+    console.log('✅ Data de realização atualizada com sucesso! (campos atualizados localmente)', {
+      dataRealizacao: animalServico.value?.dataRealizacao,
+      statusServico: animalServico.value?.statusServico
+    })
+  } catch (err) {
+    console.error('❌ Erro ao atualizar data de realização:', err)
+    alert('Erro ao atualizar a data de realização. Tente novamente.')
+  }
+}
+
+// Funções de alteração de status
+const marcarComoPendente = async (): Promise<void> => {
+  try {
+    if (!animalServico.value) return
+
+    console.log('🔄 Marcando serviço como pendente...', animalServico.value.id)
+
+    const response = await animalServicoService.atualizar(animalServico.value.id, {
+      dataRealizacao: null,
+      statusServico: 'pendente'
+    })
+
+    console.log('📥 Resposta do backend:', response)
+
+    // ⚠️ WORKAROUND: Backend não retorna statusServico/dataRealizacao
+    // Então atualizamos manualmente os campos locais
+    if (animalServico.value) {
+      animalServico.value.dataRealizacao = null
+      animalServico.value.statusServico = 'pendente'
+    }
+
+    console.log('✅ Serviço marcado como pendente com sucesso! (campos atualizados localmente)', {
+      dataRealizacao: animalServico.value?.dataRealizacao,
+      statusServico: animalServico.value?.statusServico
+    })
+  } catch (err) {
+    console.error('❌ Erro ao marcar serviço como pendente:', err)
+    alert('Erro ao atualizar o status do serviço. Tente novamente.')
+  }
+}
+
+const confirmarRealizacaoServico = async (data?: string): Promise<void> => {
+  try {
+    if (!animalServico.value) return
+
+    // Garantir um valor de data válido: usar data passada, senão usar hoje.value ou fallback para a data atual
+    const dataToUse = data || hoje.value || new Date().toISOString().split('T')[0]
+
+    console.log('🔄 Marcando serviço como realizado...', animalServico.value.id, 'Data:', dataToUse)
+
+    const response = await animalServicoService.atualizar(animalServico.value.id, {
+      dataRealizacao: dataToUse,
+      statusServico: 'realizado'
+    })
+
+    console.log('📥 Resposta do backend:', response)
+
+    // ⚠️ WORKAROUND: Backend não retorna statusServico/dataRealizacao
+    // Então atualizamos manualmente os campos locais
+    if (animalServico.value) {
+      animalServico.value.dataRealizacao = dataToUse
+      animalServico.value.statusServico = 'realizado'
+    }
+    
+    mostrarModalBanho.value = false
+
+    console.log('✅ Serviço marcado como realizado com sucesso! (campos atualizados localmente)', {
+      dataRealizacao: animalServico.value?.dataRealizacao,
+      statusServico: animalServico.value?.statusServico
+    })
+  } catch (err) {
+    console.error('❌ Erro ao marcar serviço como realizado:', err)
+    alert('Erro ao atualizar o status do serviço. Tente novamente.')
+  }
+}
+
 const salvarNovaData = async (): Promise<void> => {
   if (!animalServico.value || !novaData.value) return
 
   try {
     salvandoData.value = true
 
-    // ⚠️ CORREÇÃO: Enviar apenas campos escalares, NÃO objetos relacionados
+    // Envia a data exatamente como foi selecionada no input
+    console.log('Salvando data do serviço:', novaData.value)
+
     const dadosAtualizacao = {
       id: animalServico.value.id,
       dataServico: novaData.value,
@@ -2087,11 +2253,9 @@ const salvarNovaData = async (): Promise<void> => {
       dataExpiracao: animalServico.value.dataExpiracao,
       statusPagamento: animalServico.value.statusPagamento,
       dataPagamento: animalServico.value.dataPagamento,
-      // ❌ NÃO enviar objetos relacionados: animal, servico, usuario
-      // ✅ O backend já conhece estes relacionamentos pelo ID do registro
     }
 
-    console.log('📤 Enviando dados limpos para API:', dadosAtualizacao)
+    console.log('📤 Enviando dados para API:', dadosAtualizacao)
 
     await animalServicoService.atualizar(animalServico.value.id, dadosAtualizacao)
 

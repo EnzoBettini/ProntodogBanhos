@@ -203,7 +203,7 @@
                 />
                 <p class="text-sm font-medium" :class="formulario.servicoUnico ? 'text-green-800' : 'text-blue-800'">
                   <span v-if="formulario.servicoUnico">
-                    ✅ Serviço será marcado como <strong>realizado</strong> (ex: tosa, corte de unha)
+                    Serviço será marcado como <strong>realizado</strong> (ex: tosa, corte de unha)
                   </span>
                   <span v-else>
                     📅 Serviço será <strong>agendado</strong> para banhos individuais (ex: pacotes)

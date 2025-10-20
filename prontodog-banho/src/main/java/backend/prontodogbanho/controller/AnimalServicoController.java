@@ -108,6 +108,22 @@ public class AnimalServicoController {
         if (dadosAtualizacao.containsKey("dataPagamento") && dadosAtualizacao.get("dataPagamento") != null) {
             animalServico.setDataPagamento(LocalDate.parse((String) dadosAtualizacao.get("dataPagamento")));
         }
+        
+        // 🎯 Processar campos de serviço único
+        if (dadosAtualizacao.containsKey("statusServico")) {
+            animalServico.setStatusServico((String) dadosAtualizacao.get("statusServico"));
+            System.out.println("🔍 CONTROLLER - Status do serviço definido: " + dadosAtualizacao.get("statusServico"));
+        }
+        if (dadosAtualizacao.containsKey("dataRealizacao")) {
+            Object dataRealizacaoObj = dadosAtualizacao.get("dataRealizacao");
+            if (dataRealizacaoObj != null) {
+                animalServico.setDataRealizacao(LocalDate.parse((String) dataRealizacaoObj));
+                System.out.println("🔍 CONTROLLER - Data de realização definida: " + dataRealizacaoObj);
+            } else {
+                animalServico.setDataRealizacao(null);
+                System.out.println("🔍 CONTROLLER - Data de realização definida como NULL");
+            }
+        }
 
         // Processar IDs dos relacionamentos
         Long servicoId = null;

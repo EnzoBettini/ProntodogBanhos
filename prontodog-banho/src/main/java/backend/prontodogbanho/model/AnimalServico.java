@@ -37,6 +37,13 @@ public class AnimalServico {
 
     @Column(name="data_pagamento")
     private LocalDate dataPagamento;
+  
+    // 🎯 Campos para controle de serviços únicos (não-pacotes)
+    @Column(name="status_servico")
+    private String statusServico; // "pendente", "realizado"
+
+    @Column(name="data_realizacao")
+    private LocalDate dataRealizacao;
 
     @Column(name="valor_cobrado", precision=10, scale=2)
     private BigDecimal valorCobrado;

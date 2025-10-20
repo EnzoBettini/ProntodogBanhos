@@ -416,6 +416,14 @@ public class AnimalServicoService {
                 animalServicoExistente.setDataPagamento(novosDados.getDataPagamento());
                 System.out.println("📆 Atualizando data pagamento: " + novosDados.getDataPagamento());
             }
+            if (novosDados.getStatusServico() != null) {
+                animalServicoExistente.setStatusServico(novosDados.getStatusServico());
+                System.out.println("🔔 Atualizando status serviço: " + novosDados.getStatusServico());
+            }
+            if (novosDados.getDataRealizacao() != null) {
+                animalServicoExistente.setDataRealizacao(novosDados.getDataRealizacao());
+                System.out.println("✅ Atualizando data realização: " + novosDados.getDataRealizacao());
+            }
 
             // Atualizar serviço se fornecido
             if (servicoId != null) {
