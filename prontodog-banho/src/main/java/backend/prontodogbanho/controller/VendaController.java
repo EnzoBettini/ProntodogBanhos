@@ -146,7 +146,13 @@ public class VendaController {
             @PathVariable Long itemId) {
         try {
             VendaCompletoDTO venda = vendaService.removerItem(vendaId, itemId);
-            return ResponseEntity.ok(venda);
+
+            // Se venda é null, significa que foi excluída (ficou sem itens)
+            if (venda == null) {
+                return ResponseEntity.noContent().build(); // 204 No Content
+            }
+
+            return ResponseEntity.ok(venda); // 200 OK com venda atualizada
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

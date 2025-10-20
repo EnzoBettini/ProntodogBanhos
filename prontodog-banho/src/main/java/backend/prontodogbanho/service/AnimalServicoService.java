@@ -32,6 +32,7 @@ public class AnimalServicoService {
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ServicoAdicionalRepository servicoAdicionalRepository;
+    private final backend.prontodogbanho.repository.VendaItemRepository vendaItemRepository;
     private VendaService vendaService;
 
     public AnimalServicoService(AnimalServicoRepository animalServicoRepository,
@@ -39,13 +40,15 @@ public class AnimalServicoService {
                               AnimalRepository animalRepository,
                               ServicoRepository servicoRepository,
                               UsuarioRepository usuarioRepository,
-                              ServicoAdicionalRepository servicoAdicionalRepository) {
+                              ServicoAdicionalRepository servicoAdicionalRepository,
+                              backend.prontodogbanho.repository.VendaItemRepository vendaItemRepository) {
         this.animalServicoRepository = animalServicoRepository;
         this.banhoIndividualRepository = banhoIndividualRepository;
         this.animalRepository = animalRepository;
         this.servicoRepository = servicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.servicoAdicionalRepository = servicoAdicionalRepository;
+        this.vendaItemRepository = vendaItemRepository;
     }
 
     // Setter para injeção lazy e evitar dependência circular
@@ -247,19 +250,15 @@ public class AnimalServicoService {
 
         // Se o serviço faz parte de uma venda, precisamos remover através da venda
         if (animalServico.getVenda() != null) {
-            System.out.println("🔗 Serviço faz parte da venda #" + animalServico.getVenda().getCodigoVenda());
+            Long vendaId = animalServico.getVenda().getId();
+            System.out.println("🔗 Serviço faz parte da venda #" + vendaId);
             System.out.println("🗑️ Removendo através do VendaService para manter consistência...");
 
-            // Buscar o VendaItem correspondente
-            Venda venda = animalServico.getVenda();
-            Long vendaId = venda.getId();
-
-            // Precisamos encontrar o item da venda que corresponde a este animalServico
-            // Para isso, vamos usar o repository
+            // Buscar o VendaItem correspondente usando o repository diretamente
             if (vendaService != null) {
-                // Buscar o item manualmente
+                // Buscar todos os itens da venda usando o repository (mais seguro)
                 java.util.List<backend.prontodogbanho.model.VendaItem> itens =
-                    venda.getItens();
+                    vendaItemRepository.findByVenda_Id(vendaId);
 
                 backend.prontodogbanho.model.VendaItem itemParaRemover = null;
                 for (backend.prontodogbanho.model.VendaItem item : itens) {

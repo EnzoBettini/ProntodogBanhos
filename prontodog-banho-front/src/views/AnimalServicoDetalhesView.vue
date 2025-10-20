@@ -76,7 +76,7 @@
         </div>
 
         <!-- Grid principal reorganizado -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full pb-8">
 
           <!-- 📊 Coluna 1: Informações Principais -->
           <BaseCard class="shadow-xl border-0 w-full min-w-0">
@@ -451,30 +451,67 @@
                 </div>
               </div>
 
-              <!-- 🧾 Venda Relacionada -->
-              <div v-if="animalServico?.vendaId" class="p-5 rounded-xl border-2 bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 border-indigo-300 shadow-md hover:shadow-lg transition-all duration-300">
-                <div class="flex flex-col gap-4">
-                  <div class="flex items-start justify-between gap-4">
-                    <div class="flex items-start gap-3 flex-1">
-                      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                        <FontAwesomeIcon :icon="['fas', 'receipt']" class="text-white text-lg" />
+              <!-- 🧾 Venda Relacionada - UI Melhorada -->
+              <div v-if="animalServico?.vendaId" class="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 shadow-lg hover:shadow-2xl transition-all duration-300 group">
+                <!-- Padrão de fundo decorativo -->
+                <div class="absolute inset-0 opacity-5">
+                  <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full blur-3xl"></div>
+                  <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full blur-3xl"></div>
+                </div>
+
+                <div class="relative p-6">
+                  <!-- Header com ícone e título -->
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="relative">
+                      <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <FontAwesomeIcon :icon="['fas', 'receipt']" class="text-white text-xl" />
                       </div>
-                      <div class="flex-1 min-w-0">
-                        <p class="text-xs font-medium text-indigo-600 uppercase tracking-wide mb-1">Venda Relacionada</p>
-                        <p class="text-2xl font-bold text-indigo-900 mb-1">Venda #{{ animalServico?.vendaId }}</p>
-                        <p class="text-sm text-indigo-700">Este serviço faz parte de uma venda</p>
+                      <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-md animate-pulse"></div>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1 flex items-center gap-2">
+                        <FontAwesomeIcon :icon="['fas', 'link']" class="text-xs" />
+                        Vinculado a uma venda
+                      </p>
+                      <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                        Venda #{{ animalServico?.vendaId }}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <!-- Informação contextual -->
+                  <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 mb-4 border border-indigo-100">
+                    <div class="flex items-start gap-3">
+                      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-blue-600" />
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm text-gray-700 leading-relaxed">
+                          Este serviço está incluído em uma venda.
+                          <span class="font-semibold text-indigo-700">Pagamentos, descontos e valores</span>
+                          são gerenciados na venda completa.
+                        </p>
                       </div>
                     </div>
+                  </div>
 
+                  <!-- Botões de ação -->
+                  <div class="flex gap-3">
                     <router-link
                       :to="`/vendas/${animalServico?.vendaId}`"
-                      class="px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2.5 whitespace-nowrap flex-shrink-0"
-                      title="Ver detalhes completos da venda"
+                      class="flex-1 px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
                     >
-                      <FontAwesomeIcon :icon="['fas', 'arrow-right']" class="text-sm" />
-                      <span>Ver Venda</span>
-                      <FontAwesomeIcon :icon="['fas', 'external-link-alt']" class="text-xs" />
+                      <FontAwesomeIcon :icon="['fas', 'receipt']" class="text-lg" />
+                      <span>Abrir Painel da Venda</span>
+                      <FontAwesomeIcon :icon="['fas', 'arrow-right']" class="text-sm animate-pulse" />
                     </router-link>
+                  </div>
+
+                  <!-- Tag decorativa -->
+                  <div class="mt-4 flex items-center justify-center gap-2 text-xs text-indigo-600 font-medium">
+                    <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                    <span>Gerenciado pelo sistema de vendas</span>
+                    <div class="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
                   </div>
                 </div>
               </div>
@@ -1309,7 +1346,7 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
 import SearchSelect from '@/components/UI/SearchSelect.vue'
-import { animalServicoService, animaisService, servicosService, clientesService, usuariosService, banhosIndividuaisService, servicosAdicionaisService, type NovoBanhoIndividual, type BanhoIndividual } from '@/services/api'
+import { animalServicoService, animaisService, servicosService, clientesService, usuariosService, banhosIndividuaisService, servicosAdicionaisService, vendasService, type NovoBanhoIndividual, type BanhoIndividual } from '@/services/api'
 import type { AnimalServico, Animal, ServicoCompleto, Cliente, Usuario } from '@/types/api'
 import { formatarCpf, formatarTelefone, getIconeTipoAnimal } from '@/utils/formatters'
 
@@ -2324,18 +2361,51 @@ const salvarNovaData = async (): Promise<void> => {
 }
 
 // 🗑️ Funções de exclusão do animal serviço
-const confirmarExclusaoAnimalServico = (): void => {
+const confirmarExclusaoAnimalServico = async (): Promise<void> => {
   if (!animalServico.value || !animal.value || !servico.value) return
 
-  const confirmacao = window.confirm(
-    `🗑️ Tem certeza que deseja excluir este animal serviço?\n\n` +
+  let mensagemConfirmacao = `🗑️ Tem certeza que deseja excluir este animal serviço?\n\n` +
     `Animal: ${animal.value.nome}\n` +
     `Serviço: ${servico.value.nome}\n` +
     `Data: ${formatarData(animalServico.value.dataServico)}\n` +
-    `Banhos utilizados: ${animalServico.value.banhosUsados}/${servico.value.quantidade}\n\n` +
+    `Banhos utilizados: ${animalServico.value.banhosUsados}/${servico.value.quantidade}\n\n`
+
+  // 🔍 Se está vinculado a uma venda, verificar se é o último item
+  if (animalServico.value.vendaId) {
+    try {
+      // Buscar informações da venda
+      const venda = await vendasService.buscarPorId(animalServico.value.vendaId)
+
+      if (venda && venda.itens && venda.itens.length === 1) {
+        // ⚠️ É o último item da venda - aviso especial!
+        mensagemConfirmacao =
+          `🚨 ATENÇÃO: Este é o ÚLTIMO SERVIÇO desta venda!\n\n` +
+          `⚠️ Ao excluir este serviço, a VENDA INTEIRA será EXCLUÍDA automaticamente.\n\n` +
+          `📋 O que será removido:\n` +
+          `   • Venda #${venda.codigoVenda}\n` +
+          `   • ${venda.quantidadeBaixas || 0} pagamento(s) registrado(s)\n` +
+          `   • Serviço: ${servico.value.nome}\n` +
+          `   • Animal: ${animal.value.nome}\n` +
+          `   • Todos os banhos individuais\n\n` +
+          `💰 Valor total da venda: R$ ${(venda.valorTotal || 0).toFixed(2)}\n\n` +
+          `❓ Tem certeza que deseja continuar?`
+      } else {
+        // Item normal de uma venda com múltiplos itens
+        mensagemConfirmacao +=
+          `🧾 Este serviço faz parte da Venda #${venda.codigoVenda}\n` +
+          `(${venda.itens.length} itens no total)\n\n`
+      }
+    } catch (error) {
+      console.error('Erro ao buscar venda:', error)
+      // Se falhar ao buscar venda, continua com mensagem padrão
+    }
+  }
+
+  mensagemConfirmacao +=
     `⚠️ ATENÇÃO: Esta ação não poderá ser desfeita!\n` +
     `Todos os banhos individuais relacionados também serão excluídos.`
-  )
+
+  const confirmacao = window.confirm(mensagemConfirmacao)
 
   if (confirmacao) {
     excluirAnimalServico()
@@ -2345,6 +2415,8 @@ const confirmarExclusaoAnimalServico = (): void => {
 const excluirAnimalServico = async (): Promise<void> => {
   if (!animalServico.value) return
 
+  const eraUltimoItemDaVenda = animalServico.value.vendaId ? await verificarSeEUltimoItem(animalServico.value.vendaId) : false
+
   try {
     loading.value = true
     console.log(`🗑️ Excluindo animal serviço ID ${animalServico.value.id}...`)
@@ -2353,8 +2425,16 @@ const excluirAnimalServico = async (): Promise<void> => {
 
     console.log('✅ Animal serviço excluído com sucesso!')
 
-    // Mostrar feedback de sucesso
-    alert(`✅ Animal serviço de "${animal.value?.nome}" foi excluído com sucesso!\n\nVocê será redirecionado para a lista.`)
+    // Mensagem de sucesso diferente se excluiu a venda também
+    if (eraUltimoItemDaVenda) {
+      alert(
+        `✅ Operação concluída com sucesso!\n\n` +
+        `📋 O serviço foi excluído e a venda também foi removida (pois ficou sem itens).\n\n` +
+        `Você será redirecionado para a lista.`
+      )
+    } else {
+      alert(`✅ Animal serviço de "${animal.value?.nome}" foi excluído com sucesso!\n\nVocê será redirecionado para a lista.`)
+    }
 
     // Redirecionar para lista
     voltarParaLista()
@@ -2368,6 +2448,17 @@ const excluirAnimalServico = async (): Promise<void> => {
     alert(`❌ Não foi possível excluir este serviço\n\n${mensagem}`)
   } finally {
     loading.value = false
+  }
+}
+
+// Função auxiliar para verificar se é o último item da venda
+const verificarSeEUltimoItem = async (vendaId: number): Promise<boolean> => {
+  try {
+    const venda = await vendasService.buscarPorId(vendaId)
+    return venda && venda.itens && venda.itens.length === 1
+  } catch (error) {
+    console.error('Erro ao verificar itens da venda:', error)
+    return false
   }
 }
 

@@ -297,12 +297,15 @@ public class VendaService {
 
         // Configurações avançadas do DTO
 
-        // Se é serviço único, marca todos os banhos como usados
+        // Se é serviço único, marca todos os banhos como usados E marca como realizado
         if (itemDTO.getServicoUnico() != null && itemDTO.getServicoUnico()) {
             animalServico.setBanhosUsados(servico.getQuantidade());
-            System.out.println("✅ Serviço único: marcando " + servico.getQuantidade() + " banhos como usados");
+            animalServico.setStatusServico("realizado"); // 🎯 Marcar como realizado
+            animalServico.setDataRealizacao(LocalDate.now()); // 🎯 Definir data de realização
+            System.out.println("✅ Serviço único: marcando " + servico.getQuantidade() + " banhos como usados e status=realizado");
         } else {
             animalServico.setBanhosUsados(itemDTO.getBanhosUsados() != null ? itemDTO.getBanhosUsados() : 0);
+            animalServico.setStatusServico("agendado"); // 🎯 Serviços normais iniciam como agendado
         }
 
         // Status de pagamento sempre inicia como "em_aberto" - será atualizado automaticamente quando houver baixas na venda
@@ -435,15 +438,36 @@ public class VendaService {
             vendaItemRepository.delete(item);
         }
 
+        // 🔍 VERIFICAÇÃO DE VENDA ÓRFÃ: Verificar ANTES de recalcular valores
+        List<VendaItem> itensRestantes = vendaItemRepository.findByVenda_Id(vendaId);
+
+        if (itensRestantes.isEmpty()) {
+            System.out.println("  ⚠️  ATENÇÃO: Venda #" + venda.getCodigoVenda() + " ficou sem itens!");
+            System.out.println("  🗑️  Excluindo venda órfã automaticamente...");
+
+            // Deletar todas as baixas da venda primeiro
+            List<VendaBaixa> baixas = vendaBaixaRepository.findByVenda_IdOrderByDataBaixaDesc(vendaId);
+            if (!baixas.isEmpty()) {
+                System.out.println("  🧹 Removendo " + baixas.size() + " baixa(s) da venda...");
+                vendaBaixaRepository.deleteAll(baixas);
+            }
+
+            // Deletar a venda
+            vendaRepository.delete(venda);
+            System.out.println("  ✅ Venda órfã excluída com sucesso!");
+
+            // Retornar null para indicar que a venda foi excluída
+            return null;
+        }
+
         // Recalcular valores da venda (atualiza valor bruto, total e pendente)
+        // ⚠️ IMPORTANTE: Só recalcular se ainda houver itens!
         recalcularValoresVenda(venda);
 
         // IMPORTANTE: Redistribuir o pagamento total entre os itens restantes
         // Não subtraímos do valor pago, apenas redistribuímos proporcionalmente
         System.out.println("  💸 Redistribuindo pagamento de R$ " + valorPagoTotal + " entre os itens restantes...");
 
-        // Zerar valorPagoItem de todos os itens restantes
-        List<VendaItem> itensRestantes = vendaItemRepository.findByVenda_Id(vendaId);
         for (VendaItem itemRestante : itensRestantes) {
             itemRestante.setValorPagoItem(BigDecimal.ZERO);
             vendaItemRepository.save(itemRestante);
@@ -467,11 +491,6 @@ public class VendaService {
 
             // Atualizar status dos AnimalServico
             atualizarStatusItensBaseadoEmPagamento(vendaId);
-        } else {
-            // Se não há mais itens, zerar o valor pago
-            venda.setValorPago(BigDecimal.ZERO);
-            venda.recalcularValores();
-            vendaRepository.save(venda);
         }
 
         System.out.println("  ✅ Valores após remoção e redistribuição:");

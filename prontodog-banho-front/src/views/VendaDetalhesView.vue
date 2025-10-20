@@ -731,15 +731,66 @@ const removerBaixa = async (baixaId: number) => {
 const removerItem = async (itemId: number) => {
   console.log('🗑️ removerItem chamado com ID:', itemId)
 
-  if (!confirm('Deseja realmente remover este item?')) {
+  // 🔍 Verificar se é o último item ANTES de remover
+  const isUltimoItem = venda.value.itens?.length === 1
+
+  let mensagemConfirmacao = '⚠️ Deseja realmente remover este item da venda?\n\n'
+
+  if (isUltimoItem) {
+    // ⚠️ AVISO ESPECIAL: É o último item - a venda será excluída!
+    mensagemConfirmacao =
+      '🚨 ATENÇÃO: Este é o último item da venda!\n\n' +
+      '⚠️ Ao remover este item, a VENDA INTEIRA será EXCLUÍDA automaticamente.\n\n' +
+      '📋 O que será removido:\n' +
+      `   • Venda #${venda.value.codigoVenda}\n` +
+      `   • ${venda.value.quantidadeBaixas || 0} pagamento(s) registrado(s)\n` +
+      `   • Todos os dados relacionados\n\n` +
+      '❓ Tem certeza que deseja continuar?'
+  } else {
+    // Mensagem normal para remoção de item
+    const item = venda.value.itens?.find((i: any) => i.id === itemId)
+    mensagemConfirmacao =
+      '⚠️ Deseja realmente remover este item da venda?\n\n' +
+      `📦 Item: ${item?.servicoNome || 'Item'}\n` +
+      `🐕 Animal: ${item?.animalNome || '-'}\n` +
+      `💰 Valor: R$ ${(item?.valorFinalItem || 0).toFixed(2)}\n\n` +
+      'Esta ação não pode ser desfeita.'
+  }
+
+  if (!confirm(mensagemConfirmacao)) {
     console.log('❌ Usuário cancelou a remoção')
     return
   }
 
   try {
     console.log('📤 Chamando API para remover item...')
+    console.log('📊 Estado antes:', { vendaId: venda.value.id, itemId, quantidadeItens: venda.value.itens?.length })
+
     const vendaAtualizada = await vendasService.removerItem(venda.value.id, itemId)
-    console.log('✅ Item removido com sucesso!')
+
+    console.log('📦 Resposta da API:', vendaAtualizada)
+    console.log('🔍 vendaAtualizada === null?', vendaAtualizada === null)
+    console.log('🔍 vendaAtualizada === undefined?', vendaAtualizada === undefined)
+    console.log('🔍 vendaAtualizada === ""?', vendaAtualizada === '')
+    console.log('🔍 tipo:', typeof vendaAtualizada)
+
+    // 🔍 Verificar se a venda foi excluída (retornou null/undefined/string vazia porque ficou sem itens)
+    if (vendaAtualizada === null || vendaAtualizada === undefined || vendaAtualizada === '') {
+      console.log('⚠️  Venda foi excluída automaticamente (ficou sem itens)')
+      console.log('🔄 Redirecionando para /vendas...')
+
+      alert(
+        '✅ Operação concluída com sucesso!\n\n' +
+        '📋 A venda foi excluída porque ficou sem itens.\n\n' +
+        'Você será redirecionado para a lista de vendas.'
+      )
+
+      router.push('/vendas')
+      console.log('✅ Redirecionamento executado!')
+      return
+    }
+
+    console.log('✅ Item removido, venda ainda existe')
     venda.value = vendaAtualizada
     alert('✅ Item removido com sucesso!')
   } catch (err: any) {
