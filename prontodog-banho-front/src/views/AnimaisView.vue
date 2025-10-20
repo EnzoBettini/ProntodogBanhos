@@ -199,13 +199,14 @@
       </BaseCard>
 
       <!-- 🐕 Lista elegante de animais -->
-      <div v-else-if="animais.length > 0" ref="listaAnimaisRef" class="space-y-4">
-        <div
-          v-for="(animal, index) in animaisExibidos"
-          :key="animal.id"
-          class="group relative bg-gradient-to-r from-white via-white to-blue-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden"
-          @click="visualizarAnimal(animal)"
-        >
+      <div v-else-if="animais.length > 0" class="space-y-4">
+        <div ref="listaAnimaisRef" class="space-y-4 mb-4">
+          <div
+            v-for="(animal, index) in animaisPaginados"
+            :key="animal.id"
+            class="group relative bg-gradient-to-r from-white via-white to-blue-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden"
+            @click="visualizarAnimal(animal)"
+          >
           <div class="p-6">
             <div class="flex items-center justify-between">
               <!-- 🐕 Avatar e informações principais -->
@@ -325,19 +326,58 @@
 
           <!-- Borda gradiente no hover -->
           <div class="absolute inset-0 border-2 border-transparent group-hover:border-blue-200 rounded-xl transition-all duration-300 pointer-events-none"></div>
+          </div>
         </div>
 
-        <!-- 📄 Botão Carregar Mais -->
-        <div v-if="temMaisItens" class="mt-8 flex justify-center">
-          <BaseButton
-            @click="carregarMais"
-            class="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex items-center gap-3"
-          >
-            <FontAwesomeIcon icon="chevron-down" class="group-hover:translate-y-1 transition-transform duration-300" />
-            <span>Carregar mais {{ Math.min(itensPorPagina, totalItensDisponiveis - itensExibidos) }} animais</span>
-            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
-          </BaseButton>
-        </div>
+        <!-- Paginação -->
+        <BaseCard v-if="totalPaginas > 1" class="shadow-lg border-0 bg-white">
+          <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Info da paginação -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <FontAwesomeIcon icon="list" class="text-blue-500" />
+              <span>
+                Mostrando
+                <strong class="text-blue-600">{{ indicePrimeiroItem }}</strong> -
+                <strong class="text-blue-600">{{ indiceUltimoItem }}</strong>
+                de
+                <strong class="text-blue-600">{{ animaisFiltrados.length }}</strong>
+                animais
+              </span>
+            </div>
+
+            <!-- Controles de paginação -->
+            <div class="flex items-center gap-2">
+              <button @click="paginaAtual = 1" :disabled="paginaAtual === 1" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50" :class="paginaAtual === 1 ? 'text-gray-400' : 'text-blue-600 hover:text-blue-700'">
+                <FontAwesomeIcon icon="angle-double-left" />
+              </button>
+              <button @click="paginaAtual--" :disabled="paginaAtual === 1" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50" :class="paginaAtual === 1 ? 'text-gray-400' : 'text-blue-600 hover:text-blue-700'">
+                <FontAwesomeIcon icon="chevron-left" class="mr-1" />
+                <span class="hidden sm:inline">Anterior</span>
+              </button>
+              <div class="flex items-center gap-1">
+                <button v-for="pagina in paginasVisiveis" :key="pagina" @click="paginaAtual = pagina" class="w-10 h-10 rounded-lg font-medium transition-all duration-200" :class="paginaAtual === pagina ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'">
+                  {{ pagina }}
+                </button>
+              </div>
+              <button @click="paginaAtual++" :disabled="paginaAtual === totalPaginas" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50" :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-blue-600 hover:text-blue-700'">
+                <span class="hidden sm:inline">Próxima</span>
+                <FontAwesomeIcon icon="chevron-right" class="ml-1" />
+              </button>
+              <button @click="paginaAtual = totalPaginas" :disabled="paginaAtual === totalPaginas" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50" :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-blue-600 hover:text-blue-700'">
+                <FontAwesomeIcon icon="angle-double-right" />
+              </button>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">Itens por página:</span>
+              <select v-model="itensPorPagina" @change="paginaAtual = 1" class="px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white">
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </BaseCard>
 
         <!-- 📊 Rodapé elegante com estatísticas -->
         <BaseCard class="mt-8 bg-gradient-to-r from-gray-50 to-blue-50 border-0 shadow-sm">
@@ -347,7 +387,7 @@
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <span class="text-gray-600 font-medium">
-                    <span class="text-blue-600 font-bold">{{ animaisExibidos.length }}</span> de <span class="text-blue-600 font-bold">{{ totalItensDisponiveis }}</span> encontrados
+                    <span class="text-blue-600 font-bold">{{ animais.length }}</span> animais total
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -447,8 +487,8 @@ const filtroCliente = ref('')
 const filtroTipo = ref('')
 
 // 📄 Estados da paginação
-const itensPorPagina = ref(10)                // Quantos itens mostrar por vez
-const itensExibidos = ref(10)                 // Quantos itens estão sendo exibidos atualmente
+const itensPorPagina = ref(10)                // Quantos itens mostrar por página
+const paginaAtual = ref(1)                    // Página atual
 
 // 🎬 Auto-animate para listas
 const listaAnimaisRef = ref<HTMLElement>()
@@ -509,18 +549,56 @@ const animaisFiltrados = computed(() => {
   })
 })
 
-// 📄 Animais que devem aparecer na tela (paginados)
-const animaisExibidos = computed(() => {
-  return animaisFiltrados.value.slice(0, itensExibidos.value)
+// Computed properties para paginação
+const totalPaginas = computed(() => {
+  return Math.ceil(animaisFiltrados.value.length / itensPorPagina.value)
 })
 
-// 📊 Controles da paginação
-const temMaisItens = computed(() => {
-  return animaisFiltrados.value.length > itensExibidos.value
+const indicePrimeiroItem = computed(() => {
+  return (paginaAtual.value - 1) * itensPorPagina.value + 1
 })
 
-const totalItensDisponiveis = computed(() => {
-  return animaisFiltrados.value.length
+const indiceUltimoItem = computed(() => {
+  const ultimo = paginaAtual.value * itensPorPagina.value
+  return ultimo > animaisFiltrados.value.length ? animaisFiltrados.value.length : ultimo
+})
+
+const animaisPaginados = computed(() => {
+  const inicio = (paginaAtual.value - 1) * itensPorPagina.value
+  const fim = inicio + itensPorPagina.value
+  return animaisFiltrados.value.slice(inicio, fim)
+})
+
+const paginasVisiveis = computed(() => {
+  const total = totalPaginas.value
+  const atual = paginaAtual.value
+  const paginas: number[] = []
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      paginas.push(i)
+    }
+  } else {
+    if (atual <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    } else if (atual >= total - 3) {
+      paginas.push(1)
+      for (let i = total - 4; i <= total; i++) {
+        paginas.push(i)
+      }
+    } else {
+      paginas.push(1)
+      for (let i = atual - 1; i <= atual + 1; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    }
+  }
+
+  return paginas
 })
 
 const clientesUnicos = computed(() => {
@@ -619,22 +697,9 @@ const visualizarAnimal = (animal: Animal): void => {
   router.push(`/animais/${animal.id}/editar`)
 }
 
-// 📄 Funções de Paginação
-const carregarMais = (): void => {
-  console.log('📄 Carregando mais animais...')
-  const proximosItens = Math.min(itensPorPagina.value, totalItensDisponiveis.value - itensExibidos.value)
-  itensExibidos.value += proximosItens
-  console.log(`✅ Mostrando agora ${itensExibidos.value} de ${totalItensDisponiveis.value} animais`)
-}
-
-const resetarPaginacao = (): void => {
-  console.log('🔄 Resetando paginação...')
-  itensExibidos.value = itensPorPagina.value
-}
-
 // 👀 Watchers para resetar paginação quando filtros mudam
 watch([filtroNome, filtroCliente, filtroTipo], () => {
-  resetarPaginacao()
+  paginaAtual.value = 1
 })
 
 const editarAnimal = (animal: Animal): void => {

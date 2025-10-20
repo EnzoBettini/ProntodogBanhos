@@ -32,7 +32,7 @@ const ERROR_MESSAGES: Record<number, string> = {
  * @returns Erro formatado para exibição
  */
 export const handleApiError = (error: unknown, fallbackMessage = 'Erro inesperado'): never => {
-  const axiosError = error as AxiosError
+  const axiosError = error as AxiosError<any>
 
   // Log apenas em desenvolvimento
   if (import.meta.env.DEV) {
@@ -40,7 +40,20 @@ export const handleApiError = (error: unknown, fallbackMessage = 'Erro inesperad
   }
 
   const status = axiosError.response?.status || 0
-  const message = ERROR_MESSAGES[status] || fallbackMessage
+
+  // Tenta extrair mensagem do backend primeiro
+  let message: string
+
+  if (axiosError.response?.data?.message) {
+    // Backend retornou mensagem customizada
+    message = axiosError.response.data.message
+  } else if (axiosError.response?.data && typeof axiosError.response.data === 'string') {
+    // Backend retornou string direta
+    message = axiosError.response.data
+  } else {
+    // Usa mensagem genérica baseada no status
+    message = ERROR_MESSAGES[status] || fallbackMessage
+  }
 
   throw new Error(message)
 }

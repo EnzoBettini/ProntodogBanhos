@@ -230,7 +230,7 @@
                 <!-- Stats normais -->
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full">
                   <FontAwesomeIcon icon="users" class="text-emerald-600 text-sm" />
-                  <span class="text-sm font-medium text-emerald-700">{{ clientesExibidos.length }} de {{ totalItensDisponiveis }} encontrados</span>
+                  <span class="text-sm font-medium text-emerald-700">{{ clientesFiltrados.length }} encontrados</span>
                 </div>
 
                 <div v-if="!infoFiltroAtivo" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
@@ -243,9 +243,9 @@
         </BaseCard>
 
         <!-- 🎨 Lista elegante de clientes -->
-        <div ref="listaClientesRef" class="space-y-4">
+        <div ref="listaClientesRef" class="space-y-4 mb-4">
           <div
-            v-for="(cliente, index) in clientesExibidos"
+            v-for="(cliente, index) in clientesPaginados"
             :key="cliente.id"
             class="group relative bg-gradient-to-r from-white via-white to-emerald-50 rounded-xl shadow-lg hover:shadow-2xl cursor-pointer transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden"
             @click="verDetalhes(cliente)"
@@ -366,17 +366,98 @@
           </div>
         </div>
 
-        <!-- 📄 Botão Carregar Mais -->
-        <div v-if="temMaisItens" class="mt-8 flex justify-center">
-          <BaseButton
-            @click="carregarMais"
-            class="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex items-center gap-3"
-          >
-            <FontAwesomeIcon icon="chevron-down" class="group-hover:translate-y-1 transition-transform duration-300" />
-            <span>Carregar mais {{ Math.min(itensPorPagina, totalItensDisponiveis - itensExibidos) }} clientes</span>
-            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
-          </BaseButton>
-        </div>
+        <!-- Paginação -->
+        <BaseCard v-if="totalPaginas > 1" class="shadow-lg border-0 bg-white">
+          <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Info da paginação -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <FontAwesomeIcon icon="list" class="text-emerald-500" />
+              <span>
+                Mostrando
+                <strong class="text-emerald-600">{{ indicePrimeiroItem }}</strong> -
+                <strong class="text-emerald-600">{{ indiceUltimoItem }}</strong>
+                de
+                <strong class="text-emerald-600">{{ clientesFiltrados.length }}</strong>
+                clientes
+              </span>
+            </div>
+
+            <!-- Controles de paginação -->
+            <div class="flex items-center gap-2">
+              <!-- Botão Primeira Página -->
+              <button
+                @click="paginaAtual = 1"
+                :disabled="paginaAtual === 1"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+                :class="paginaAtual === 1 ? 'text-gray-400' : 'text-emerald-600 hover:text-emerald-700'"
+              >
+                <FontAwesomeIcon icon="angle-double-left" />
+              </button>
+
+              <!-- Botão Anterior -->
+              <button
+                @click="paginaAtual--"
+                :disabled="paginaAtual === 1"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+                :class="paginaAtual === 1 ? 'text-gray-400' : 'text-emerald-600 hover:text-emerald-700'"
+              >
+                <FontAwesomeIcon icon="chevron-left" class="mr-1" />
+                <span class="hidden sm:inline">Anterior</span>
+              </button>
+
+              <!-- Números das páginas -->
+              <div class="flex items-center gap-1">
+                <button
+                  v-for="pagina in paginasVisiveis"
+                  :key="pagina"
+                  @click="paginaAtual = pagina"
+                  class="w-10 h-10 rounded-lg font-medium transition-all duration-200"
+                  :class="paginaAtual === pagina
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md'
+                    : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'"
+                >
+                  {{ pagina }}
+                </button>
+              </div>
+
+              <!-- Botão Próxima -->
+              <button
+                @click="paginaAtual++"
+                :disabled="paginaAtual === totalPaginas"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+                :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-emerald-600 hover:text-emerald-700'"
+              >
+                <span class="hidden sm:inline">Próxima</span>
+                <FontAwesomeIcon icon="chevron-right" class="ml-1" />
+              </button>
+
+              <!-- Botão Última Página -->
+              <button
+                @click="paginaAtual = totalPaginas"
+                :disabled="paginaAtual === totalPaginas"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+                :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-emerald-600 hover:text-emerald-700'"
+              >
+                <FontAwesomeIcon icon="angle-double-right" />
+              </button>
+            </div>
+
+            <!-- Select de itens por página -->
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">Itens por página:</span>
+              <select
+                v-model="itensPorPagina"
+                @change="paginaAtual = 1"
+                class="px-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-700 bg-white"
+              >
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </BaseCard>
 
         <!-- 📊 Rodapé elegante com estatísticas -->
         <BaseCard class="mt-8 bg-gradient-to-r from-gray-50 to-emerald-50 border-0 shadow-sm">
@@ -433,8 +514,8 @@ const filtroBusca = ref('')                  // Filtro de busca geral
 const ultimaAtualizacao = ref('')            // Timestamp da última atualização
 
 // 📄 Estados da paginação
-const itensPorPagina = ref(10)                // Quantos itens mostrar por vez
-const itensExibidos = ref(10)                 // Quantos itens estão sendo exibidos atualmente
+const itensPorPagina = ref(10)                // Quantos itens mostrar por página
+const paginaAtual = ref(1)                    // Página atual
 
 
 // 🎬 Auto-animate para listas
@@ -490,18 +571,56 @@ const clientesFiltrados = computed(() => {
   })
 })
 
-// 📄 Clientes que devem aparecer na tela (paginados)
-const clientesExibidos = computed(() => {
-  return clientesFiltrados.value.slice(0, itensExibidos.value)
+// Computed properties para paginação
+const totalPaginas = computed(() => {
+  return Math.ceil(clientesFiltrados.value.length / itensPorPagina.value)
 })
 
-// 📊 Controles da paginação
-const temMaisItens = computed(() => {
-  return clientesFiltrados.value.length > itensExibidos.value
+const indicePrimeiroItem = computed(() => {
+  return (paginaAtual.value - 1) * itensPorPagina.value + 1
 })
 
-const totalItensDisponiveis = computed(() => {
-  return clientesFiltrados.value.length
+const indiceUltimoItem = computed(() => {
+  const ultimo = paginaAtual.value * itensPorPagina.value
+  return ultimo > clientesFiltrados.value.length ? clientesFiltrados.value.length : ultimo
+})
+
+const clientesPaginados = computed(() => {
+  const inicio = (paginaAtual.value - 1) * itensPorPagina.value
+  const fim = inicio + itensPorPagina.value
+  return clientesFiltrados.value.slice(inicio, fim)
+})
+
+const paginasVisiveis = computed(() => {
+  const total = totalPaginas.value
+  const atual = paginaAtual.value
+  const paginas: number[] = []
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      paginas.push(i)
+    }
+  } else {
+    if (atual <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    } else if (atual >= total - 3) {
+      paginas.push(1)
+      for (let i = total - 4; i <= total; i++) {
+        paginas.push(i)
+      }
+    } else {
+      paginas.push(1)
+      for (let i = atual - 1; i <= atual + 1; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    }
+  }
+
+  return paginas
 })
 
 const totalAnimais = computed(() => {
@@ -606,22 +725,9 @@ const onClienteAtualizado = (clienteAtualizado: Cliente): void => {
   }
 }
 
-// 📄 Funções de Paginação
-const carregarMais = (): void => {
-  console.log('📄 Carregando mais clientes...')
-  const proximosItens = Math.min(itensPorPagina.value, totalItensDisponiveis.value - itensExibidos.value)
-  itensExibidos.value += proximosItens
-  console.log(`✅ Mostrando agora ${itensExibidos.value} de ${totalItensDisponiveis.value} clientes`)
-}
-
-const resetarPaginacao = (): void => {
-  console.log('🔄 Resetando paginação...')
-  itensExibidos.value = itensPorPagina.value
-}
-
 // 👀 Watcher para resetar paginação quando filtro muda
 watch(filtroBusca, () => {
-  resetarPaginacao()
+  paginaAtual.value = 1
 })
 
 // 🎬 Lifecycle - carrega dados quando o componente é montado

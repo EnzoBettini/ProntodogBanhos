@@ -105,7 +105,6 @@
                 v-model="filtroBusca"
                 placeholder="Buscar por nome, descrição ou valor..."
                 class="w-full pl-12 pr-4 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                @input="resetarPaginacao"
               >
               <FontAwesomeIcon
                 :icon="['fas', 'search']"
@@ -127,7 +126,7 @@
             <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 rounded-xl">
               <FontAwesomeIcon :icon="['fas', 'cog']" class="text-amber-600" />
               <span class="text-sm font-medium text-amber-800">
-                {{ totalItensDisponiveis }} de {{ servicosCount }} encontrados
+                {{ servicosFiltrados.length }} de {{ servicosCount }} encontrados
               </span>
             </div>
 
@@ -204,9 +203,9 @@
 
       <!-- 📋 Lista de Serviços -->
       <div v-else class="space-y-6">
-        <div ref="servicosListRef" class="space-y-4">
+        <div ref="servicosListRef" class="space-y-4 mb-4">
           <div
-            v-for="servico in servicosExibidos"
+            v-for="servico in servicosPaginados"
             :key="servico.id"
             class="group bg-gradient-to-r from-white via-white to-amber-50/30 rounded-2xl shadow-lg hover:shadow-2xl border border-amber-100/50 transition-all duration-300 transform hover:-translate-y-1 p-6 cursor-pointer"
             @click="visualizarServico(servico.id)"
@@ -311,20 +310,55 @@
           </div>
         </div>
 
-        <!-- 🔄 Botão "Carregar Mais" -->
-        <div v-if="temMaisItens" class="text-center py-6">
-          <BaseButton
-            @click="carregarMais"
-            variant="secondary"
-            class="bg-gradient-to-r from-amber-600 to-yellow-700 hover:from-amber-700 hover:to-yellow-800 text-white border-0 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <FontAwesomeIcon :icon="['fas', 'plus-circle']" class="mr-2" />
-            Carregar Mais Serviços
-            <span class="ml-2 bg-white/20 px-2 py-1 rounded-full text-sm">
-              +{{ Math.min(itensPorPagina, totalItensDisponiveis - itensExibidos) }}
-            </span>
-          </BaseButton>
-        </div>
+        <!-- Paginação -->
+        <BaseCard v-if="totalPaginas > 1" class="shadow-lg border-0 bg-white">
+          <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Info da paginação -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <FontAwesomeIcon icon="list" class="text-purple-500" />
+              <span>
+                Mostrando
+                <strong class="text-purple-600">{{ indicePrimeiroItem }}</strong> -
+                <strong class="text-purple-600">{{ indiceUltimoItem }}</strong>
+                de
+                <strong class="text-purple-600">{{ servicosFiltrados.length }}</strong>
+                serviços
+              </span>
+            </div>
+
+            <!-- Controles de paginação -->
+            <div class="flex items-center gap-2">
+              <button @click="paginaAtual = 1" :disabled="paginaAtual === 1" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50" :class="paginaAtual === 1 ? 'text-gray-400' : 'text-purple-600 hover:text-purple-700'">
+                <FontAwesomeIcon icon="angle-double-left" />
+              </button>
+              <button @click="paginaAtual--" :disabled="paginaAtual === 1" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50" :class="paginaAtual === 1 ? 'text-gray-400' : 'text-purple-600 hover:text-purple-700'">
+                <FontAwesomeIcon icon="chevron-left" class="mr-1" />
+                <span class="hidden sm:inline">Anterior</span>
+              </button>
+              <div class="flex items-center gap-1">
+                <button v-for="pagina in paginasVisiveis" :key="pagina" @click="paginaAtual = pagina" class="w-10 h-10 rounded-lg font-medium transition-all duration-200" :class="paginaAtual === pagina ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-md' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'">
+                  {{ pagina }}
+                </button>
+              </div>
+              <button @click="paginaAtual++" :disabled="paginaAtual === totalPaginas" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50" :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-purple-600 hover:text-purple-700'">
+                <span class="hidden sm:inline">Próxima</span>
+                <FontAwesomeIcon icon="chevron-right" class="ml-1" />
+              </button>
+              <button @click="paginaAtual = totalPaginas" :disabled="paginaAtual === totalPaginas" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50" :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-purple-600 hover:text-purple-700'">
+                <FontAwesomeIcon icon="angle-double-right" />
+              </button>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">Itens por página:</span>
+              <select v-model="itensPorPagina" @change="paginaAtual = 1" class="px-3 py-2 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-700 bg-white">
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </BaseCard>
       </div>
 
       <!-- 📊 Footer com Estatísticas -->
@@ -379,7 +413,7 @@ const {
 // 🔍 Estados de busca e paginação
 const filtroBusca = ref('')
 const itensPorPagina = ref(10)
-const itensExibidos = ref(10)
+const paginaAtual = ref(1)
 
 // 📋 Referência para animações
 const servicosListRef = ref<HTMLElement>()
@@ -405,16 +439,56 @@ const servicosFiltrados = computed(() => {
   })
 })
 
-const servicosExibidos = computed(() => {
-  return servicosFiltrados.value.slice(0, itensExibidos.value)
+// Computed properties para paginação
+const totalPaginas = computed(() => {
+  return Math.ceil(servicosFiltrados.value.length / itensPorPagina.value)
 })
 
-const temMaisItens = computed(() => {
-  return itensExibidos.value < servicosFiltrados.value.length
+const indicePrimeiroItem = computed(() => {
+  return (paginaAtual.value - 1) * itensPorPagina.value + 1
 })
 
-const totalItensDisponiveis = computed(() => {
-  return servicosFiltrados.value.length
+const indiceUltimoItem = computed(() => {
+  const ultimo = paginaAtual.value * itensPorPagina.value
+  return ultimo > servicosFiltrados.value.length ? servicosFiltrados.value.length : ultimo
+})
+
+const servicosPaginados = computed(() => {
+  const inicio = (paginaAtual.value - 1) * itensPorPagina.value
+  const fim = inicio + itensPorPagina.value
+  return servicosFiltrados.value.slice(inicio, fim)
+})
+
+const paginasVisiveis = computed(() => {
+  const total = totalPaginas.value
+  const atual = paginaAtual.value
+  const paginas: number[] = []
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      paginas.push(i)
+    }
+  } else {
+    if (atual <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    } else if (atual >= total - 3) {
+      paginas.push(1)
+      for (let i = total - 4; i <= total; i++) {
+        paginas.push(i)
+      }
+    } else {
+      paginas.push(1)
+      for (let i = atual - 1; i <= atual + 1; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    }
+  }
+
+  return paginas
 })
 
 const servicosCount = computed(() => {
@@ -440,13 +514,10 @@ const formatarValor = (valor: number): string => {
   })
 }
 
-const carregarMais = () => {
-  itensExibidos.value += itensPorPagina.value
-}
-
-const resetarPaginacao = () => {
-  itensExibidos.value = itensPorPagina.value
-}
+// 👀 Watcher para resetar paginação quando filtro muda
+watch(filtroBusca, () => {
+  paginaAtual.value = 1
+})
 
 const visualizarServico = (id: number) => {
   console.log('🔍 Visualizando serviço:', id)
@@ -475,11 +546,6 @@ const excluirServico = async (id: number) => {
 const recarregarDados = () => {
   carregarServicos(() => servicosService.buscarTodos())
 }
-
-// 👀 Watchers
-watch(filtroBusca, () => {
-  resetarPaginacao()
-})
 
 // 🎬 Lifecycle
 onMounted(() => {

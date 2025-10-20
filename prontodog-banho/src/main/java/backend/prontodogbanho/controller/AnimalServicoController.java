@@ -77,9 +77,16 @@ public class AnimalServicoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removerSerivco(@PathVariable Long id) {
-        this.animalServicoService.deletar(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> removerSerivco(@PathVariable Long id) {
+        try {
+            this.animalServicoService.deletar(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            // Retorna a mensagem de erro de forma estruturada para o frontend
+            return ResponseEntity
+                .badRequest()
+                .body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
