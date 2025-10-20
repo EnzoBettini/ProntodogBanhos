@@ -947,11 +947,10 @@
           <SearchSelect
             v-model="formularioServicoAdicional.servicoId"
             :options="servicosAdicionaisDisponiveis"
-            :display-key="'nome'"
-            :value-key="'id'"
-            :description-key="'servicoDescription'"
+            label-key="nome"
+            value-key="id"
+            description-key="servicoDescription"
             placeholder="🔍 Buscar serviço adicional..."
-            empty-message="Nenhum serviço adicional encontrado"
             @update:model-value="atualizarValorServicoSelecionado"
           />
         </div>
@@ -1059,7 +1058,7 @@
           <BaseButton
             @click="salvarServicoAdicional"
             variant="primary"
-            :disabled="editandoServicos || formularioServicoAdicional.servicoId === 0"
+            :disabled="editandoServicos || !formularioServicoAdicional.servicoId"
           >
             <FontAwesomeIcon v-if="editandoServicos" :icon="['fas', 'spinner']" class="animate-spin mr-2" />
             {{ editandoServicos ? 'Salvando...' : 'Adicionar Serviço' }}
@@ -1201,11 +1200,10 @@
         <SearchSelect
           v-model="formularioEditarServico.servicoId"
           :options="todosServicos"
-          :label-key="'nome'"
-          :value-key="'id'"
-          :description-key="'servicoDescription'"
+          label-key="nome"
+          value-key="id"
+          description-key="servicoDescription"
           placeholder="🔍 Buscar serviço..."
-          empty-message="Nenhum serviço encontrado"
           @update:model-value="(value) => console.log('🔄 Serviço selecionado:', value)"
         />
       </div>
@@ -1219,11 +1217,10 @@
         <SearchSelect
           v-model="formularioEditarServico.usuarioId"
           :options="todosUsuarios"
-          :label-key="'nome'"
-          :value-key="'id'"
-          :description-key="'usuarioDescription'"
+          label-key="nome"
+          value-key="id"
+          description-key="usuarioDescription"
           placeholder="🔍 Buscar usuário..."
-          empty-message="Nenhum usuário encontrado"
           @update:model-value="(value) => console.log('👤 Usuário selecionado:', value)"
         />
       </div>
@@ -1403,7 +1400,7 @@ const todosUsuarios = ref<Usuario[]>([])
 // Formulário para adicionar/editar serviço adicional
 const formularioServicoAdicional = ref({
   id: null as number | null,
-  servicoId: 0,
+  servicoId: null as number | null, // ✅ Alterado para aceitar null
   servicoNome: '',
   quantidade: 1,
   valorUnitario: 0,
@@ -1785,7 +1782,7 @@ const removerServicoAdicional = async (adicional: any): Promise<void> => {
 const adicionarNovoServicoAdicional = (): void => {
   formularioServicoAdicional.value = {
     id: null,
-    servicoId: 0,
+    servicoId: null, // ✅ Alterado de 0 para null - importante para o SearchSelect
     servicoNome: '',
     quantidade: 1,
     valorUnitario: 0,
@@ -1802,6 +1799,26 @@ const adicionarNovoServicoAdicional = (): void => {
 
 const salvarServicoAdicional = async (): Promise<void> => {
   if (!animalServico.value) return
+
+  // ✅ Validar se o serviço foi selecionado
+  if (!formularioServicoAdicional.value.servicoId) {
+    alert('Por favor, selecione um serviço adicional.')
+    return
+  }
+
+  // ✅ Validar se a quantidade é válida
+  if (!formularioServicoAdicional.value.quantidade || formularioServicoAdicional.value.quantidade < 1) {
+    alert('A quantidade deve ser no mínimo 1.')
+    return
+  }
+
+  // ✅ Validar se o valor unitário é válido
+  if (formularioServicoAdicional.value.valorUnitario === null ||
+      formularioServicoAdicional.value.valorUnitario === undefined ||
+      formularioServicoAdicional.value.valorUnitario < 0) {
+    alert('Por favor, informe um valor válido para o serviço.')
+    return
+  }
 
   try {
     editandoServicos.value = true
@@ -2200,7 +2217,7 @@ const salvarDataRealizacao = async (): Promise<void> => {
       animalServico.value.dataRealizacao = novaDataRealizacao.value
       animalServico.value.statusServico = 'realizado'
     }
-    
+
     editandoDataRealizacao.value = false
 
     console.log('✅ Data de realização atualizada com sucesso! (campos atualizados localmente)', {
@@ -2266,7 +2283,7 @@ const confirmarRealizacaoServico = async (data?: string): Promise<void> => {
       animalServico.value.dataRealizacao = dataToUse
       animalServico.value.statusServico = 'realizado'
     }
-    
+
     mostrarModalBanho.value = false
 
     console.log('✅ Serviço marcado como realizado com sucesso! (campos atualizados localmente)', {

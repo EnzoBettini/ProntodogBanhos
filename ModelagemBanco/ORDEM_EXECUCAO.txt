@@ -1,0 +1,107 @@
+================================================================================
+    ORDEM DE EXECUÇÃO DOS SCRIPTS SQL - ModelagemBanco
+================================================================================
+
+Esta é a ordem correta para executar os scripts SQL da pasta ModelagemBanco,
+respeitando as dependências entre tabelas, colunas e views.
+
+================================================================================
+ORDEM DE EXECUÇÃO
+================================================================================
+
+1. criar_tables.sql
+   → Cria todas as tabelas base do sistema
+   → Tabelas: clientes, animais, servicos, animal_servico, telefones_clientes,
+     email_clientes, usuarios, banhos_individuais
+   → Este SEMPRE deve ser o primeiro!
+
+2. vendas_sistema.sql
+   → Implementa o sistema completo de vendas
+   → Cria: formas_pagamento, vendas, venda_itens, venda_baixas
+   → Adiciona coluna venda_id em animal_servico
+   → Cria views: vw_vendas_completas, vw_venda_itens_detalhados,
+     vw_baixas_detalhadas
+   → Depende de: animal_servico, clientes, servicos, usuarios
+
+3. fix_status_pagamento_constraint.sql
+   → Corrige constraint de status_pagamento em animal_servico
+   → Adiciona suporte para status "parcial"
+   → Depende de: animal_servico existir
+
+4. add_valor_cobrado_animal_servico.sql
+   → Adiciona coluna valor_cobrado em animal_servico
+   → Armazena o valor efetivamente cobrado no serviço
+   → Depende de: animal_servico e servicos existirem
+
+5. add_valor_pago_item.sql
+   → Adiciona coluna valor_pago_item em venda_itens
+   → Atualiza constraint de status_pagamento em animal_servico
+   → Cria função calcular_percentual_pago_item
+   → Depende de: venda_itens existir (criado em vendas_sistema.sql)
+
+6. adicionar_status_servico.sql
+   → Adiciona colunas status_servico e data_realizacao em animal_servico
+   → Controla serviços únicos (não-pacotes)
+   → Depende de: animal_servico existir
+
+7. fix_view_conflict.sql
+   → Remove view vw_atendimentos_completos (se existir)
+   → Prepara o banco para criar tabela servicos_adicionais
+   → IMPORTANTE: Executar ANTES de servicos_adicionais.sql
+
+8. servicos_adicionais.sql
+   → Cria tabela servicos_adicionais
+   → Adiciona colunas pode_ser_adicional e categoria em servicos
+   → Cria view vw_atendimentos_completos (nova versão)
+   → Depende de: animal_servico, servicos, usuarios
+
+9. adicionar_data_realizacao_servico_adicional.sql
+   → Adiciona coluna data_realizacao em servicos_adicionais
+   → Migra dados existentes do serviço principal
+   → Depende de: servicos_adicionais existir
+
+10. testes_banco.sql (OPCIONAL)
+    → Scripts de teste e consultas de validação
+    → Executar por último, apenas para testes
+    → Não é necessário em produção
+
+================================================================================
+RESUMO VISUAL
+================================================================================
+
+criar_tables.sql
+    ↓
+vendas_sistema.sql
+    ↓
+fix_status_pagamento_constraint.sql
+    ↓
+add_valor_cobrado_animal_servico.sql
+    ↓
+add_valor_pago_item.sql
+    ↓
+adicionar_status_servico.sql
+    ↓
+fix_view_conflict.sql
+    ↓
+servicos_adicionais.sql
+    ↓
+adicionar_data_realizacao_servico_adicional.sql
+    ↓
+fix_add_data_realizacao.sql
+    ↓
+testes_banco.sql (opcional)
+
+================================================================================
+OBSERVAÇÕES IMPORTANTES
+================================================================================
+
+• Esta ordem garante que todas as dependências sejam respeitadas
+• Não pule nenhum script (exceto testes_banco.sql que é opcional)
+• Se houver erro, verifique se executou todos os anteriores
+• fix_view_conflict.sql é crucial antes de servicos_adicionais.sql
+• Cada script pode ser executado múltiplas vezes de forma segura (são idempotentes)
+
+================================================================================
+Data de criação: 20/10/2025
+================================================================================
+
