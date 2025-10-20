@@ -57,6 +57,7 @@ public class CriarVendaDTO {
         private Integer quantidade;
         private BigDecimal valorUnitario;
         private String observacoes;
+        private String dataRealizacao; // Data em que o serviço adicional foi realizado (formato: YYYY-MM-DD)
     }
 }
 

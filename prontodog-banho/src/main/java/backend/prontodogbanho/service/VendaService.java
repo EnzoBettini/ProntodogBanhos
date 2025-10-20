@@ -372,6 +372,14 @@ public class VendaService {
                     servicoAdicionalEntity.setStatusPagamento(animalServico.getStatusPagamento());
                     servicoAdicionalEntity.setDataPagamento(animalServico.getDataPagamento());
 
+                    // Data de realização: se fornecida no DTO, usar ela; senão, herdar do pai (dataServico)
+                    if (adicionalDTO.getDataRealizacao() != null && !adicionalDTO.getDataRealizacao().isEmpty()) {
+                        servicoAdicionalEntity.setDataRealizacao(java.time.LocalDate.parse(adicionalDTO.getDataRealizacao()));
+                    } else {
+                        // Herdar data do serviço principal
+                        servicoAdicionalEntity.setDataRealizacao(animalServico.getDataServico());
+                    }
+
                     servicoAdicionalEntity.setObservacoes(adicionalDTO.getObservacoes());
                     servicoAdicionalEntity.setUsuario(usuario);
                     servicoAdicionalEntity.setDataAdicao(java.time.LocalDateTime.now());

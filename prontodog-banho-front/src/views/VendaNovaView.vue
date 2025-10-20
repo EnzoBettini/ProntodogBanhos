@@ -287,15 +287,36 @@
                         </span>
                       </div>
 
-                      <!-- Extras (se houver) -->
-                      <div v-if="item.servicosAdicionais && item.servicosAdicionais.length > 0" class="mt-2 flex gap-1 flex-wrap">
-                        <span
+                      <!-- Serviços Adicionais (hierarquia visual) -->
+                      <div v-if="item.servicosAdicionais && item.servicosAdicionais.length > 0" class="mt-3 pl-4 border-l-4 border-pink-300 space-y-2">
+                        <div class="flex items-center gap-2 mb-2">
+                          <FontAwesome icon="plus-circle" class="text-pink-600 text-xs" />
+                          <span class="text-xs font-semibold text-gray-700">Serviços Adicionais:</span>
+                        </div>
+                        <div
                           v-for="(adicional, idx) in item.servicosAdicionais"
                           :key="idx"
-                          class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded text-[10px] font-medium"
+                          class="p-2 bg-white/70 border border-pink-200 rounded-lg"
                         >
-                          + {{ adicional.servicoNome }} ({{ adicional.quantidade }})
-                        </span>
+                          <div class="flex items-start justify-between gap-2">
+                            <div class="flex-1 min-w-0">
+                              <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs font-semibold text-gray-800">{{ adicional.servicoNome }}</span>
+                                <span class="px-1.5 py-0.5 bg-pink-100 text-pink-700 rounded text-[9px] font-medium">
+                                  Qtd: {{ adicional.quantidade }}
+                                </span>
+                              </div>
+                              <div class="flex items-center gap-2 text-[10px] text-gray-600">
+                                <span>Unit: {{ formatarMoeda(adicional.valorUnitario) }}</span>
+                                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                <span class="font-semibold">Total: {{ formatarMoeda(adicional.valorTotal) }}</span>
+                              </div>
+                              <p v-if="adicional.observacoes" class="text-[10px] text-gray-500 mt-1">
+                                {{ adicional.observacoes }}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -303,10 +324,13 @@
                     <div class="flex items-center gap-3 flex-shrink-0">
                       <div class="text-right">
                         <p class="font-bold text-gray-900 text-lg whitespace-nowrap">
-                          {{ formatarMoeda(item.valorItem - (item.descontoItem || 0)) }}
+                          {{ formatarMoeda(item.valorItem - (item.descontoItem || 0) + (item.servicosAdicionais?.reduce((sum, a) => sum + a.valorTotal, 0) || 0)) }}
                         </p>
                         <p v-if="item.descontoItem && item.descontoItem > 0" class="text-xs text-gray-500 line-through">
                           {{ formatarMoeda(item.valorItem) }}
+                        </p>
+                        <p v-if="item.servicosAdicionais && item.servicosAdicionais.length > 0" class="text-xs text-pink-600 font-medium">
+                          +{{ formatarMoeda(item.servicosAdicionais.reduce((sum, a) => sum + a.valorTotal, 0)) }} adicionais
                         </p>
                       </div>
                       <button
@@ -709,6 +733,69 @@
                 </div>
               </div>
 
+              <!-- 🔧 Serviços Adicionais -->
+              <div class="space-y-4 p-5 rounded-xl bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-pink-200">
+                <div class="flex items-center justify-between">
+                  <label class="flex items-center text-base font-bold text-gray-800">
+                    <FontAwesome icon="plus-circle" class="mr-2 text-pink-600" />
+                    Serviços Adicionais
+                  </label>
+                  <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
+                    <div class="w-1.5 h-1.5 bg-rose-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                  </div>
+                </div>
+
+                <!-- Lista de Serviços Adicionais -->
+                <div v-if="novoServico.servicosAdicionais && novoServico.servicosAdicionais.length > 0" class="space-y-2">
+                  <div
+                    v-for="(adicional, index) in novoServico.servicosAdicionais"
+                    :key="index"
+                    class="p-3 bg-white/80 border border-pink-200 rounded-lg hover:shadow-md transition-all"
+                  >
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="font-semibold text-gray-800 text-sm">{{ adicional.servicoNome }}</span>
+                          <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                            Herda status do pai
+                          </span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                          <span>Qtd: {{ adicional.quantidade }}</span>
+                          <span>Unit: {{ formatarMoeda(adicional.valorUnitario) }}</span>
+                          <span class="font-semibold">Total: {{ formatarMoeda(adicional.valorTotal) }}</span>
+                        </div>
+                        <p v-if="adicional.observacoes" class="text-xs text-gray-500 mt-1">{{ adicional.observacoes }}</p>
+                      </div>
+                      <button
+                        type="button"
+                        @click="removerServicoAdicional(index)"
+                        class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remover serviço adicional"
+                      >
+                        <FontAwesome icon="trash" class="text-sm" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botão Adicionar Serviço -->
+                <button
+                  type="button"
+                  @click="abrirModalServicoAdicional"
+                  class="w-full flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-pink-100 to-rose-100 border-2 border-dashed border-pink-300 rounded-lg hover:from-pink-200 hover:to-rose-200 hover:border-pink-400 transition-all"
+                >
+                  <FontAwesome icon="plus" class="text-pink-600" />
+                  <span class="font-semibold text-pink-700 text-sm">Adicionar Serviço Extra</span>
+                </button>
+
+                <p class="text-xs text-gray-500 flex items-center gap-2">
+                  <FontAwesome icon="info-circle" class="text-pink-500" />
+                  Adicione serviços extras que serão cobrados junto com o serviço principal
+                </p>
+              </div>
+
               <!-- Resumo -->
               <div class="p-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl text-white">
                 <div class="space-y-2">
@@ -720,9 +807,13 @@
                     <span class="text-violet-100">Desconto</span>
                     <span class="font-semibold">-{{ formatarMoeda(novoServico.descontoItem) }}</span>
                   </div>
+                  <div v-if="valorTotalAdicionaisNovoServico > 0" class="flex justify-between items-center text-sm">
+                    <span class="text-violet-100">Serviços Adicionais</span>
+                    <span class="font-semibold">+{{ formatarMoeda(valorTotalAdicionaisNovoServico) }}</span>
+                  </div>
                   <div class="flex justify-between items-center pt-2 border-t border-violet-400/30 text-lg font-bold">
                     <span>TOTAL</span>
-                    <span>{{ formatarMoeda(novoServico.valorItem - (novoServico.descontoItem || 0)) }}</span>
+                    <span>{{ formatarMoeda(novoServico.valorItem - (novoServico.descontoItem || 0) + valorTotalAdicionaisNovoServico) }}</span>
                   </div>
                 </div>
               </div>
@@ -745,6 +836,166 @@
             :title="!podeAdicionarServico ? 'Selecione um serviço' : ''"
           >
             Adicionar Serviço
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Adicionar Serviço Adicional -->
+    <div
+      v-if="modalServicoAdicionalAberto"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+      @click.self="fecharModalServicoAdicional"
+    >
+      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="bg-gradient-to-br from-pink-600 via-rose-600 to-pink-700 text-white px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold">Adicionar Serviço Extra</h2>
+            <p class="text-sm text-pink-100 mt-0.5">Será vinculado ao serviço principal</p>
+          </div>
+          <button
+            @click="fecharModalServicoAdicional"
+            class="w-10 h-10 rounded-full hover:bg-white/10 transition-colors flex items-center justify-center"
+          >
+            <FontAwesome icon="times" class="text-xl" />
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-5">
+          <!-- Seleção do Serviço Adicional -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Serviço Adicional *
+            </label>
+            <select
+              v-model="formularioAdicional.servicoId"
+              @change="atualizarValorServicoAdicional"
+              class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-pink-400 focus:ring-4 focus:ring-pink-100 transition-all outline-none"
+              required
+            >
+              <option value="">Selecione um serviço...</option>
+              <option v-for="servico in servicosAdicionaisDisponiveis" :key="servico.id" :value="servico.id">
+                {{ servico.nome }} - {{ formatarMoeda(servico.valor) }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Quantidade -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Quantidade *
+            </label>
+            <input
+              v-model.number="formularioAdicional.quantidade"
+              type="number"
+              min="1"
+              required
+              class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-pink-400 focus:ring-4 focus:ring-pink-100 transition-all outline-none"
+              @input="calcularValorTotalAdicional"
+            />
+          </div>
+
+          <!-- Valor -->
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Valor do Serviço
+              </label>
+              <div class="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="font-semibold text-gray-800">
+                  {{ formatarMoeda(formularioAdicional.valorUnitarioOriginal) }}
+                </div>
+                <div class="text-xs text-gray-500">Valor padrão do serviço</div>
+              </div>
+            </div>
+
+            <!-- Checkbox para alterar valor -->
+            <div class="flex items-start gap-3">
+              <input
+                v-model="formularioAdicional.alterarValor"
+                type="checkbox"
+                id="alterarValorAdicional"
+                class="mt-1 w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500"
+                @change="toggleAlterarValorAdicional"
+              />
+              <div class="flex-1">
+                <label for="alterarValorAdicional" class="text-sm font-medium text-gray-700 cursor-pointer">
+                  Alterar valor para este atendimento específico
+                </label>
+                <p class="text-xs text-gray-500 mt-1">
+                  Marque para cobrar um valor diferente do padrão
+                </p>
+              </div>
+            </div>
+
+            <!-- Valor Personalizado -->
+            <div v-if="formularioAdicional.alterarValor">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Valor Personalizado *
+              </label>
+              <input
+                v-model.number="formularioAdicional.valorUnitario"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                class="w-full px-4 py-3 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:ring-4 focus:ring-pink-100 transition-all outline-none"
+                @input="calcularValorTotalAdicional"
+              />
+            </div>
+          </div>
+
+          <!-- Info sobre herança -->
+          <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <div class="flex items-start gap-2">
+              <FontAwesome icon="info-circle" class="text-blue-600 mt-0.5" />
+              <div class="text-sm text-blue-800">
+                <p class="font-medium">Status e Data de Pagamento</p>
+                <p>Herdados automaticamente do serviço principal</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observações -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Observações (opcional)
+            </label>
+            <textarea
+              v-model="formularioAdicional.observacoes"
+              rows="3"
+              class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-pink-400 focus:ring-4 focus:ring-pink-100 transition-all outline-none resize-none"
+              placeholder="Ex: Tosa completa, apenas patas, etc."
+            ></textarea>
+          </div>
+
+          <!-- Resumo do Valor -->
+          <div class="p-4 bg-pink-50 rounded-xl border border-pink-200">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-gray-700">Valor Total:</span>
+              <span class="text-2xl font-bold text-pink-600">
+                {{ formatarMoeda(formularioAdicional.valorTotal) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 flex gap-3">
+          <button
+            @click="fecharModalServicoAdicional"
+            class="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="adicionarServicoAdicionalAoServico"
+            :disabled="!formularioAdicionalValido"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Adicionar
           </button>
         </div>
       </div>
@@ -800,6 +1051,7 @@ interface NovoServicoItem {
     valorUnitario: number
     valorTotal: number
     observacoes?: string
+    dataRealizacao?: string // ✅ Adicionar data de realização
   }>
 }
 
@@ -841,7 +1093,22 @@ const novoServico = ref({
     valorUnitario: number
     valorTotal: number
     observacoes?: string
+    dataRealizacao?: string // ✅ Adicionar data de realização
   }>
+})
+
+// Modal de Serviços Adicionais
+const modalServicoAdicionalAberto = ref(false)
+const servicosAdicionaisDisponiveis = ref<ServicoCompleto[]>([])
+const formularioAdicional = ref({
+  servicoId: '',
+  servicoNome: '',
+  quantidade: 1,
+  valorUnitario: 0,
+  valorUnitarioOriginal: 0,
+  valorTotal: 0,
+  observacoes: '',
+  alterarValor: false
 })
 
 // Função para normalizar texto (remover acentos e caracteres especiais)
@@ -922,6 +1189,19 @@ const podeAdicionarServico = computed(() => {
   return !!novoServico.value.servicoId
 })
 
+// Computadas para serviços adicionais
+const valorTotalAdicionaisNovoServico = computed(() => {
+  return novoServico.value.servicosAdicionais.reduce((total, adicional) => {
+    return total + adicional.valorTotal
+  }, 0)
+})
+
+const formularioAdicionalValido = computed(() => {
+  return formularioAdicional.value.servicoId !== '' &&
+         formularioAdicional.value.quantidade > 0 &&
+         formularioAdicional.value.valorTotal > 0
+})
+
 const getServicosExistentesAnimal = (animalId: number) => {
   return servicosExistentesCliente.value.filter(s => s.animal?.id === animalId && !s.vendaId)
 }
@@ -944,9 +1224,13 @@ const valorTotalBruto = computed(() => {
     .filter(s => servicosExistentesSelecionados.value.includes(s.id))
     .reduce((acc, s) => acc + (s.servico?.valor || 0), 0)
 
-  // Valor dos novos serviços
+  // Valor dos novos serviços (incluindo serviços adicionais)
   const valorNovos = novosServicos.value
-    .reduce((acc, s: NovoServicoItem) => acc + (s.valorItem - s.descontoItem), 0)
+    .reduce((acc, s: NovoServicoItem) => {
+      const valorServico = s.valorItem - s.descontoItem
+      const valorAdicionais = s.servicosAdicionais?.reduce((sum, a) => sum + a.valorTotal, 0) || 0
+      return acc + valorServico + valorAdicionais
+    }, 0)
 
   return valorExistentes + valorNovos
 })
@@ -1156,6 +1440,104 @@ const fecharModal = () => {
   mostrarListaServicos.value = false
 }
 
+// Métodos para Serviços Adicionais
+const abrirModalServicoAdicional = async () => {
+  // Carregar serviços adicionais disponíveis
+  try {
+    const todosServicos = await servicosService.buscarTodos()
+    servicosAdicionaisDisponiveis.value = todosServicos.filter(s => s.podeSerAdicional === true)
+  } catch (error) {
+    console.error('Erro ao carregar serviços adicionais:', error)
+  }
+  modalServicoAdicionalAberto.value = true
+}
+
+const fecharModalServicoAdicional = () => {
+  modalServicoAdicionalAberto.value = false
+  formularioAdicional.value = {
+    servicoId: '',
+    servicoNome: '',
+    quantidade: 1,
+    valorUnitario: 0,
+    valorUnitarioOriginal: 0,
+    valorTotal: 0,
+    observacoes: '',
+    alterarValor: false
+  }
+}
+
+const atualizarValorServicoAdicional = () => {
+  const servicoId = formularioAdicional.value.servicoId
+  if (!servicoId) return
+
+  const servico = servicosAdicionaisDisponiveis.value.find(s => s.id === Number(servicoId))
+  if (servico) {
+    formularioAdicional.value.servicoNome = servico.nome
+    formularioAdicional.value.valorUnitario = servico.valor || 0
+    formularioAdicional.value.valorUnitarioOriginal = servico.valor || 0
+    formularioAdicional.value.alterarValor = false
+    calcularValorTotalAdicional()
+  }
+}
+
+const calcularValorTotalAdicional = () => {
+  const quantidade = formularioAdicional.value.quantidade || 1
+  const valorUnitario = formularioAdicional.value.alterarValor
+    ? formularioAdicional.value.valorUnitario
+    : formularioAdicional.value.valorUnitarioOriginal
+  formularioAdicional.value.valorTotal = quantidade * valorUnitario
+}
+
+const toggleAlterarValorAdicional = () => {
+  if (!formularioAdicional.value.alterarValor) {
+    // Se desmarcou, volta ao valor original
+    formularioAdicional.value.valorUnitario = formularioAdicional.value.valorUnitarioOriginal
+  }
+  calcularValorTotalAdicional()
+}
+
+const adicionarServicoAdicionalAoServico = () => {
+  if (!formularioAdicionalValido.value) return
+
+  // Preparar observações com informação sobre alteração de valor
+  let observacoes = formularioAdicional.value.observacoes || ''
+
+  if (formularioAdicional.value.alterarValor) {
+    const valorOriginal = formularioAdicional.value.valorUnitarioOriginal
+    const valorPersonalizado = formularioAdicional.value.valorUnitario
+    const diferenca = valorPersonalizado - valorOriginal
+    const tipoAlteracao = diferenca > 0 ? 'Acréscimo' : 'Desconto'
+
+    const infoAlteracao = `${tipoAlteracao} de R$ ${Math.abs(diferenca).toFixed(2)} (valor padrão: R$ ${valorOriginal.toFixed(2)})`
+    observacoes = observacoes ? `${observacoes} | ${infoAlteracao}` : infoAlteracao
+  }
+
+  // Obter data atual no formato YYYY-MM-DD
+  const dataAtual = new Date().toISOString().split('T')[0]
+
+  const novoAdicional = {
+    servicoId: Number(formularioAdicional.value.servicoId),
+    servicoNome: formularioAdicional.value.servicoNome,
+    quantidade: formularioAdicional.value.quantidade,
+    valorUnitario: formularioAdicional.value.alterarValor
+      ? formularioAdicional.value.valorUnitario
+      : formularioAdicional.value.valorUnitarioOriginal,
+    valorTotal: formularioAdicional.value.valorTotal,
+    observacoes: observacoes || undefined,
+    dataRealizacao: dataAtual // ✅ Adicionar data de realização (data atual por padrão)
+  }
+
+  console.log('🔍 DEBUG - Adicionando serviço adicional:', novoAdicional)
+  console.log('🔍 DEBUG - dataRealizacao:', novoAdicional.dataRealizacao)
+
+  novoServico.value.servicosAdicionais.push(novoAdicional)
+  fecharModalServicoAdicional()
+}
+
+const removerServicoAdicional = (index: number) => {
+  novoServico.value.servicosAdicionais.splice(index, 1)
+}
+
 const preencherDadosServico = () => {
   const servico = servicosCatalogo.value.find(s => s.id === Number(novoServico.value.servicoId))
   if (servico) {
@@ -1232,9 +1614,20 @@ const criarVenda = async () => {
             servicoId: adic.servicoId,
             quantidade: adic.quantidade,
             valorUnitario: adic.valorUnitario,
-            observacoes: adic.observacoes || undefined
+            observacoes: adic.observacoes || undefined,
+            dataRealizacao: adic.dataRealizacao || undefined // ✅ Incluir data de realização
           })) : undefined
         }))
+    }
+
+    // 🔍 DEBUG: Verificar dados sendo enviados
+    console.log('🔍 DEBUG - Dados sendo enviados para criar venda:', JSON.stringify(dados, null, 2))
+    if (dados.itens && dados.itens.length > 0) {
+      dados.itens.forEach((item, idx) => {
+        if (item.servicosAdicionais && item.servicosAdicionais.length > 0) {
+          console.log(`🔍 DEBUG - Item ${idx} - Serviços Adicionais:`, item.servicosAdicionais)
+        }
+      })
     }
 
     const vendaCriada = await vendasService.criar(dados)
