@@ -1527,9 +1527,6 @@ const adicionarServicoAdicionalAoServico = () => {
     dataRealizacao: dataAtual // ✅ Adicionar data de realização (data atual por padrão)
   }
 
-  console.log('🔍 DEBUG - Adicionando serviço adicional:', novoAdicional)
-  console.log('🔍 DEBUG - dataRealizacao:', novoAdicional.dataRealizacao)
-
   novoServico.value.servicosAdicionais.push(novoAdicional)
   fecharModalServicoAdicional()
 }
@@ -1618,16 +1615,6 @@ const criarVenda = async () => {
             dataRealizacao: adic.dataRealizacao || undefined // ✅ Incluir data de realização
           })) : undefined
         }))
-    }
-
-    // 🔍 DEBUG: Verificar dados sendo enviados
-    console.log('🔍 DEBUG - Dados sendo enviados para criar venda:', JSON.stringify(dados, null, 2))
-    if (dados.itens && dados.itens.length > 0) {
-      dados.itens.forEach((item, idx) => {
-        if (item.servicosAdicionais && item.servicosAdicionais.length > 0) {
-          console.log(`🔍 DEBUG - Item ${idx} - Serviços Adicionais:`, item.servicosAdicionais)
-        }
-      })
     }
 
     const vendaCriada = await vendasService.criar(dados)

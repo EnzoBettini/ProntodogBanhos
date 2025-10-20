@@ -75,7 +75,21 @@ public class VendaCompletoDTO {
         // Serviços adicionais
         private BigDecimal valorAdicionais;
         private Integer quantidadeAdicionais;
+        private List<ServicoAdicionalResumoDTO> servicosAdicionais;
 
+        private String observacoes;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ServicoAdicionalResumoDTO {
+        private Long id;
+        private Long servicoId;
+        private String servicoNome;
+        private Integer quantidade;
+        private BigDecimal valorUnitario;
+        private BigDecimal valorTotal;
         private String observacoes;
     }
 

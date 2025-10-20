@@ -136,9 +136,26 @@
                     <p class="font-semibold text-gray-800 mb-1 group-hover:text-violet-600 transition">{{ item.servicoNome }}</p>
 
                     <!-- Serviços adicionais -->
-                    <div v-if="item.quantidadeAdicionais > 0" class="flex items-center gap-2 text-sm text-purple-600">
-                      <FontAwesome icon="plus-circle" />
-                      <span>{{ item.quantidadeAdicionais }} adicional(is) - {{ formatarMoeda(item.valorAdicionais) }}</span>
+                    <div v-if="item.servicosAdicionais && item.servicosAdicionais.length > 0" class="mt-2 ml-4 space-y-1">
+                      <div
+                        v-for="adicional in item.servicosAdicionais"
+                        :key="adicional.id"
+                        class="flex items-start gap-2 text-sm text-purple-600"
+                      >
+                        <FontAwesome icon="plus-circle" class="mt-0.5 flex-shrink-0" />
+                        <div class="flex-1">
+                          <span class="font-medium">{{ adicional.servicoNome }}</span>
+                          <span v-if="adicional.quantidade > 1" class="text-purple-500">
+                            ({{ adicional.quantidade }}x)
+                          </span>
+                          <span class="text-gray-600 ml-2">
+                            {{ formatarMoeda(adicional.valorTotal) }}
+                          </span>
+                          <p v-if="adicional.observacoes" class="text-xs text-gray-500 mt-0.5">
+                            {{ adicional.observacoes }}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <div v-if="item.descontoItem > 0" class="text-sm text-green-600 mt-1">
@@ -312,11 +329,22 @@
               <button
                 v-if="venda.statusVenda !== 'cancelado'"
                 @click="cancelarVenda"
-                class="w-full py-2 bg-red-500 bg-opacity-20 text-white font-semibold rounded-lg hover:bg-opacity-30 transition mb-2"
+                :disabled="venda.valorPago > 0"
+                :class="[
+                  'w-full py-2 font-semibold rounded-lg transition mb-2',
+                  venda.valorPago > 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-red-500 bg-opacity-20 text-white hover:bg-opacity-30'
+                ]"
+                :title="venda.valorPago > 0 ? 'Não é possível cancelar vendas com pagamentos. Remova os pagamentos primeiro.' : ''"
               >
                 <FontAwesome icon="times-circle" class="mr-2" />
                 Cancelar Venda
               </button>
+              <div v-if="venda.valorPago > 0 && venda.statusVenda !== 'cancelado'" class="flex items-center justify-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg py-2 px-3 mb-2">
+                <FontAwesome icon="exclamation-triangle" class="text-amber-600" />
+                <span class="font-medium">Remova os pagamentos para cancelar</span>
+              </div>
 
               <button
                 @click="confirmarExclusao"
@@ -377,13 +405,24 @@
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Valor do Pagamento</label>
-          <input
-            v-model.number="formPagamento.valorBaixa"
-            type="number"
-            step="0.01"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500"
-            placeholder="0.00"
-          />
+          <div class="flex gap-2">
+            <input
+              v-model.number="formPagamento.valorBaixa"
+              type="number"
+              step="0.01"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500"
+              placeholder="0.00"
+            />
+            <button
+              @click="preencherValorTotal"
+              type="button"
+              class="px-4 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition flex items-center gap-2 whitespace-nowrap"
+              title="Preencher com o valor total pendente"
+            >
+              <FontAwesome icon="check-circle" />
+              Pagar Total
+            </button>
+          </div>
           <p class="text-sm text-gray-500 mt-1">
             Pendente: {{ formatarMoeda(venda?.valorPendente || 0) }}
           </p>
@@ -624,6 +663,12 @@ const carregarFormasPagamento = async () => {
   }
 }
 
+const preencherValorTotal = () => {
+  if (venda.value?.valorPendente) {
+    formPagamento.value.valorBaixa = venda.value.valorPendente
+  }
+}
+
 const atualizarParcelasPagamento = () => {
   formPagamento.value.numeroParcelas = 1
 }
@@ -798,14 +843,25 @@ const adicionarNovoItem = async () => {
 }
 
 const cancelarVenda = async () => {
+  // Validação: não pode cancelar venda com pagamentos
+  if (venda.value.valorPago > 0) {
+    alert(
+      '⚠️ Não é possível cancelar uma venda com pagamentos registrados.\n\n' +
+      `Valor pago: R$ ${formatarMoeda(venda.value.valorPago)}\n\n` +
+      'Para cancelar esta venda, primeiro remova todos os pagamentos.'
+    )
+    return
+  }
+
   const motivo = prompt('Digite o motivo do cancelamento:')
   if (!motivo) return
 
   try {
     const vendaAtualizada = await vendasService.cancelar(venda.value.id, motivo)
     venda.value = vendaAtualizada
+    alert('✅ Venda cancelada com sucesso!')
   } catch (err: any) {
-    alert('Erro ao cancelar venda: ' + (err.message || 'Erro desconhecido'))
+    alert('❌ Erro ao cancelar venda: ' + (err.message || 'Erro desconhecido'))
   }
 }
 

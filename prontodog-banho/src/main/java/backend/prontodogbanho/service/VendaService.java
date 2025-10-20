@@ -123,12 +123,14 @@ public class VendaService {
         if (dto.getItens() != null && !dto.getItens().isEmpty()) {
             for (CriarVendaDTO.ItemVendaDTO itemDTO : dto.getItens()) {
                 VendaItem item = adicionarItemInterno(venda, itemDTO);
-                valorBruto = valorBruto.add(item.getValorFinalItem());
+                // Incluir valor dos serviços adicionais no cálculo
+                valorBruto = valorBruto.add(item.getValorTotalComAdicionais());
             }
         } else if (dto.getAnimalServicoIds() != null && !dto.getAnimalServicoIds().isEmpty()) {
             for (Long animalServicoId : dto.getAnimalServicoIds()) {
                 VendaItem item = adicionarItemSimples(venda, animalServicoId);
-                valorBruto = valorBruto.add(item.getValorFinalItem());
+                // Incluir valor dos serviços adicionais no cálculo
+                valorBruto = valorBruto.add(item.getValorTotalComAdicionais());
             }
         }
 
@@ -639,6 +641,24 @@ public class VendaService {
             throw new RuntimeException("Venda já está cancelada");
         }
 
+        // ⚠️ CONSTRAINT: Não pode cancelar venda que possui pagamentos
+        if (venda.getValorPago() != null && venda.getValorPago().compareTo(BigDecimal.ZERO) > 0) {
+            throw new RuntimeException(
+                "Não é possível cancelar uma venda que já possui pagamentos registrados. " +
+                "Valor pago: R$ " + venda.getValorPago() + ". " +
+                "Para cancelar esta venda, primeiro remova todos os pagamentos."
+            );
+        }
+
+        // Verificar se há baixas registradas (dupla verificação)
+        List<VendaBaixa> baixas = vendaBaixaRepository.findByVenda_IdOrderByDataBaixaDesc(id);
+        if (!baixas.isEmpty()) {
+            throw new RuntimeException(
+                "Não é possível cancelar uma venda com " + baixas.size() + " pagamento(s) registrado(s). " +
+                "Primeiro remova todos os pagamentos para poder cancelar a venda."
+            );
+        }
+
         venda.setStatusVenda("cancelado");
         venda.setCanceladoEm(LocalDateTime.now());
         venda.setMotivoCancelamento(dto.getMotivoCancelamento());
@@ -682,16 +702,39 @@ public class VendaService {
     // ============================================
 
     private void recalcularValoresVenda(Venda venda) {
-        // Buscar todos os itens
-        List<VendaItem> itens = vendaItemRepository.findByVenda_Id(venda.getId());
+        // Buscar todos os itens com AnimalServico
+        List<VendaItem> itens = vendaItemRepository.findByVendaIdWithAnimalServico(venda.getId());
 
-        // Calcular valor bruto (soma dos itens)
+        // Inicializar serviços adicionais
+        itens.forEach(item -> {
+            if (item.getAnimalServico() != null && item.getAnimalServico().getServicosAdicionais() != null) {
+                item.getAnimalServico().getServicosAdicionais().size();
+            }
+        });
+
+        // Calcular valor bruto (soma dos itens COM serviços adicionais)
         BigDecimal valorBruto = itens.stream()
-                .map(VendaItem::getValorFinalItem)
+                .map(VendaItem::getValorTotalComAdicionais)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Preservar o valor pago atual
+        BigDecimal valorPagoAtual = venda.getValorPago();
+
+        // Atualizar valores
         venda.setValorBruto(valorBruto);
-        venda.recalcularValores();
+        BigDecimal novoValorTotal = valorBruto.subtract(venda.getDesconto());
+        venda.setValorTotal(novoValorTotal);
+        venda.setValorPendente(novoValorTotal.subtract(valorPagoAtual));
+
+        // Atualizar status baseado nos novos valores
+        if (valorPagoAtual.compareTo(BigDecimal.ZERO) == 0) {
+            venda.setStatusVenda("em_aberto");
+        } else if (valorPagoAtual.compareTo(novoValorTotal) >= 0) {
+            venda.setStatusVenda("pago");
+        } else {
+            venda.setStatusVenda("parcial");
+        }
+
         vendaRepository.save(venda);
     }
 
@@ -897,13 +940,63 @@ public class VendaService {
         dto.setUsuarioId(venda.getUsuarioId());
         dto.setUsuarioNome(venda.getUsuarioNome());
 
-        // Valores
-        dto.setValorBruto(venda.getValorBruto());
+        // Valores - recalcular valorBruto para incluir adicionais
+        List<VendaItem> itensParaCalculo = vendaItemRepository.findByVendaIdWithAnimalServico(venda.getId());
+        // Inicializar serviços adicionais manualmente (Hibernate.initialize)
+        itensParaCalculo.forEach(item -> {
+            if (item.getAnimalServico() != null && item.getAnimalServico().getServicosAdicionais() != null) {
+                item.getAnimalServico().getServicosAdicionais().size(); // Força inicialização
+            }
+        });
+
+        BigDecimal valorBrutoReal = itensParaCalculo.stream()
+                .map(VendaItem::getValorTotalComAdicionais)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Se o valor bruto no banco está diferente do valor real calculado, atualizar
+        if (venda.getValorBruto().compareTo(valorBrutoReal) != 0) {
+            System.out.println("⚠️ Valor bruto desatualizado! Banco: " + venda.getValorBruto() + ", Real: " + valorBrutoReal);
+
+            // Salvar valor pago antes de recalcular (não deve mudar)
+            BigDecimal valorPagoAtual = venda.getValorPago();
+
+            // Atualizar valores
+            venda.setValorBruto(valorBrutoReal);
+            BigDecimal novoValorTotal = valorBrutoReal.subtract(venda.getDesconto());
+            venda.setValorTotal(novoValorTotal);
+            venda.setValorPendente(novoValorTotal.subtract(valorPagoAtual));
+
+            // Atualizar status baseado nos novos valores
+            if (valorPagoAtual.compareTo(BigDecimal.ZERO) == 0) {
+                venda.setStatusVenda("em_aberto");
+            } else if (valorPagoAtual.compareTo(novoValorTotal) >= 0) {
+                venda.setStatusVenda("pago");
+            } else {
+                venda.setStatusVenda("parcial");
+            }
+
+            venda = vendaRepository.save(venda);
+            System.out.println("✅ Valores recalculados e atualizados no banco!");
+            System.out.println("   Valor Bruto: " + venda.getValorBruto());
+            System.out.println("   Valor Total: " + venda.getValorTotal());
+            System.out.println("   Valor Pago: " + venda.getValorPago());
+            System.out.println("   Valor Pendente: " + venda.getValorPendente());
+            System.out.println("   Status: " + venda.getStatusVenda());
+        }
+
+        dto.setValorBruto(valorBrutoReal);
         dto.setDesconto(venda.getDesconto());
-        dto.setValorTotal(venda.getValorTotal());
+        dto.setValorTotal(valorBrutoReal.subtract(venda.getDesconto()));
         dto.setValorPago(venda.getValorPago());
-        dto.setValorPendente(venda.getValorPendente());
-        dto.setPercentualPago(venda.getPercentualPago());
+        dto.setValorPendente(valorBrutoReal.subtract(venda.getDesconto()).subtract(venda.getValorPago()));
+
+        // Recalcular percentual pago
+        BigDecimal valorTotalReal = valorBrutoReal.subtract(venda.getDesconto());
+        BigDecimal percentualPago = valorTotalReal.compareTo(BigDecimal.ZERO) > 0 ?
+                venda.getValorPago().multiply(new BigDecimal("100"))
+                        .divide(valorTotalReal, 2, java.math.RoundingMode.HALF_UP) :
+                BigDecimal.ZERO;
+        dto.setPercentualPago(percentualPago);
 
         dto.setQuantidadeItens(venda.getQuantidadeItens());
         dto.setQuantidadeBaixas(venda.getQuantidadeBaixas());
@@ -913,8 +1006,20 @@ public class VendaService {
         dto.setCanceladoEm(venda.getCanceladoEm());
         dto.setMotivoCancelamento(venda.getMotivoCancelamento());
 
-        // Itens
-        List<VendaItem> itens = vendaItemRepository.findByVenda_Id(venda.getId());
+        // Itens (com serviços adicionais carregados)
+        List<VendaItem> itens = vendaItemRepository.findByVendaIdWithAnimalServico(venda.getId());
+        // Inicializar serviços adicionais manualmente
+        itens.forEach(item -> {
+            if (item.getAnimalServico() != null && item.getAnimalServico().getServicosAdicionais() != null) {
+                item.getAnimalServico().getServicosAdicionais().size(); // Força inicialização
+                // Também inicializar o serviço relacionado a cada adicional
+                item.getAnimalServico().getServicosAdicionais().forEach(sa -> {
+                    if (sa.getServicoAdicional() != null) {
+                        sa.getServicoAdicional().getNome(); // Força inicialização
+                    }
+                });
+            }
+        });
         dto.setItens(itens.stream().map(this::converterItemParaDTO).collect(Collectors.toList()));
 
         // Baixas
@@ -944,11 +1049,28 @@ public class VendaService {
                 dto.setServicoNome(as.getServico().getNome());
             }
 
+            // Calcular valor total e quantidade dos adicionais
             dto.setValorAdicionais(as.getServicosAdicionais() != null ?
                     as.getServicosAdicionais().stream()
                             .map(ServicoAdicional::getValorTotal)
                             .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO);
             dto.setQuantidadeAdicionais(as.getQuantidadeAdicionais());
+
+            // Adicionar lista detalhada de serviços adicionais
+            if (as.getServicosAdicionais() != null && !as.getServicosAdicionais().isEmpty()) {
+                List<VendaCompletoDTO.ServicoAdicionalResumoDTO> adicionaisDTO = as.getServicosAdicionais().stream()
+                        .map(sa -> new VendaCompletoDTO.ServicoAdicionalResumoDTO(
+                                sa.getId(),
+                                sa.getServicoAdicional() != null ? sa.getServicoAdicional().getId() : null,
+                                sa.getServicoAdicional() != null ? sa.getServicoAdicional().getNome() : "Serviço Removido",
+                                sa.getQuantidadeAdicional(),
+                                sa.getValorUnitario(),
+                                sa.getValorTotal(),
+                                sa.getObservacoes()
+                        ))
+                        .collect(Collectors.toList());
+                dto.setServicosAdicionais(adicionaisDTO);
+            }
         }
 
         dto.setValorItem(item.getValorItem());
