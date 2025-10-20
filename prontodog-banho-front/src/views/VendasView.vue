@@ -258,85 +258,181 @@
       </BaseCard>
 
       <!-- ✅ Lista de vendas -->
-      <div v-else class="grid grid-cols-1 gap-4 animate-fade-in">
-        <div
-          v-for="venda in vendasFiltradas"
-          :key="venda.id"
-          @click="$router.push(`/vendas/${venda.id}`)"
-          class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 cursor-pointer hover:scale-[1.01] border-2 border-transparent hover:border-violet-200"
-        >
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <!-- Info principal -->
-            <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2 flex-wrap">
-                <span class="text-2xl font-bold text-violet-600">#{{ venda.codigoVenda }}</span>
-                <span
-                  :class="[
-                    'px-3 py-1 rounded-full text-xs font-semibold',
-                    getStatusBadgeClass(venda.statusVenda)
-                  ]"
-                >
-                  {{ getStatusLabel(venda.statusVenda) }}
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                  {{ getTipoVendaLabel(venda.tipoVenda) }}
-                </span>
-              </div>
-
-              <div class="space-y-1 text-gray-600">
-                <p class="flex items-center gap-2">
-                  <FontAwesome icon="user" class="text-violet-500" />
-                  <span class="font-medium">{{ venda.clienteNome }}</span>
-                </p>
-                <p class="flex items-center gap-2 text-sm">
-                  <FontAwesome icon="calendar" class="text-gray-400" />
-                  {{ formatarData(venda.dataVenda) }}
-                </p>
-                <p class="flex items-center gap-2 text-sm">
-                  <FontAwesome icon="box" class="text-gray-400" />
-                  {{ venda.quantidadeItens }} {{ venda.quantidadeItens === 1 ? 'item' : 'itens' }}
-                  <span class="mx-1">•</span>
-                  <FontAwesome icon="credit-card" class="text-gray-400" />
-                  {{ venda.quantidadeBaixas }} {{ venda.quantidadeBaixas === 1 ? 'pagamento' : 'pagamentos' }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Valores -->
-            <div class="flex flex-col items-end gap-2">
-              <div class="text-right">
-                <p class="text-sm text-gray-500">Valor Total</p>
-                <p class="text-2xl font-bold text-gray-800">{{ formatarMoeda(venda.valorTotal) }}</p>
-              </div>
-
-              <div v-if="venda.statusVenda !== 'pago'" class="text-right">
-                <p class="text-xs text-gray-500">Pendente</p>
-                <p class="text-lg font-semibold text-red-600">{{ formatarMoeda(venda.valorPendente) }}</p>
-              </div>
-
-              <!-- Barra de progresso do pagamento -->
-              <div v-if="venda.statusVenda === 'parcial'" class="w-40">
-                <div class="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>Pago</span>
-                  <span>{{ venda.percentualPago.toFixed(0) }}%</span>
+      <div v-else class="space-y-4 animate-fade-in">
+        <!-- Cards de vendas -->
+        <div class="grid grid-cols-1 gap-4">
+          <div
+            v-for="venda in vendasPaginadas"
+            :key="venda.id"
+            @click="$router.push(`/vendas/${venda.id}`)"
+            class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 cursor-pointer hover:scale-[1.01] border-2 border-transparent hover:border-violet-200"
+          >
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <!-- Info principal -->
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                  <span class="text-2xl font-bold text-violet-600">#{{ venda.codigoVenda }}</span>
+                  <span
+                    :class="[
+                      'px-3 py-1 rounded-full text-xs font-semibold',
+                      getStatusBadgeClass(venda.statusVenda)
+                    ]"
+                  >
+                    {{ getStatusLabel(venda.statusVenda) }}
+                  </span>
+                  <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                    {{ getTipoVendaLabel(venda.tipoVenda) }}
+                  </span>
                 </div>
-                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
-                    :style="{ width: `${venda.percentualPago}%` }"
-                  ></div>
+
+                <div class="space-y-1 text-gray-600">
+                  <p class="flex items-center gap-2">
+                    <FontAwesome icon="user" class="text-violet-500" />
+                    <span class="font-medium">{{ venda.clienteNome }}</span>
+                  </p>
+                  <p class="flex items-center gap-2 text-sm">
+                    <FontAwesome icon="calendar" class="text-gray-400" />
+                    {{ formatarData(venda.dataVenda) }}
+                  </p>
+                  <p class="flex items-center gap-2 text-sm">
+                    <FontAwesome icon="box" class="text-gray-400" />
+                    {{ venda.quantidadeItens }} {{ venda.quantidadeItens === 1 ? 'item' : 'itens' }}
+                    <span class="mx-1">•</span>
+                    <FontAwesome icon="credit-card" class="text-gray-400" />
+                    {{ venda.quantidadeBaixas }} {{ venda.quantidadeBaixas === 1 ? 'pagamento' : 'pagamentos' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Valores -->
+              <div class="flex flex-col items-end gap-2">
+                <div class="text-right">
+                  <p class="text-sm text-gray-500">Valor Total</p>
+                  <p class="text-2xl font-bold text-gray-800">{{ formatarMoeda(venda.valorTotal) }}</p>
+                </div>
+
+                <div v-if="venda.statusVenda !== 'pago'" class="text-right">
+                  <p class="text-xs text-gray-500">Pendente</p>
+                  <p class="text-lg font-semibold text-red-600">{{ formatarMoeda(venda.valorPendente) }}</p>
+                </div>
+
+                <!-- Barra de progresso do pagamento -->
+                <div v-if="venda.statusVenda === 'parcial'" class="w-40">
+                  <div class="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Pago</span>
+                    <span>{{ venda.percentualPago.toFixed(0) }}%</span>
+                  </div>
+                  <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
+                      :style="{ width: `${venda.percentualPago}%` }"
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Paginação -->
+        <BaseCard v-if="totalPaginas > 1" class="shadow-lg border-0 bg-white">
+          <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Info da paginação -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <FontAwesome icon="list" class="text-violet-500" />
+              <span>
+                Mostrando
+                <strong class="text-violet-600">{{ indicePrimeiroItem }}</strong> -
+                <strong class="text-violet-600">{{ indiceUltimoItem }}</strong>
+                de
+                <strong class="text-violet-600">{{ vendasFiltradas.length }}</strong>
+                vendas
+              </span>
+            </div>
+
+            <!-- Controles de paginação -->
+            <div class="flex items-center gap-2">
+              <!-- Botão Primeira Página -->
+              <button
+                @click="paginaAtual = 1"
+                :disabled="paginaAtual === 1"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-violet-50"
+                :class="paginaAtual === 1 ? 'text-gray-400' : 'text-violet-600 hover:text-violet-700'"
+              >
+                <FontAwesome icon="angle-double-left" />
+              </button>
+
+              <!-- Botão Anterior -->
+              <button
+                @click="paginaAtual--"
+                :disabled="paginaAtual === 1"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-violet-50"
+                :class="paginaAtual === 1 ? 'text-gray-400' : 'text-violet-600 hover:text-violet-700'"
+              >
+                <FontAwesome icon="chevron-left" class="mr-1" />
+                <span class="hidden sm:inline">Anterior</span>
+              </button>
+
+              <!-- Números das páginas -->
+              <div class="flex items-center gap-1">
+                <button
+                  v-for="pagina in paginasVisiveis"
+                  :key="pagina"
+                  @click="paginaAtual = pagina"
+                  class="w-10 h-10 rounded-lg font-medium transition-all duration-200"
+                  :class="paginaAtual === pagina
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md'
+                    : 'bg-violet-50 text-violet-600 hover:bg-violet-100'"
+                >
+                  {{ pagina }}
+                </button>
+              </div>
+
+              <!-- Botão Próxima -->
+              <button
+                @click="paginaAtual++"
+                :disabled="paginaAtual === totalPaginas"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-violet-50"
+                :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-violet-600 hover:text-violet-700'"
+              >
+                <span class="hidden sm:inline">Próxima</span>
+                <FontAwesome icon="chevron-right" class="ml-1" />
+              </button>
+
+              <!-- Botão Última Página -->
+              <button
+                @click="paginaAtual = totalPaginas"
+                :disabled="paginaAtual === totalPaginas"
+                class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-violet-50"
+                :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-violet-600 hover:text-violet-700'"
+              >
+                <FontAwesome icon="angle-double-right" />
+              </button>
+            </div>
+
+            <!-- Select de itens por página -->
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">Itens por página:</span>
+              <select
+                v-model="itensPorPagina"
+                @change="paginaAtual = 1"
+                class="px-3 py-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-700 bg-white"
+              >
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </BaseCard>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { vendasService } from '@/services/api'
 import { FontAwesomeIcon as FontAwesome } from '@fortawesome/vue-fontawesome'
 import { formatarValor } from '@/utils/formatters'
@@ -348,6 +444,10 @@ const error = ref<string | null>(null)
 const filtroStatus = ref<string>('')
 const filtroTipoVenda = ref<string>('')
 const filtroBusca = ref('')
+
+// Paginação
+const paginaAtual = ref(1)
+const itensPorPagina = ref(10)
 
 const normalizarTexto = (texto: string | null | undefined): string => {
   if (!texto) return ''
@@ -433,6 +533,63 @@ const vendasFiltradas = computed(() => {
   return resultado
 })
 
+// Computed properties para paginação
+const totalPaginas = computed(() => {
+  return Math.ceil(vendasFiltradas.value.length / itensPorPagina.value)
+})
+
+const indicePrimeiroItem = computed(() => {
+  return (paginaAtual.value - 1) * itensPorPagina.value + 1
+})
+
+const indiceUltimoItem = computed(() => {
+  const ultimo = paginaAtual.value * itensPorPagina.value
+  return ultimo > vendasFiltradas.value.length ? vendasFiltradas.value.length : ultimo
+})
+
+const vendasPaginadas = computed(() => {
+  const inicio = (paginaAtual.value - 1) * itensPorPagina.value
+  const fim = inicio + itensPorPagina.value
+  return vendasFiltradas.value.slice(inicio, fim)
+})
+
+const paginasVisiveis = computed(() => {
+  const total = totalPaginas.value
+  const atual = paginaAtual.value
+  const paginas: number[] = []
+
+  if (total <= 7) {
+    // Se tiver 7 ou menos páginas, mostra todas
+    for (let i = 1; i <= total; i++) {
+      paginas.push(i)
+    }
+  } else {
+    // Sempre mostra primeira, última e 5 ao redor da atual
+    if (atual <= 4) {
+      // Início
+      for (let i = 1; i <= 5; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    } else if (atual >= total - 3) {
+      // Fim
+      paginas.push(1)
+      for (let i = total - 4; i <= total; i++) {
+        paginas.push(i)
+      }
+    } else {
+      // Meio
+      paginas.push(1)
+      for (let i = atual - 1; i <= atual + 1; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
+    }
+  }
+
+  return paginas
+})
+
 const totalVendas = computed(() => {
   return vendasFiltradas.value
     .filter(v => v.statusVenda !== 'cancelado')
@@ -443,7 +600,13 @@ const limparFiltros = () => {
   filtroBusca.value = ''
   filtroStatus.value = ''
   filtroTipoVenda.value = ''
+  paginaAtual.value = 1
 }
+
+// Resetar página quando filtros mudarem
+watch([filtroStatus, filtroTipoVenda, filtroBusca], () => {
+  paginaAtual.value = 1
+})
 
 const carregarVendas = async () => {
   try {
