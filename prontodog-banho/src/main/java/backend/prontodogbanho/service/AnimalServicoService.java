@@ -166,7 +166,8 @@ public class AnimalServicoService {
                         servicoAdicionalDTO.quantidade(),
                         servicoAdicionalDTO.valorUnitario(), // ← usar valorUnitario
                         servicoAdicionalDTO.observacoes(),
-                        servicoAdicionalDTO.usuarioId()
+                        servicoAdicionalDTO.usuarioId(),
+                        servicoAdicionalDTO.dataRealizacao() // 🎯 Nova: data de realização
                         // ❌ Removidos: statusPagamento e dataPagamento (herdam do pai automaticamente)
                     );
 
@@ -210,6 +211,16 @@ public class AnimalServicoService {
         servicoAdicionalEntity.setDataPagamento(animalServico.getDataPagamento());
 
         System.out.println("✅ Status e data herdados do pai automaticamente!");
+
+        // 🎯 HERDAR OU DEFINIR DATA DE REALIZAÇÃO
+        // Se o DTO tiver dataRealizacao, usa ela; senão, herda do pai (dataServico)
+        if (dto.dataRealizacao() != null) {
+            servicoAdicionalEntity.setDataRealizacao(dto.dataRealizacao());
+            System.out.println("📅 Data de realização customizada: " + dto.dataRealizacao());
+        } else {
+            servicoAdicionalEntity.setDataRealizacao(animalServico.getDataServico());
+            System.out.println("📅 Data de realização herdada do pai: " + animalServico.getDataServico());
+        }
 
         servicoAdicionalEntity.setObservacoes(dto.observacoes());
         servicoAdicionalEntity.setUsuario(usuario);

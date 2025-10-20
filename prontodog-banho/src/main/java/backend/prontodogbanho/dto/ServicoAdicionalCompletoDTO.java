@@ -15,6 +15,7 @@ public record ServicoAdicionalCompletoDTO(
         BigDecimal valorTotal,
         String statusPagamento,
         LocalDate dataPagamento,
+        LocalDate dataRealizacao, // 🎯 Nova: data de realização do serviço adicional
         String observacoes,
         Long usuarioId,
         String nomeUsuario,
@@ -32,6 +33,7 @@ public record ServicoAdicionalCompletoDTO(
                 sa.getValorTotal(),
                 sa.getStatusPagamento(),
                 sa.getDataPagamento(),
+                sa.getDataRealizacao(), // 🎯 Nova: data de realização
                 sa.getObservacoes(),
                 sa.getUsuario() != null ? sa.getUsuario().getId() : null,
                 sa.getUsuario() != null ? sa.getUsuario().getNome() : "Usuário Removido",

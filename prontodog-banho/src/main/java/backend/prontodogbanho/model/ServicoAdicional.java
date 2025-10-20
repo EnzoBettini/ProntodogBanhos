@@ -43,6 +43,9 @@ public class ServicoAdicional {
     @Column(name="data_pagamento")
     private LocalDate dataPagamento;
 
+    @Column(name="data_realizacao", nullable = false)
+    private LocalDate dataRealizacao;
+
     // Relacionamento com o serviço principal (AnimalServico)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="animal_servico_principal_id", nullable = false)
