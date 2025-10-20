@@ -89,6 +89,8 @@ adicionar_data_realizacao_servico_adicional.sql
     ↓
 fix_add_data_realizacao.sql
     ↓
+fix_servicos_adicionais.sql
+    ↓
 testes_banco.sql (opcional)
 
 ================================================================================

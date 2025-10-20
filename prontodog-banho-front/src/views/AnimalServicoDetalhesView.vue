@@ -476,17 +476,6 @@
                       <FontAwesomeIcon :icon="['fas', 'external-link-alt']" class="text-xs" />
                     </router-link>
                   </div>
-
-                  <!-- Aviso sobre controle de pagamento -->
-                  <div v-if="animalServico?.statusPagamento !== 'pago'" class="p-3.5 bg-gradient-to-r from-indigo-100/70 to-purple-100/70 rounded-lg border-2 border-indigo-200">
-                    <div class="flex items-start gap-2.5">
-                      <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-indigo-600 mt-0.5 flex-shrink-0" />
-                      <p class="text-sm text-indigo-800 leading-relaxed">
-                        <strong class="font-semibold">Importante:</strong> O pagamento deste serviço deve ser gerenciado através da venda.
-                        Não é possível marcar como pago individualmente.
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -721,10 +710,10 @@
                         <template v-if="adicional.statusPagamento !== 'em_aberto'">
                           <span>•</span>
                           <BaseBadge
-                            :variant="adicional.statusPagamento === 'pago' ? 'success' : 'warning'"
+                            :variant="getStatusPagamentoBadgeVariant(adicional.statusPagamento)"
                             size="sm"
                           >
-                            {{ adicional.statusPagamento === 'pago' ? 'Pago' : 'Cancelado' }}
+                            {{ getStatusPagamentoTexto(adicional.statusPagamento) }}
                           </BaseBadge>
                         </template>
                       </div>
@@ -1545,6 +1534,8 @@ const getStatusPagamentoTexto = (status: string): string => {
   switch (status) {
     case 'pago':
       return 'Pago'
+    case 'parcial':
+      return 'Pagamento Parcial'
     case 'em_aberto':
       return 'Em Aberto'
     case 'cancelado':
@@ -1558,6 +1549,8 @@ const getStatusPagamentoBadgeVariant = (status: string): 'success' | 'warning' |
   switch (status) {
     case 'pago':
       return 'success'
+    case 'parcial':
+      return 'warning'
     case 'em_aberto':
       return 'warning'
     case 'cancelado':
@@ -1877,14 +1870,13 @@ const recarregarServicosAdicionais = async (): Promise<void> => {
 const atualizarValorServicoSelecionado = (novoValor?: number): void => {
   const servicoId = novoValor || formularioServicoAdicional.value.servicoId
   const servicoSelecionado = servicosAdicionaisDisponiveis.value.find(s => s.id === servicoId)
+
   if (servicoSelecionado) {
     formularioServicoAdicional.value.servicoId = servicoId
     formularioServicoAdicional.value.servicoNome = servicoSelecionado.nome
     formularioServicoAdicional.value.valorOriginal = servicoSelecionado.valor
     formularioServicoAdicional.value.valorUnitario = servicoSelecionado.valor
     formularioServicoAdicional.value.alterarValor = false
-
-    console.log('✅ Serviço selecionado:', servicoSelecionado.nome, 'Valor:', servicoSelecionado.valor)
   }
 }
 

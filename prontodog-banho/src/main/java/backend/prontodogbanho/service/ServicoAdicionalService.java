@@ -64,10 +64,18 @@ public class ServicoAdicionalService {
         System.out.println("  - Status do pai: " + animalServico.getStatusPagamento());
         System.out.println("  - Data do pai: " + animalServico.getDataPagamento());
 
-        servicoAdicional.setStatusPagamento(animalServico.getStatusPagamento());
+        // ⚠️ IMPORTANTE: Se o status do pai for 'cancelado', não herdar!
+        // Novos serviços adicionais devem começar com 'em_aberto' ou o status da venda
+        String statusParaUsar = animalServico.getStatusPagamento();
+        if ("cancelado".equals(statusParaUsar)) {
+            statusParaUsar = "em_aberto";
+            System.out.println("⚠️ Status do pai é 'cancelado', usando 'em_aberto' para o adicional");
+        }
+
+        servicoAdicional.setStatusPagamento(statusParaUsar);
         servicoAdicional.setDataPagamento(animalServico.getDataPagamento());
 
-        System.out.println("✅ Status e data herdados com sucesso!");
+        System.out.println("✅ Status definido: " + statusParaUsar);
 
         // 🎯 HERDAR OU DEFINIR DATA DE REALIZAÇÃO
         // Se o DTO tiver dataRealizacao, usa ela; senão, herda do pai (dataServico)

@@ -15,6 +15,12 @@ public interface VendaItemRepository extends JpaRepository<VendaItem, Long> {
     // Buscar itens de uma venda
     List<VendaItem> findByVenda_Id(Long vendaId);
 
+    // Buscar itens de uma venda com AnimalServico carregado
+    @Query("SELECT DISTINCT vi FROM VendaItem vi " +
+           "LEFT JOIN FETCH vi.animalServico " +
+           "WHERE vi.venda.id = :vendaId")
+    List<VendaItem> findByVendaIdWithAnimalServico(@Param("vendaId") Long vendaId);
+
     // Buscar item por animal_servico
     Optional<VendaItem> findByAnimalServico_Id(Long animalServicoId);
 
