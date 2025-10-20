@@ -396,17 +396,17 @@
                       <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
                         <!-- 🎯 Badge de Status para SERVIÇOS ÚNICOS -->
                         <div v-if="isServicoUnico(animalServico)"
-                          class="px-3 py-1 rounded-lg text-sm font-medium shadow-sm border-2 transition-all duration-300"
+                          class="px-2 py-1 rounded-lg text-sm font-medium shadow-sm border-2 transition-all duration-300"
                           :class="{
-                            'bg-green-50 border-green-300 text-green-700': getStatusServicoUnico(animalServico) === 'realizado',
-                            'bg-gray-50 border-gray-300 text-gray-700': getStatusServicoUnico(animalServico) === 'pendente'
+                            'bg-green-50 border-green-200 text-green-700': getStatusServicoUnico(animalServico) === 'realizado',
+                            'bg-gray-50 border-gray-200 text-gray-700': getStatusServicoUnico(animalServico) === 'pendente'
                           }"
                         >
                           <FontAwesomeIcon
                             :icon="getStatusServicoUnico(animalServico) === 'realizado' ? 'check-circle' : 'clock'"
-                            class="mr-2 opacity-70"
+                            class="opacity-70"
                           />
-                          {{ getStatusServicoUnico(animalServico) === 'realizado' ? '✅ REALIZADO' : '⏳ PENDENTE' }}
+                          {{ getStatusServicoUnico(animalServico) === 'realizado' ? 'Realizado' : '⏳ Pendente' }}
                         </div>
 
                         <!-- 📦 Badge de Status para PACOTES (mantém original) -->
@@ -464,7 +464,7 @@
                             ⏰ {{ getDaysUntilExpiration(animalServico) }}d restantes
                           </span>
                           <span v-else>
-                            ✅ {{ getDaysUntilExpiration(animalServico) }}d restantes
+                            {{ getDaysUntilExpiration(animalServico) }}d restantes
                           </span>
                         </div>
 
@@ -566,7 +566,7 @@
 
                   <!-- 🚀 Ações Rápidas -->
                   <div class="flex items-center gap-2">
-                    <!-- 🎯 Botão para SERVIÇOS ÚNICOS - Marcar como Realizado -->
+                    <!-- 🎯 Botão para SERVIÇOS ÚNICOS - Marcar como Realizado (quando PENDENTE) -->
                     <button
                       v-if="isServicoUnico(animalServico) && getStatusServicoUnico(animalServico) === 'pendente'"
                       @click.stop="abrirModalBanhoRapido(animalServico)"
@@ -575,6 +575,17 @@
                     >
                       <FontAwesomeIcon :icon="['fas', 'check']" class="text-sm" />
                       <span class="text-xs font-bold hidden sm:inline">Realizado</span>
+                    </button>
+
+                    <!-- 🔄 Botão para SERVIÇOS ÚNICOS - Marcar como Pendente (quando REALIZADO) -->
+                    <button
+                      v-if="isServicoUnico(animalServico) && getStatusServicoUnico(animalServico) === 'realizado'"
+                      @click.stop="marcarServicoUnicoComoPendente(animalServico)"
+                      class="group/btn flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+                      title="Marcar como pendente"
+                    >
+                      <FontAwesomeIcon :icon="['fas', 'undo']" class="text-sm" />
+                      <span class="text-xs font-bold hidden sm:inline">Pendente</span>
                     </button>
 
                     <!-- 📦 Botão para PACOTES - Registrar Banho (mantém original) -->
@@ -749,7 +760,7 @@
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
               <FontAwesomeIcon :icon="['fas', 'calendar-alt']" class="mr-2 text-blue-600" />
-              Data do Banho *
+              Data do Serviço*
             </label>
             <input
               v-model="formularioBanho.dataBanho"
@@ -1271,8 +1282,7 @@ const isServicoUnico = (animalServico: AnimalServico): boolean => {
 }
 
 const getStatusServicoUnico = (animalServico: AnimalServico): 'realizado' | 'pendente' => {
-  // Para serviços únicos, consideramos "realizado" se banhosUsados >= 1
-  return animalServico.banhosUsados >= 1 ? 'realizado' : 'pendente'
+    return animalServico.statusServico as 'realizado' | 'pendente'
 }
 
 // 🔧 Funções auxiliares - Busca reversa devido ao @JsonBackReference
@@ -1505,8 +1515,76 @@ const toggleMenuAcoes = (animalServicoId: number): void => {
 
 const abrirModalBanhoRapido = (animalServico: AnimalServico): void => {
   console.log('🚀 Abrindo modal rápido para registrar banho:', animalServico)
-  abrirModalBanho(animalServico)
+  
+  // 🎯 Para serviços únicos, apenas atualizar o status (sem registrar banho individual)
+  if (isServicoUnico(animalServico)) {
+    marcarServicoUnicoComoRealizado(animalServico)
+  } else {
+    // 📦 Para pacotes, abrir modal de registro de banho individual
+    abrirModalBanho(animalServico)
+  }
+  
   menuAcoesAberto.value = null
+}
+
+// 🎯 Marcar serviço único como realizado (sem criar banho individual)
+const marcarServicoUnicoComoRealizado = async (animalServico: AnimalServico): Promise<void> => {
+  try {
+    loading.value = true
+
+    const dataAtual = new Date().toISOString().split('T')[0]
+
+    console.log(`✅ Marcando serviço único ${animalServico.id} como realizado...`)
+    
+    // Atualizar o serviço com statusServico = 'realizado' e dataRealizacao = hoje
+    await animalServicoService.atualizar(animalServico.id, {
+      statusServico: 'realizado',
+      dataRealizacao: dataAtual
+    })
+
+    // Atualizar o item na lista localmente
+    const index = animalServicos.value.findIndex(as => as.id === animalServico.id)
+    if (index !== -1 && animalServicos.value[index]) {
+      animalServicos.value[index].statusServico = 'realizado'
+      animalServicos.value[index].dataRealizacao = dataAtual
+    }
+
+    console.log('✅ Serviço único marcado como REALIZADO com sucesso!')
+  } catch (error) {
+    console.error('❌ Erro ao marcar serviço único como realizado:', error)
+    alert('Erro ao marcar como realizado. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 🔄 Marcar serviço único como pendente
+const marcarServicoUnicoComoPendente = async (animalServico: AnimalServico): Promise<void> => {
+  try {
+    loading.value = true
+
+    console.log(`⏳ Marcando serviço único ${animalServico.id} como pendente...`)
+    
+    // Atualizar o serviço com statusServico = 'pendente' e limpar dataRealizacao
+    await animalServicoService.atualizar(animalServico.id, {
+      statusServico: 'pendente',
+      dataRealizacao: null
+    })
+
+    // Atualizar o item na lista localmente
+    const index = animalServicos.value.findIndex(as => as.id === animalServico.id)
+    if (index !== -1 && animalServicos.value[index]) {
+      animalServicos.value[index].statusServico = 'pendente'
+      animalServicos.value[index].dataRealizacao = undefined
+    }
+
+    console.log('⏳ Serviço único marcado como PENDENTE com sucesso!')
+  } catch (error) {
+    console.error('❌ Erro ao marcar serviço único como pendente:', error)
+    alert('Erro ao marcar como pendente. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
 }
 
 const editarExpiracao = (animalServico: AnimalServico): void => {

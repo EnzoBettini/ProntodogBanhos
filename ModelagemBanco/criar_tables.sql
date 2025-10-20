@@ -103,3 +103,6 @@ ADD COLUMN status_pagamento VARCHAR(20) DEFAULT 'em_aberto' NOT NULL CHECK (
 
 ALTER TABLE banhoetosa.animal_servico
 ADD COLUMN data_pagamento DATE;
+
+INSERT INTO banhoetosa.usuarios (nome, email, senha, role)
+VALUES ('Admin Sistema', 'admin@prontodog.com', 'senha123', 'ADMIN');

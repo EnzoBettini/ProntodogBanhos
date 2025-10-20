@@ -36,6 +36,8 @@ export interface AnimalServico {
   statusPagamento: string // "pago", "em_aberto", "cancelado"
   dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
   valorTotalServico?: number // Valor total do serviço principal (novo campo)
+  dataRealizacao?: string | null // formato: "YYYY-MM-DD" (opcional) - Data em que o serviço foi realizado
+  statusServico?: string // "pendente", "realizado" - Status do serviço único
   animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)
   servicoId?: number   // ID do serviço (não vem o objeto completo devido ao @JsonBackReference)
   usuarioId?: number   // ID do usuário (não vem o objeto completo devido ao @JsonBackReference)
