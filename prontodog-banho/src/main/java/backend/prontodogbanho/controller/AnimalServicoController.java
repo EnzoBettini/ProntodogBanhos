@@ -29,6 +29,13 @@ public class AnimalServicoController {
     @GetMapping("/{id}")
     public ResponseEntity<AnimalServico> buscaPorId(@PathVariable Long id) {
         Optional<AnimalServico> animalServicoOptional = this.animalServicoService.buscarPorId(id);
+
+        if (animalServicoOptional.isPresent()) {
+            AnimalServico as = animalServicoOptional.get();
+            System.out.println("📋 AnimalServico #" + id + " - valorCobrado: " + as.getValorCobrado() +
+                             " | valorTotalServico: " + as.getValorTotalServico());
+        }
+
         return animalServicoOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -70,9 +77,16 @@ public class AnimalServicoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removerSerivco(@PathVariable Long id) {
-        this.animalServicoService.deletar(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> removerSerivco(@PathVariable Long id) {
+        try {
+            this.animalServicoService.deletar(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            // Retorna a mensagem de erro de forma estruturada para o frontend
+            return ResponseEntity
+                .badRequest()
+                .body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")

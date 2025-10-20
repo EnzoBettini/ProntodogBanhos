@@ -62,70 +62,6 @@
               {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
             </BaseBadge>
 
-
-            <!-- Menu de Ações de Pagamento -->
-            <div class="relative">
-              <BaseButton
-                @click="mostrarMenuPagamento = !mostrarMenuPagamento"
-                variant="secondary"
-                class="flex items-center gap-2"
-              >
-                <FontAwesomeIcon :icon="['fas', 'dollar-sign']" />
-                <span class="hidden sm:inline">Pagamento</span>
-                <FontAwesomeIcon :icon="['fas', 'chevron-down']" class="text-xs" />
-              </BaseButton>
-
-              <!-- Dropdown de Pagamento -->
-              <div
-                v-if="mostrarMenuPagamento"
-                class="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
-                @click.stop
-              >
-                <div class="px-4 py-2 border-b border-gray-100">
-                  <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Alterar Status</p>
-                </div>
-
-                <!-- Marcar como Pago -->
-                <button
-                  v-if="animalServico.statusPagamento !== 'pago'"
-                  @click="alterarStatusPagamento('pago')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-emerald-500" />
-                  <div>
-                    <p class="font-medium">Marcar como Pago</p>
-                    <p class="text-xs text-gray-500">Define data de pagamento para hoje</p>
-                  </div>
-                </button>
-
-                <!-- Marcar como Em Aberto -->
-                <button
-                  v-if="animalServico.statusPagamento !== 'em_aberto'"
-                  @click="alterarStatusPagamento('em_aberto')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-3"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-500" />
-                  <div>
-                    <p class="font-medium">Marcar como Em Aberto</p>
-                    <p class="text-xs text-gray-500">Remove data de pagamento</p>
-                  </div>
-                </button>
-
-                <!-- Marcar como Cancelado -->
-                <button
-                  v-if="animalServico.statusPagamento !== 'cancelado'"
-                  @click="alterarStatusPagamento('cancelado')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
-                >
-                  <FontAwesomeIcon :icon="['fas', 'times-circle']" class="text-red-500" />
-                  <div>
-                    <p class="font-medium">Marcar como Cancelado</p>
-                    <p class="text-xs text-gray-500">Cancela o pagamento</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-
             <!-- Botão Excluir -->
             <BaseButton
               @click="confirmarExclusaoAnimalServico"
@@ -515,6 +451,45 @@
                 </div>
               </div>
 
+              <!-- 🧾 Venda Relacionada -->
+              <div v-if="animalServico?.vendaId" class="p-5 rounded-xl border-2 bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 border-indigo-300 shadow-md hover:shadow-lg transition-all duration-300">
+                <div class="flex flex-col gap-4">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-start gap-3 flex-1">
+                      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                        <FontAwesomeIcon :icon="['fas', 'receipt']" class="text-white text-lg" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium text-indigo-600 uppercase tracking-wide mb-1">Venda Relacionada</p>
+                        <p class="text-2xl font-bold text-indigo-900 mb-1">Venda #{{ animalServico?.vendaId }}</p>
+                        <p class="text-sm text-indigo-700">Este serviço faz parte de uma venda</p>
+                      </div>
+                    </div>
+
+                    <router-link
+                      :to="`/vendas/${animalServico?.vendaId}`"
+                      class="px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2.5 whitespace-nowrap flex-shrink-0"
+                      title="Ver detalhes completos da venda"
+                    >
+                      <FontAwesomeIcon :icon="['fas', 'arrow-right']" class="text-sm" />
+                      <span>Ver Venda</span>
+                      <FontAwesomeIcon :icon="['fas', 'external-link-alt']" class="text-xs" />
+                    </router-link>
+                  </div>
+
+                  <!-- Aviso sobre controle de pagamento -->
+                  <div v-if="animalServico?.statusPagamento !== 'pago'" class="p-3.5 bg-gradient-to-r from-indigo-100/70 to-purple-100/70 rounded-lg border-2 border-indigo-200">
+                    <div class="flex items-start gap-2.5">
+                      <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-indigo-600 mt-0.5 flex-shrink-0" />
+                      <p class="text-sm text-indigo-800 leading-relaxed">
+                        <strong class="font-semibold">Importante:</strong> O pagamento deste serviço deve ser gerenciado através da venda.
+                        Não é possível marcar como pago individualmente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Data de Expiração (movido para cá) -->
               <div v-if="animalServico?.dataExpiracao" class="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200"
                    :class="{
@@ -704,9 +679,12 @@
                 </div>
                 <div class="text-right">
                   <p class="text-2xl font-bold text-indigo-600">
-                    R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}
+                    R$ {{ (animalServico?.valorTotalServico || servico?.valor || 0).toFixed(2).replace('.', ',') }}
                   </p>
                   <p class="text-sm text-gray-500">Serviço Principal</p>
+                  <p v-if="animalServico?.valorCobrado && servico?.valor !== animalServico?.valorCobrado" class="text-xs text-gray-500 line-through">
+                    Valor catálogo: R$ {{ (servico?.valor || 0).toFixed(2).replace('.', ',') }}
+                  </p>
                 </div>
               </div>
 
@@ -1454,7 +1432,17 @@ const podeAdicionarBanho = computed(() => {
 })
 
 // Computadas para valores dos serviços
-const valorTotalPrincipal = computed(() => servico.value?.valor || 0)
+const valorTotalPrincipal = computed(() => {
+  const valor = animalServico.value?.valorTotalServico || servico.value?.valor || 0
+  console.log('💰 valorTotalPrincipal:', {
+    animalServicoId: animalServico.value?.id,
+    valorTotalServico: animalServico.value?.valorTotalServico,
+    valorCobrado: animalServico.value?.valorCobrado,
+    servicoValor: servico.value?.valor,
+    valorFinal: valor
+  })
+  return valor
+})
 
 const valorTotalGeral = computed(() => {
   return valorTotalPrincipal.value + valorTotalAdicionais.value
@@ -2362,9 +2350,13 @@ const excluirAnimalServico = async (): Promise<void> => {
     // Redirecionar para lista
     voltarParaLista()
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('❌ Erro ao excluir animal serviço:', err)
-    alert(`❌ Erro ao excluir animal serviço: ${err instanceof Error ? err.message : 'Erro desconhecido'}\n\nTente novamente.`)
+
+    // apiHelpers já extraiu a mensagem do backend
+    const mensagem = err?.message || 'Erro desconhecido ao excluir serviço'
+
+    alert(`❌ Não foi possível excluir este serviço\n\n${mensagem}`)
   } finally {
     loading.value = false
   }

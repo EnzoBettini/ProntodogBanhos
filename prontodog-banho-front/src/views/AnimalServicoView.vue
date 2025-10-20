@@ -307,9 +307,9 @@
         </BaseCard>
 
         <!-- 📊 Lista elegante de animal serviços -->
-        <div ref="listaAnimalServicosRef" class="space-y-4">
+        <div ref="listaAnimalServicosRef" class="space-y-4 mb-4">
           <div
-            v-for="(animalServico, index) in animalServicosFiltrados"
+            v-for="(animalServico, index) in animalServicosPaginados"
             :key="animalServico.id"
             class="group relative rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-200 hover:-translate-y-1 animate-fade-in overflow-hidden border-2"
             :class="{
@@ -483,6 +483,24 @@
                           />
                           {{ getStatusPagamentoTexto(animalServico.statusPagamento) }}
                         </div>
+
+                        <!-- 🧾 Badge de Venda Relacionada -->
+                        <router-link
+                          v-if="animalServico.vendaId"
+                          :to="`/vendas/${animalServico.vendaId}`"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm border transition-all duration-300 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-300 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 hover:border-indigo-400 hover:shadow-lg hover:scale-105 flex items-center gap-1.5 whitespace-nowrap"
+                          title="Clique para ver a venda completa"
+                        >
+                          <FontAwesomeIcon
+                            :icon="['fas', 'receipt']"
+                            class="text-sm"
+                          />
+                          <span>Venda #{{ animalServico.vendaId }}</span>
+                          <FontAwesomeIcon
+                            :icon="['fas', 'external-link-alt']"
+                            class="text-[10px] opacity-60"
+                          />
+                        </router-link>
                       </div>
                     </div>
 
@@ -643,42 +661,6 @@
                             Duplicar Serviço
                           </button>
 
-                          <!-- Opções de Pagamento -->
-                          <hr class="my-1 border-gray-100">
-                          <div class="px-3 py-1">
-                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pagamento</p>
-                          </div>
-
-                          <!-- Marcar como Pago -->
-                          <button
-                            v-if="animalServico.statusPagamento !== 'pago'"
-                            @click="marcarComoPago(animalServico)"
-                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3"
-                          >
-                            <FontAwesomeIcon :icon="['fas', 'check-circle']" class="text-emerald-500" />
-                            Marcar como Pago
-                          </button>
-
-                          <!-- Marcar como Em Aberto -->
-                          <button
-                            v-if="animalServico.statusPagamento !== 'em_aberto'"
-                            @click="marcarComoEmAberto(animalServico)"
-                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-3"
-                          >
-                            <FontAwesomeIcon :icon="['fas', 'clock']" class="text-orange-500" />
-                            Marcar como Em Aberto
-                          </button>
-
-                          <!-- Marcar como Cancelado -->
-                          <button
-                            v-if="animalServico.statusPagamento !== 'cancelado'"
-                            @click="marcarComoCancelado(animalServico)"
-                            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-3"
-                          >
-                            <FontAwesomeIcon :icon="['fas', 'times-circle']" class="text-red-500" />
-                            Marcar como Cancelado
-                          </button>
-
                           <hr class="my-1 border-gray-100">
 
                         <!-- Excluir -->
@@ -698,41 +680,55 @@
           </div>
         </div>
 
-        <!-- 📄 Botão "Carregar Mais" com informações detalhadas -->
-        <div v-if="temMaisItens" class="text-center mt-8">
-          <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 max-w-md mx-auto">
-            <div class="mb-4">
-              <p class="text-gray-600 text-sm mb-2">
-                Mostrando <span class="font-semibold text-blue-600">{{ animalServicosFiltrados.length }}</span>
-                de <span class="font-semibold text-gray-800">{{ totalItensDisponiveis }}</span> registros
-              </p>
-              <div class="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  class="bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500"
-                  :style="{ width: `${(animalServicosFiltrados.length / totalItensDisponiveis) * 100}%` }"
-                ></div>
-              </div>
+        <!-- Paginação -->
+        <BaseCard v-if="totalPaginas > 1" class="shadow-lg border-0 bg-white">
+          <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Info da paginação -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <FontAwesomeIcon icon="list" class="text-orange-500" />
+              <span>
+                Mostrando
+                <strong class="text-orange-600">{{ indicePrimeiroItem }}</strong> -
+                <strong class="text-orange-600">{{ indiceUltimoItem }}</strong>
+                de
+                <strong class="text-orange-600">{{ animalServicosFiltrados.length }}</strong>
+                serviços
+              </span>
             </div>
-            <BaseButton
-              @click="carregarMaisItens"
-              variant="primary"
-              class="px-8 py-3 text-lg w-full"
-              :disabled="loading"
-            >
-              <FontAwesomeIcon
-                v-if="loading"
-                :icon="['fas', 'spinner']"
-                class="mr-2 animate-spin"
-              />
-              <FontAwesomeIcon
-                v-else
-                :icon="['fas', 'plus-circle']"
-                class="mr-2"
-              />
-              {{ loading ? 'Carregando...' : `Carregar mais ${proximosItens} ${proximosItens === 1 ? 'registro' : 'registros'}` }}
-            </BaseButton>
+
+            <!-- Controles de paginação -->
+            <div class="flex items-center gap-2">
+              <button @click="paginaAtual = 1" :disabled="paginaAtual === 1" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50" :class="paginaAtual === 1 ? 'text-gray-400' : 'text-orange-600 hover:text-orange-700'">
+                <FontAwesomeIcon icon="angle-double-left" />
+              </button>
+              <button @click="paginaAtual--" :disabled="paginaAtual === 1" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50" :class="paginaAtual === 1 ? 'text-gray-400' : 'text-orange-600 hover:text-orange-700'">
+                <FontAwesomeIcon icon="chevron-left" class="mr-1" />
+                <span class="hidden sm:inline">Anterior</span>
+              </button>
+              <div class="flex items-center gap-1">
+                <button v-for="pagina in paginasVisiveis" :key="pagina" @click="paginaAtual = pagina" class="w-10 h-10 rounded-lg font-medium transition-all duration-200" :class="paginaAtual === pagina ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'">
+                  {{ pagina }}
+                </button>
+              </div>
+              <button @click="paginaAtual++" :disabled="paginaAtual === totalPaginas" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50" :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-orange-600 hover:text-orange-700'">
+                <span class="hidden sm:inline">Próxima</span>
+                <FontAwesomeIcon icon="chevron-right" class="ml-1" />
+              </button>
+              <button @click="paginaAtual = totalPaginas" :disabled="paginaAtual === totalPaginas" class="px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50" :class="paginaAtual === totalPaginas ? 'text-gray-400' : 'text-orange-600 hover:text-orange-700'">
+                <FontAwesomeIcon icon="angle-double-right" />
+              </button>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">Itens por página:</span>
+              <select v-model="itensPorPagina" @change="paginaAtual = 1" class="px-3 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-700 bg-white">
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
           </div>
-        </div>
+        </BaseCard>
       </div>
     </div>
 
@@ -985,7 +981,7 @@ const menuAcoesAberto = ref<number | null>(null)
 const filtroTexto = ref('')
 const filtroExpiracao = ref('todos') // 'todos', 'vencidos', 'vencendo', 'validos', 'sem-expiracao'
 const itensPorPagina = ref(10)
-const itensExibidos = ref(10)
+const paginaAtual = ref(1)
 
 // 🗓️ Funções para determinar status de expiração (apenas para pacotes)
 const getExpirationStatus = (animalServico: AnimalServico): 'vencido' | 'vencendo' | 'valido' | 'sem-expiracao' => {
@@ -1113,57 +1109,59 @@ const animalServicosFiltrados = computed(() => {
 
       return clienteNome.includes(termoBuscaLower)
     }
-  }).slice(0, itensExibidos.value)
+  })
 })
 
-// 📊 Controle de paginação
-const totalItensDisponiveis = computed(() => {
-  return animalServicos.value.filter(animalServico => {
-    // 🗓️ FILTRO DE EXPIRAÇÃO
-    if (filtroExpiracao.value !== 'todos') {
-      const status = getExpirationStatus(animalServico)
-      if (filtroExpiracao.value === 'vencidos' && status !== 'vencido') return false
-      if (filtroExpiracao.value === 'vencendo' && status !== 'vencendo') return false
-      if (filtroExpiracao.value === 'validos' && status !== 'valido') return false
-      if (filtroExpiracao.value === 'sem-expiracao' && status !== 'sem-expiracao') return false
+// Computed properties para paginação
+const totalPaginas = computed(() => {
+  return Math.ceil(animalServicosFiltrados.value.length / itensPorPagina.value)
+})
+
+const indicePrimeiroItem = computed(() => {
+  return (paginaAtual.value - 1) * itensPorPagina.value + 1
+})
+
+const indiceUltimoItem = computed(() => {
+  const ultimo = paginaAtual.value * itensPorPagina.value
+  return ultimo > animalServicosFiltrados.value.length ? animalServicosFiltrados.value.length : ultimo
+})
+
+const animalServicosPaginados = computed(() => {
+  const inicio = (paginaAtual.value - 1) * itensPorPagina.value
+  const fim = inicio + itensPorPagina.value
+  return animalServicosFiltrados.value.slice(inicio, fim)
+})
+
+const paginasVisiveis = computed(() => {
+  const total = totalPaginas.value
+  const atual = paginaAtual.value
+  const paginas: number[] = []
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      paginas.push(i)
     }
-
-    // 🔍 FILTRO DE TEXTO
-    if (!filtroTexto.value) return true
-
-    const termoBusca = filtroTexto.value.trim()
-
-    if (termoBusca.startsWith('#')) {
-      const idBusca = termoBusca.substring(1)
-      if (idBusca) {
-        return animalServico.id.toString().includes(idBusca)
-      } else {
-        return true
+  } else {
+    if (atual <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        paginas.push(i)
       }
-    } else if (termoBusca.startsWith('@')) {
-      const animalBusca = termoBusca.substring(1)
-      if (animalBusca) {
-        const animalNome = getAnimalNome(animalServico).toLowerCase()
-        return animalNome.includes(animalBusca.toLowerCase())
-      } else {
-        return true
-      }
-    } else if (termoBusca.startsWith('%')) {
-      const servicoBusca = termoBusca.substring(1)
-      if (servicoBusca) {
-        const servicoNome = getServicoNome(animalServico).toLowerCase()
-        const servicoDescricao = getServicoDescricao(animalServico).toLowerCase()
-        return servicoNome.includes(servicoBusca.toLowerCase()) ||
-               servicoDescricao.includes(servicoBusca.toLowerCase())
-      } else {
-        return true
+      paginas.push(total)
+    } else if (atual >= total - 3) {
+      paginas.push(1)
+      for (let i = total - 4; i <= total; i++) {
+        paginas.push(i)
       }
     } else {
-      const termoBuscaLower = termoBusca.toLowerCase()
-      const clienteNome = getClienteNome(animalServico).toLowerCase()
-      return clienteNome.includes(termoBuscaLower)
+      paginas.push(1)
+      for (let i = atual - 1; i <= atual + 1; i++) {
+        paginas.push(i)
+      }
+      paginas.push(total)
     }
-  }).length
+  }
+
+  return paginas
 })
 
 // 📊 Contadores por status de expiração
@@ -1195,15 +1193,6 @@ const contadoresExpiracao = computed(() => {
   })
 
   return contadores
-})
-
-const temMaisItens = computed(() => {
-  return totalItensDisponiveis.value > itensExibidos.value
-})
-
-const proximosItens = computed(() => {
-  const restantes = totalItensDisponiveis.value - itensExibidos.value
-  return Math.min(restantes, itensPorPagina.value)
 })
 
 // 🎯 Informações sobre o filtro ativo
@@ -1429,9 +1418,13 @@ const excluirAnimalServico = async (animalServico: AnimalServico): Promise<void>
     // Recarregar dados para garantir consistência
     await carregarAnimalServicos()
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erro ao excluir animal serviço:', error)
-    alert(`❌ Erro ao excluir animal serviço: ${error instanceof Error ? error.message : 'Erro desconhecido'}\n\nTente novamente.`)
+
+    // apiHelpers já extraiu a mensagem do backend
+    const mensagem = error?.message || 'Erro desconhecido ao excluir serviço'
+
+    alert(`❌ Não foi possível excluir este serviço\n\n${mensagem}`)
   } finally {
     loading.value = false
   }
@@ -1525,6 +1518,10 @@ const carregarValoresAdicionais = async (): Promise<void> => {
 const carregarMaisItens = (): void => {
   itensExibidos.value += itensPorPagina.value
 }
+// 👀 Watchers para resetar paginação quando filtros mudam
+watch([filtroTexto, filtroExpiracao], () => {
+  paginaAtual.value = 1
+})
 
 // 👁️ Navegação para detalhes
 const verDetalhesAnimalServico = (animalServico: AnimalServico): void => {
@@ -1771,11 +1768,6 @@ const salvarBanhoIndividual = async (): Promise<void> => {
 }
 
 // 👀 Watchers
-// Resetar paginação quando filtro mudar
-watch(filtroTexto, () => {
-  itensExibidos.value = itensPorPagina.value
-})
-
 // Fechar menus quando clicar fora
 const fecharMenus = (): void => {
   menuAcoesAberto.value = null

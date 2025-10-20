@@ -703,6 +703,269 @@ export const servicosAdicionaisService = {
   }
 }
 
+// 💰 SERVIÇOS DE VENDAS
+// Aqui ficam todos os métodos relacionados ao sistema de vendas
+export const vendasService = {
+
+  // 📖 BUSCAR TODAS AS VENDAS
+  async buscarTodas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🛒 Buscando todas as vendas...')
+      const response = await api.get('/api/vendas')
+      devLog(`✅ ${response.data.length} vendas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar a lista de vendas.')
+  },
+
+  // 🔍 BUSCAR VENDA POR ID
+  async buscarPorId(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando venda com ID ${id}...`)
+      const response = await api.get(`/api/vendas/${id}`)
+      devLog('✅ Venda encontrada!')
+      return response.data
+    }, 'Não foi possível buscar os dados da venda.')
+  },
+
+  // 🔍 BUSCAR VENDA POR CÓDIGO
+  async buscarPorCodigo(codigoVenda: number): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando venda com código ${codigoVenda}...`)
+      const response = await api.get(`/api/vendas/codigo/${codigoVenda}`)
+      devLog('✅ Venda encontrada!')
+      return response.data
+    }, 'Não foi possível buscar a venda pelo código.')
+  },
+
+  // 📋 BUSCAR VENDAS DE UM CLIENTE
+  async buscarPorCliente(clienteId: number): Promise<any[]> {
+    validateId(clienteId)
+    return withErrorHandling(async () => {
+      devLog(`📋 Buscando vendas do cliente ${clienteId}...`)
+      const response = await api.get(`/api/vendas/cliente/${clienteId}`)
+      devLog(`✅ ${response.data.length} vendas encontradas!`)
+      return response.data
+    }, 'Não foi possível buscar as vendas do cliente.')
+  },
+
+  // 📊 BUSCAR VENDAS POR STATUS
+  async buscarPorStatus(status: string): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog(`📊 Buscando vendas com status ${status}...`)
+      const response = await api.get(`/api/vendas/status/${status}`)
+      devLog(`✅ ${response.data.length} vendas encontradas!`)
+      return response.data
+    }, 'Não foi possível buscar as vendas por status.')
+  },
+
+  // 💾 CRIAR NOVA VENDA
+  async criar(venda: any): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('💾 Criando nova venda...', venda)
+      const response = await api.post('/api/vendas', venda)
+      devLog('✅ Venda criada com sucesso! Código:', response.data.codigoVenda)
+      return response.data
+    }, 'Não foi possível criar a venda. Tente novamente.')
+  },
+
+  // ✏️ ATUALIZAR VENDA
+  async atualizar(id: number, dados: any): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando venda ${id}...`, dados)
+      const response = await api.put(`/api/vendas/${id}`, dados)
+      devLog('✅ Venda atualizada com sucesso!')
+      return response.data
+    }, 'Não foi possível atualizar a venda.')
+  },
+
+  // ❌ CANCELAR VENDA
+  async cancelar(id: number, motivo: string): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`❌ Cancelando venda ${id}...`)
+      const response = await api.put(`/api/vendas/${id}/cancelar`, { motivoCancelamento: motivo })
+      devLog('✅ Venda cancelada!')
+      return response.data
+    }, 'Não foi possível cancelar a venda.')
+  },
+
+  // DELETE /api/vendas/{id} - Excluir venda permanentemente
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo venda ${id}...`)
+      await api.delete(`/api/vendas/${id}`)
+      devLog('✅ Venda excluída!')
+    }, 'Não foi possível excluir a venda.')
+  },
+
+  // ➕ ADICIONAR ITEM NA VENDA (AnimalServico existente)
+  async adicionarItem(vendaId: number, animalServicoId: number): Promise<any> {
+    validateId(vendaId)
+    validateId(animalServicoId)
+    return withErrorHandling(async () => {
+      devLog(`➕ Adicionando item à venda ${vendaId}...`)
+      const response = await api.post(`/api/vendas/${vendaId}/itens/${animalServicoId}`)
+      devLog('✅ Item adicionado!')
+      return response.data
+    }, 'Não foi possível adicionar o item à venda.')
+  },
+
+  // ➕ ADICIONAR NOVO ITEM NA VENDA (criar AnimalServico na hora)
+  async adicionarItemNovo(vendaId: number, novoItem: { animalId: number, servicoId: number, valorItem?: number, descontoItem?: number }): Promise<any> {
+    validateId(vendaId)
+    return withErrorHandling(async () => {
+      devLog(`➕ Adicionando novo item à venda ${vendaId}...`, novoItem)
+      const response = await api.post(`/api/vendas/${vendaId}/itens`, novoItem)
+      devLog('✅ Novo item adicionado!')
+      return response.data
+    }, 'Não foi possível adicionar o novo item à venda.')
+  },
+
+  // 🗑️ REMOVER ITEM DA VENDA
+  async removerItem(vendaId: number, itemId: number): Promise<any> {
+    validateId(vendaId)
+    validateId(itemId)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Removendo item ${itemId} da venda ${vendaId}...`)
+      const response = await api.delete(`/api/vendas/${vendaId}/itens/${itemId}`)
+      devLog('✅ Item removido!')
+      return response.data
+    }, 'Não foi possível remover o item da venda.')
+  },
+
+  // 💰 REGISTRAR PAGAMENTO (BAIXA)
+  async registrarBaixa(baixa: any): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('💰 Registrando pagamento...', baixa)
+      const response = await api.post('/api/vendas/baixas', baixa)
+      devLog('✅ Pagamento registrado com sucesso!')
+      return response.data
+    }, 'Não foi possível registrar o pagamento.')
+  },
+
+  // 🗑️ REMOVER BAIXA (PAGAMENTO)
+  async removerBaixa(vendaId: number, baixaId: number): Promise<any> {
+    validateId(vendaId)
+    validateId(baixaId)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Removendo baixa ${baixaId} da venda ${vendaId}...`)
+      const response = await api.delete(`/api/vendas/${vendaId}/baixas/${baixaId}`)
+      devLog('✅ Baixa removida!')
+      return response.data
+    }, 'Não foi possível remover a baixa.')
+  }
+}
+
+// 💳 SERVIÇOS DE FORMAS DE PAGAMENTO
+// Aqui ficam todos os métodos relacionados às formas de pagamento
+export const formasPagamentoService = {
+
+  // 📖 BUSCAR TODAS AS FORMAS DE PAGAMENTO
+  async buscarTodas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('💳 Buscando todas as formas de pagamento...')
+      const response = await api.get('/api/formas-pagamento')
+      devLog(`✅ ${response.data.length} formas de pagamento encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as formas de pagamento.')
+  },
+
+  // 📖 BUSCAR APENAS FORMAS ATIVAS
+  async buscarAtivas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('💳 Buscando formas de pagamento ativas...')
+      const response = await api.get('/api/formas-pagamento/ativas')
+      devLog(`✅ ${response.data.length} formas ativas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as formas de pagamento ativas.')
+  },
+
+  // 🔍 BUSCAR FORMA POR ID
+  async buscarPorId(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando forma de pagamento com ID ${id}...`)
+      const response = await api.get(`/api/formas-pagamento/${id}`)
+      devLog('✅ Forma de pagamento encontrada!')
+      return response.data
+    }, 'Não foi possível buscar a forma de pagamento.')
+  },
+
+  // 📊 BUSCAR POR TIPO
+  async buscarPorTipo(tipo: string): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog(`📊 Buscando formas de pagamento do tipo ${tipo}...`)
+      const response = await api.get(`/api/formas-pagamento/tipo/${tipo}`)
+      devLog(`✅ ${response.data.length} formas encontradas!`)
+      return response.data
+    }, 'Não foi possível buscar formas por tipo.')
+  },
+
+  // 📊 BUSCAR FORMAS COM PARCELAMENTO
+  async buscarComParcelamento(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('📊 Buscando formas com parcelamento...')
+      const response = await api.get('/api/formas-pagamento/parcelamento')
+      devLog(`✅ ${response.data.length} formas com parcelamento encontradas!`)
+      return response.data
+    }, 'Não foi possível buscar formas com parcelamento.')
+  },
+
+  // 💾 CRIAR NOVA FORMA DE PAGAMENTO
+  async criar(forma: any): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('💾 Criando nova forma de pagamento...', forma)
+      const response = await api.post('/api/formas-pagamento', forma)
+      devLog('✅ Forma de pagamento criada!')
+      return response.data
+    }, 'Não foi possível criar a forma de pagamento.')
+  },
+
+  // ✏️ ATUALIZAR FORMA DE PAGAMENTO
+  async atualizar(id: number, forma: any): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando forma de pagamento ${id}...`, forma)
+      const response = await api.put(`/api/formas-pagamento/${id}`, forma)
+      devLog('✅ Forma de pagamento atualizada!')
+      return response.data
+    }, 'Não foi possível atualizar a forma de pagamento.')
+  },
+
+  // ✅ ATIVAR FORMA DE PAGAMENTO
+  async ativar(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✅ Ativando forma de pagamento ${id}...`)
+      await api.put(`/api/formas-pagamento/${id}/ativar`)
+      devLog('✅ Forma de pagamento ativada!')
+    }, 'Não foi possível ativar a forma de pagamento.')
+  },
+
+  // ❌ DESATIVAR FORMA DE PAGAMENTO
+  async desativar(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`❌ Desativando forma de pagamento ${id}...`)
+      await api.put(`/api/formas-pagamento/${id}/desativar`)
+      devLog('✅ Forma de pagamento desativada!')
+    }, 'Não foi possível desativar a forma de pagamento.')
+  },
+
+  // 🗑️ EXCLUIR FORMA DE PAGAMENTO
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo forma de pagamento ${id}...`)
+      await api.delete(`/api/formas-pagamento/${id}`)
+      devLog('✅ Forma de pagamento excluída!')
+    }, 'Não foi possível excluir a forma de pagamento.')
+  }
+}
+
 // 🔄 Exporta a instância do axios caso precise usar diretamente
 export { api }
 

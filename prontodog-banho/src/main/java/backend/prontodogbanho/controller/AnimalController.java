@@ -70,6 +70,17 @@ public class AnimalController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    public List<Animal> buscarPorCliente(@PathVariable Long clienteId) {
+        System.out.println("🔍 Buscando animais do cliente ID: " + clienteId);
+        List<Animal> animais = this.animalService.buscarPorCliente(clienteId);
+        System.out.println("✅ Encontrados " + animais.size() + " animais para o cliente " + clienteId);
+        for (Animal animal : animais) {
+            System.out.println("  - " + animal.getNome() + " (ID: " + animal.getId() + ")");
+        }
+        return animais;
+    }
+
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<Animal> criar(@RequestBody Animal novoAnimal) {
         Animal novoAnimalResponse = this.animalService.salvar(novoAnimal);

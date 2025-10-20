@@ -37,13 +37,16 @@ public class AnimalServico {
 
     @Column(name="data_pagamento")
     private LocalDate dataPagamento;
-
+  
     // 🎯 Campos para controle de serviços únicos (não-pacotes)
     @Column(name="status_servico")
     private String statusServico; // "pendente", "realizado"
 
     @Column(name="data_realizacao")
     private LocalDate dataRealizacao;
+
+    @Column(name="valor_cobrado", precision=10, scale=2)
+    private BigDecimal valorCobrado;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="animal_id", nullable = false)
@@ -78,8 +81,24 @@ public class AnimalServico {
     @JsonManagedReference("animal-servico-adicional")
     private List<ServicoAdicional> servicosAdicionais;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="venda_id")
+    @JsonBackReference("venda-animal-servico")
+    private Venda venda;
+
+    // Método para expor o vendaId no JSON
+    public Long getVendaId() {
+        return venda != null ? venda.getId() : null;
+    }
+
     // Métodos helper para cálculos financeiros
     public BigDecimal getValorTotalComAdicionais() {
+        // Se tem valor cobrado definido (quando está em uma venda), usar ele
+        if (valorCobrado != null) {
+            return valorCobrado;
+        }
+
+        // Senão, calcular valor de catálogo + adicionais
         BigDecimal valorPrincipal = servico != null && servico.getValor() != null ?
             BigDecimal.valueOf(servico.getValor()) : BigDecimal.ZERO;
 
@@ -89,6 +108,12 @@ public class AnimalServico {
                 .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
 
         return valorPrincipal.add(valorAdicionais);
+    }
+
+    // Expor valorTotalServico no JSON para o frontend usar
+    @com.fasterxml.jackson.annotation.JsonProperty("valorTotalServico")
+    public BigDecimal getValorTotalServico() {
+        return getValorTotalComAdicionais();
     }
 
     public BigDecimal getValorAdicionaisPagos() {

@@ -8,6 +8,8 @@ import backend.prontodogbanho.model.BanhoIndividual;
 import backend.prontodogbanho.model.Servico;
 import backend.prontodogbanho.model.ServicoAdicional;
 import backend.prontodogbanho.model.Usuario;
+import backend.prontodogbanho.model.Venda;
+import backend.prontodogbanho.model.VendaItem;
 import backend.prontodogbanho.repository.AnimalRepository;
 import backend.prontodogbanho.repository.AnimalServicoRepository;
 import backend.prontodogbanho.repository.BanhoIndividualRepository;
@@ -30,6 +32,7 @@ public class AnimalServicoService {
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ServicoAdicionalRepository servicoAdicionalRepository;
+    private VendaService vendaService;
 
     public AnimalServicoService(AnimalServicoRepository animalServicoRepository,
                               BanhoIndividualRepository banhoIndividualRepository,
@@ -43,6 +46,13 @@ public class AnimalServicoService {
         this.servicoRepository = servicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.servicoAdicionalRepository = servicoAdicionalRepository;
+    }
+
+    // Setter para injeção lazy e evitar dependência circular
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @org.springframework.context.annotation.Lazy
+    public void setVendaService(VendaService vendaService) {
+        this.vendaService = vendaService;
     }
 
     public List<AnimalServico> listarTodos() {
@@ -229,8 +239,57 @@ public class AnimalServicoService {
         return servicoAdicionalEntity;
     }
 
+    @Transactional
     public void deletar(Long id) {
-        animalServicoRepository.deleteById(id);
+        // Busca o serviço para verificar se está em uma venda
+        AnimalServico animalServico = animalServicoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+
+        // Se o serviço faz parte de uma venda, precisamos remover através da venda
+        if (animalServico.getVenda() != null) {
+            System.out.println("🔗 Serviço faz parte da venda #" + animalServico.getVenda().getCodigoVenda());
+            System.out.println("🗑️ Removendo através do VendaService para manter consistência...");
+
+            // Buscar o VendaItem correspondente
+            Venda venda = animalServico.getVenda();
+            Long vendaId = venda.getId();
+
+            // Precisamos encontrar o item da venda que corresponde a este animalServico
+            // Para isso, vamos usar o repository
+            if (vendaService != null) {
+                // Buscar o item manualmente
+                java.util.List<backend.prontodogbanho.model.VendaItem> itens =
+                    venda.getItens();
+
+                backend.prontodogbanho.model.VendaItem itemParaRemover = null;
+                for (backend.prontodogbanho.model.VendaItem item : itens) {
+                    if (item.getAnimalServico() != null &&
+                        item.getAnimalServico().getId().equals(id)) {
+                        itemParaRemover = item;
+                        break;
+                    }
+                }
+
+                if (itemParaRemover != null) {
+                    System.out.println("✅ Item encontrado: #" + itemParaRemover.getId());
+                    vendaService.removerItem(vendaId, itemParaRemover.getId());
+                    System.out.println("✅ Serviço removido da venda com sucesso!");
+                    return;
+                } else {
+                    System.err.println("❌ Item não encontrado na venda!");
+                    throw new RuntimeException("Item não encontrado na venda");
+                }
+            } else {
+                // Se vendaService não está disponível, apenas desvincular e deletar
+                System.out.println("⚠️ VendaService não disponível, desvinculando e deletando...");
+                animalServico.setVenda(null);
+                animalServicoRepository.save(animalServico);
+                animalServicoRepository.deleteById(id);
+            }
+        } else {
+            // Serviço não faz parte de uma venda, pode deletar diretamente
+            animalServicoRepository.deleteById(id);
+        }
     }
 
     @Transactional
@@ -605,6 +664,9 @@ public class AnimalServicoService {
 
     /**
      * Marca um serviço como pago
+     * IMPORTANTE: Serviços que fazem parte de uma venda NÃO podem ser marcados como pagos individualmente
+     * O pagamento deve ser feito através da venda
+     *
      * @param id ID do serviço
      * @param dataPagamento data do pagamento
      * @return serviço atualizado
@@ -615,6 +677,13 @@ public class AnimalServicoService {
 
         if (animalServicoOptional.isPresent()) {
             AnimalServico animalServico = animalServicoOptional.get();
+
+            // NOVA REGRA: Bloquear se estiver em uma venda
+            if (animalServico.getVenda() != null) {
+                throw new RuntimeException("❌ Este serviço faz parte da venda #" + animalServico.getVenda().getCodigoVenda() +
+                    ". O pagamento deve ser registrado através da venda, não individualmente.");
+            }
+
             animalServico.setStatusPagamento("pago");
             animalServico.setDataPagamento(dataPagamento != null ? dataPagamento : LocalDate.now());
 
@@ -626,6 +695,8 @@ public class AnimalServicoService {
 
     /**
      * Marca um serviço como cancelado
+     * IMPORTANTE: Serviços que fazem parte de uma venda NÃO podem ter status alterado individualmente
+     *
      * @param id ID do serviço
      * @return serviço atualizado
      */
@@ -635,6 +706,13 @@ public class AnimalServicoService {
 
         if (animalServicoOptional.isPresent()) {
             AnimalServico animalServico = animalServicoOptional.get();
+
+            // NOVA REGRA: Bloquear se estiver em uma venda
+            if (animalServico.getVenda() != null) {
+                throw new RuntimeException("❌ Este serviço faz parte da venda #" + animalServico.getVenda().getCodigoVenda() +
+                    ". O status de pagamento é controlado pela venda.");
+            }
+
             animalServico.setStatusPagamento("cancelado");
             animalServico.setDataPagamento(null);
 
@@ -646,6 +724,8 @@ public class AnimalServicoService {
 
     /**
      * Reativa um serviço (volta para em_aberto)
+     * IMPORTANTE: Serviços que fazem parte de uma venda NÃO podem ter status alterado individualmente
+     *
      * @param id ID do serviço
      * @return serviço atualizado
      */
@@ -655,6 +735,13 @@ public class AnimalServicoService {
 
         if (animalServicoOptional.isPresent()) {
             AnimalServico animalServico = animalServicoOptional.get();
+
+            // NOVA REGRA: Bloquear se estiver em uma venda
+            if (animalServico.getVenda() != null) {
+                throw new RuntimeException("❌ Este serviço faz parte da venda #" + animalServico.getVenda().getCodigoVenda() +
+                    ". O status de pagamento é controlado pela venda.");
+            }
+
             animalServico.setStatusPagamento("em_aberto");
             animalServico.setDataPagamento(null);
 
