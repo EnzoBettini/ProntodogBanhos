@@ -19,7 +19,12 @@ public record CriarServicoAdicionalDTO(
         BigDecimal valorUnitario, // Mudado para coincidir com o frontend
 
         String observacoes,
-        Long usuarioId // Opcional, pode ser preenchido pelo sistema
+        Long usuarioId, // Opcional, pode ser preenchido pelo sistema
+
+        // 🎯 Data de realização do serviço adicional
+        // Por padrão, herda do serviço pai (dataServico)
+        // Mas pode ser editada manualmente pelo usuário
+        LocalDate dataRealizacao
 
         // ❌ Removidos: statusPagamento e dataPagamento
         // 🎯 Sempre herdam automaticamente do serviço pai

@@ -951,7 +951,7 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseInput from '@/components/UI/BaseInput.vue'
 import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
-import { animalServicoService, animaisService, servicosService, usuariosService, banhosIndividuaisService, clientesService, type NovoBanhoIndividual } from '@/services/api'
+import { animalServicoService, animaisService, servicosService, usuariosService, banhosIndividuaisService, clientesService, servicosAdicionaisService, type NovoBanhoIndividual } from '@/services/api'
 import type { AnimalServico, Animal, ServicoCompleto, Usuario } from '@/types/api'
 
 const router = useRouter()
@@ -963,6 +963,7 @@ const animalServicos = ref<AnimalServico[]>([])
 const animais = ref<Animal[]>([])
 const servicos = ref<ServicoCompleto[]>([])
 const usuarios = ref<Usuario[]>([])
+const valoresAdicionais = ref<Map<number, number>>(new Map())
 
 // 📋 Estados do modal de banho
 const mostrarModalBanho = ref(false)
@@ -1320,7 +1321,9 @@ const getServicoDescricao = (animalServico: AnimalServico): string => {
 
 const getServicoValor = (animalServico: AnimalServico): number => {
   const servico = getServicoCompleto(animalServico)
-  return servico?.valor || 0
+  const valorPrincipal = servico?.valor || 0
+  const valorAdicionais = valoresAdicionais.value.get(animalServico.id) || 0
+  return valorPrincipal + valorAdicionais
 }
 
 const formatarValor = (valor: number): string => {
@@ -1479,6 +1482,10 @@ const carregarAnimalServicos = async (): Promise<void> => {
     if (animais.value.length > 0) {
       console.log('🔍 Estrutura do primeiro Animal (com cliente):', animais.value[0])
     }
+
+    // 💰 Carregar valores dos serviços adicionais para cada serviço
+    await carregarValoresAdicionais()
+
   } catch (err) {
     console.error('❌ Erro ao carregar animal serviços:', err)
     error.value = 'Erro ao carregar os dados. Tente novamente.'
@@ -1487,6 +1494,30 @@ const carregarAnimalServicos = async (): Promise<void> => {
   }
 }
 
+// 💰 Função para carregar valores dos serviços adicionais
+const carregarValoresAdicionais = async (): Promise<void> => {
+  console.log('💰 Carregando valores dos serviços adicionais...')
+  const novoMap = new Map<number, number>()
+  
+  await Promise.all(
+    animalServicos.value.map(async (animalServico) => {
+      try {
+        const valorAdicional = await servicosAdicionaisService.calcularValorTotal(animalServico.id)
+        novoMap.set(animalServico.id, valorAdicional)
+      } catch (err) {
+        console.error(`Erro ao carregar valor adicional do serviço ${animalServico.id}:`, err)
+        novoMap.set(animalServico.id, 0)
+      }
+    })
+  )
+  
+  valoresAdicionais.value = novoMap
+  console.log(`✅ Valores adicionais carregados para ${novoMap.size} serviços`)
+}
+
+const carregarMaisItens = (): void => {
+  itensExibidos.value += itensPorPagina.value
+}
 // 👀 Watchers para resetar paginação quando filtros mudam
 watch([filtroTexto, filtroExpiracao], () => {
   paginaAtual.value = 1

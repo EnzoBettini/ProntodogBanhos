@@ -69,6 +69,16 @@ public class ServicoAdicionalService {
 
         System.out.println("✅ Status e data herdados com sucesso!");
 
+        // 🎯 HERDAR OU DEFINIR DATA DE REALIZAÇÃO
+        // Se o DTO tiver dataRealizacao, usa ela; senão, herda do pai (dataServico)
+        if (dto.dataRealizacao() != null) {
+            servicoAdicional.setDataRealizacao(dto.dataRealizacao());
+            System.out.println("📅 Data de realização customizada: " + dto.dataRealizacao());
+        } else {
+            servicoAdicional.setDataRealizacao(animalServico.getDataServico());
+            System.out.println("📅 Data de realização herdada do pai: " + animalServico.getDataServico());
+        }
+
         servicoAdicional.setObservacoes(dto.observacoes());
         servicoAdicional.setUsuario(usuario);
         servicoAdicional.setDataAdicao(LocalDateTime.now());
@@ -197,6 +207,16 @@ public class ServicoAdicionalService {
         servicoAdicional.setDataPagamento(animalServicoPai.getDataPagamento());
 
         System.out.println("✅ Status e data herdados do pai na atualização!");
+
+        // 🎯 ATUALIZAR OU HERDAR DATA DE REALIZAÇÃO
+        // Se o DTO tiver dataRealizacao, usa ela; senão, herda do pai (dataServico)
+        if (dto.dataRealizacao() != null) {
+            servicoAdicional.setDataRealizacao(dto.dataRealizacao());
+            System.out.println("📅 Data de realização atualizada: " + dto.dataRealizacao());
+        } else {
+            servicoAdicional.setDataRealizacao(animalServicoPai.getDataServico());
+            System.out.println("📅 Data de realização herdada do pai: " + animalServicoPai.getDataServico());
+        }
 
         // Recalcular valor total
         servicoAdicional.calcularValorTotal();

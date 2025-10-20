@@ -711,14 +711,22 @@
                         <span>Quantidade: {{ adicional.quantidade }}</span>
                         <span>•</span>
                         <span>R$ {{ adicional.valorUnitario.toFixed(2).replace('.', ',') }} cada</span>
-                        <span v-if="adicional.statusPagamento !== 'em_aberto'">•</span>
-                        <BaseBadge
-                          v-if="adicional.statusPagamento !== 'em_aberto'"
-                          :variant="adicional.statusPagamento === 'pago' ? 'success' : 'warning'"
-                          size="sm"
-                        >
-                          {{ adicional.statusPagamento === 'pago' ? 'Pago' : 'Cancelado' }}
-                        </BaseBadge>
+                        <template v-if="adicional.dataRealizacao">
+                          <span>•</span>
+                          <span class="flex items-center gap-1">
+                            <FontAwesomeIcon :icon="['fas', 'calendar-check']" class="text-green-500 text-xs" />
+                            {{ formatarData(adicional.dataRealizacao) }}
+                          </span>
+                        </template>
+                        <template v-if="adicional.statusPagamento !== 'em_aberto'">
+                          <span>•</span>
+                          <BaseBadge
+                            :variant="adicional.statusPagamento === 'pago' ? 'success' : 'warning'"
+                            size="sm"
+                          >
+                            {{ adicional.statusPagamento === 'pago' ? 'Pago' : 'Cancelado' }}
+                          </BaseBadge>
+                        </template>
                       </div>
                       <p v-if="adicional.observacoes" class="text-xs text-gray-500 mt-1">
                         {{ adicional.observacoes }}
@@ -1013,6 +1021,23 @@
           </div>
         </div>
 
+        <!-- 🎯 Data de Realização -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <FontAwesomeIcon :icon="['fas', 'calendar-check']" class="text-green-600 mr-2" />
+            Data de Realização *
+          </label>
+          <input
+            v-model="formularioServicoAdicional.dataRealizacao"
+            type="date"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+          <p class="text-xs text-gray-500 mt-1">
+            Por padrão, usa a mesma data do serviço principal, mas você pode alterá-la.
+          </p>
+        </div>
+
         <!-- Observações -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -1094,6 +1119,23 @@
               <p>Sempre herdam automaticamente do serviço principal ({{ getStatusPagamentoTexto(animalServico?.statusPagamento || 'em_aberto') }}).</p>
             </div>
           </div>
+        </div>
+
+        <!-- 🎯 Data de Realização -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <FontAwesomeIcon :icon="['fas', 'calendar-check']" class="text-green-600 mr-2" />
+            Data de Realização *
+          </label>
+          <input
+            v-model="formularioServicoAdicional.dataRealizacao"
+            type="date"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+          <p class="text-xs text-gray-500 mt-1">
+            Você pode alterar a data de realização conforme necessário.
+          </p>
         </div>
 
         <!-- Observações -->
@@ -1367,8 +1409,8 @@ const formularioServicoAdicional = ref({
   valorUnitario: 0,
   valorOriginal: 0,
   observacoes: '',
-  alterarValor: false
-  // ❌ Removidos: statusPagamento e dataPagamento (sempre herdam do pai)
+  alterarValor: false,
+  dataRealizacao: ''
 })
 
 // Computadas
@@ -1718,8 +1760,8 @@ const editarServicoAdicional = (adicional: any): void => {
     valorUnitario: adicional.valorUnitario,
     valorOriginal: adicional.valorUnitario,
     observacoes: adicional.observacoes || '',
-    alterarValor: false
-    // ❌ Removidos: statusPagamento e dataPagamento (sempre herdam do pai)
+    alterarValor: false,
+    dataRealizacao: adicional.dataRealizacao || (animalServico.value?.dataServico || '')
   }
   mostrarModalEditarAdicional.value = true
 }
@@ -1749,8 +1791,8 @@ const adicionarNovoServicoAdicional = (): void => {
     valorUnitario: 0,
     valorOriginal: 0,
     observacoes: '',
-    alterarValor: false
-    // ❌ Removidos: statusPagamento e dataPagamento (sempre herdam do pai automaticamente)
+    alterarValor: false,
+    dataRealizacao: animalServico.value?.dataServico || ''
   }
 
   console.log('🎯 Novo serviço adicional (status e data herdarão do pai automaticamente)')
@@ -1770,8 +1812,8 @@ const salvarServicoAdicional = async (): Promise<void> => {
       quantidade: formularioServicoAdicional.value.quantidade,
       valorUnitario: formularioServicoAdicional.value.valorUnitario,
       observacoes: formularioServicoAdicional.value.observacoes,
-      usuarioId: usuario.value?.id || null
-      // ❌ Removidos: statusPagamento e dataPagamento (herdarão do pai no backend)
+      usuarioId: usuario.value?.id || null,
+      dataRealizacao: formularioServicoAdicional.value.dataRealizacao || undefined
     }
 
     if (formularioServicoAdicional.value.id) {
