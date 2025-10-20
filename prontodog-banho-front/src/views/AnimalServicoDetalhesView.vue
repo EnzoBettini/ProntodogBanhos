@@ -76,7 +76,7 @@
         </div>
 
         <!-- Grid principal reorganizado -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full pb-8">
 
           <!-- 📊 Coluna 1: Informações Principais -->
           <BaseCard class="shadow-xl border-0 w-full min-w-0">
@@ -1346,7 +1346,7 @@ import BaseButton from '@/components/UI/BaseButton.vue'
 import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
 import SearchSelect from '@/components/UI/SearchSelect.vue'
-import { animalServicoService, animaisService, servicosService, clientesService, usuariosService, banhosIndividuaisService, servicosAdicionaisService, type NovoBanhoIndividual, type BanhoIndividual } from '@/services/api'
+import { animalServicoService, animaisService, servicosService, clientesService, usuariosService, banhosIndividuaisService, servicosAdicionaisService, vendasService, type NovoBanhoIndividual, type BanhoIndividual } from '@/services/api'
 import type { AnimalServico, Animal, ServicoCompleto, Cliente, Usuario } from '@/types/api'
 import { formatarCpf, formatarTelefone, getIconeTipoAnimal } from '@/utils/formatters'
 
@@ -2361,18 +2361,51 @@ const salvarNovaData = async (): Promise<void> => {
 }
 
 // 🗑️ Funções de exclusão do animal serviço
-const confirmarExclusaoAnimalServico = (): void => {
+const confirmarExclusaoAnimalServico = async (): Promise<void> => {
   if (!animalServico.value || !animal.value || !servico.value) return
 
-  const confirmacao = window.confirm(
-    `🗑️ Tem certeza que deseja excluir este animal serviço?\n\n` +
+  let mensagemConfirmacao = `🗑️ Tem certeza que deseja excluir este animal serviço?\n\n` +
     `Animal: ${animal.value.nome}\n` +
     `Serviço: ${servico.value.nome}\n` +
     `Data: ${formatarData(animalServico.value.dataServico)}\n` +
-    `Banhos utilizados: ${animalServico.value.banhosUsados}/${servico.value.quantidade}\n\n` +
+    `Banhos utilizados: ${animalServico.value.banhosUsados}/${servico.value.quantidade}\n\n`
+
+  // 🔍 Se está vinculado a uma venda, verificar se é o último item
+  if (animalServico.value.vendaId) {
+    try {
+      // Buscar informações da venda
+      const venda = await vendasService.buscarPorId(animalServico.value.vendaId)
+
+      if (venda && venda.itens && venda.itens.length === 1) {
+        // ⚠️ É o último item da venda - aviso especial!
+        mensagemConfirmacao =
+          `🚨 ATENÇÃO: Este é o ÚLTIMO SERVIÇO desta venda!\n\n` +
+          `⚠️ Ao excluir este serviço, a VENDA INTEIRA será EXCLUÍDA automaticamente.\n\n` +
+          `📋 O que será removido:\n` +
+          `   • Venda #${venda.codigoVenda}\n` +
+          `   • ${venda.quantidadeBaixas || 0} pagamento(s) registrado(s)\n` +
+          `   • Serviço: ${servico.value.nome}\n` +
+          `   • Animal: ${animal.value.nome}\n` +
+          `   • Todos os banhos individuais\n\n` +
+          `💰 Valor total da venda: R$ ${(venda.valorTotal || 0).toFixed(2)}\n\n` +
+          `❓ Tem certeza que deseja continuar?`
+      } else {
+        // Item normal de uma venda com múltiplos itens
+        mensagemConfirmacao +=
+          `🧾 Este serviço faz parte da Venda #${venda.codigoVenda}\n` +
+          `(${venda.itens.length} itens no total)\n\n`
+      }
+    } catch (error) {
+      console.error('Erro ao buscar venda:', error)
+      // Se falhar ao buscar venda, continua com mensagem padrão
+    }
+  }
+
+  mensagemConfirmacao +=
     `⚠️ ATENÇÃO: Esta ação não poderá ser desfeita!\n` +
     `Todos os banhos individuais relacionados também serão excluídos.`
-  )
+
+  const confirmacao = window.confirm(mensagemConfirmacao)
 
   if (confirmacao) {
     excluirAnimalServico()
@@ -2382,6 +2415,8 @@ const confirmarExclusaoAnimalServico = (): void => {
 const excluirAnimalServico = async (): Promise<void> => {
   if (!animalServico.value) return
 
+  const eraUltimoItemDaVenda = animalServico.value.vendaId ? await verificarSeEUltimoItem(animalServico.value.vendaId) : false
+
   try {
     loading.value = true
     console.log(`🗑️ Excluindo animal serviço ID ${animalServico.value.id}...`)
@@ -2390,8 +2425,16 @@ const excluirAnimalServico = async (): Promise<void> => {
 
     console.log('✅ Animal serviço excluído com sucesso!')
 
-    // Mostrar feedback de sucesso
-    alert(`✅ Animal serviço de "${animal.value?.nome}" foi excluído com sucesso!\n\nVocê será redirecionado para a lista.`)
+    // Mensagem de sucesso diferente se excluiu a venda também
+    if (eraUltimoItemDaVenda) {
+      alert(
+        `✅ Operação concluída com sucesso!\n\n` +
+        `📋 O serviço foi excluído e a venda também foi removida (pois ficou sem itens).\n\n` +
+        `Você será redirecionado para a lista.`
+      )
+    } else {
+      alert(`✅ Animal serviço de "${animal.value?.nome}" foi excluído com sucesso!\n\nVocê será redirecionado para a lista.`)
+    }
 
     // Redirecionar para lista
     voltarParaLista()
@@ -2405,6 +2448,17 @@ const excluirAnimalServico = async (): Promise<void> => {
     alert(`❌ Não foi possível excluir este serviço\n\n${mensagem}`)
   } finally {
     loading.value = false
+  }
+}
+
+// Função auxiliar para verificar se é o último item da venda
+const verificarSeEUltimoItem = async (vendaId: number): Promise<boolean> => {
+  try {
+    const venda = await vendasService.buscarPorId(vendaId)
+    return venda && venda.itens && venda.itens.length === 1
+  } catch (error) {
+    console.error('Erro ao verificar itens da venda:', error)
+    return false
   }
 }
 
