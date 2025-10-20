@@ -88,6 +88,29 @@ const router = createRouter({
       name: 'style-guide',
       component: () => import('../views/StyleGuideView.vue'),
     },
+    // Rotas de Vendas
+    {
+      path: '/vendas',
+      name: 'vendas',
+      component: () => import('../views/VendasView.vue'),
+    },
+    {
+      path: '/vendas/novo',
+      name: 'vendas-novo',
+      component: () => import('../views/VendaNovaView.vue'),
+    },
+    {
+      path: '/vendas/:id',
+      name: 'vendas-detalhes',
+      component: () => import('../views/VendaDetalhesView.vue'),
+      props: true,
+    },
+    // Rotas de Formas de Pagamento
+    {
+      path: '/formas-pagamento',
+      name: 'formas-pagamento',
+      component: () => import('../views/FormasPagamentoView.vue'),
+    },
   ],
 })
 

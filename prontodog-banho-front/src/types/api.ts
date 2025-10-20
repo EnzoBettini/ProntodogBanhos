@@ -33,14 +33,16 @@ export interface AnimalServico {
   dataServico: string // formato: "YYYY-MM-DD"
   dataExpiracao?: string // formato: "YYYY-MM-DD" (opcional)
   banhosUsados: number
-  statusPagamento: string // "pago", "em_aberto", "cancelado"
+  statusPagamento: string // "pago", "em_aberto", "parcial", "cancelado"
   dataPagamento?: string // formato: "YYYY-MM-DD" (opcional)
-  valorTotalServico?: number // Valor total do serviço principal (novo campo)
   dataRealizacao?: string | null // formato: "YYYY-MM-DD" (opcional) - Data em que o serviço foi realizado
   statusServico?: string // "pendente", "realizado" - Status do serviço único
+  valorTotalServico?: number // Valor total do serviço principal (calcula automaticamente com desconto se em venda)
+  valorCobrado?: number // Valor efetivamente cobrado quando o serviço está em uma venda
   animalId?: number    // ID do animal (não vem o objeto completo devido ao @JsonBackReference)
   servicoId?: number   // ID do serviço (não vem o objeto completo devido ao @JsonBackReference)
   usuarioId?: number   // ID do usuário (não vem o objeto completo devido ao @JsonBackReference)
+  vendaId?: number     // ID da venda vinculada (se houver)
   animal?: Animal      // Para compatibilidade, mas pode ser undefined
   servico?: ServicoCompleto // Para compatibilidade, mas pode ser undefined
   servicosAdicionais?: ServicoAdicional[] // Lista de serviços adicionais associados
@@ -252,3 +254,164 @@ export const TIPOS_SERVICOS = [
 ] as const
 
 export type TipoServico = typeof TIPOS_SERVICOS[number]
+
+// =====================================================
+// 💰 SISTEMA DE VENDAS
+// =====================================================
+
+// 💳 Forma de Pagamento
+export interface FormaPagamento {
+  id: number
+  nome: string
+  tipo: 'dinheiro' | 'debito' | 'credito' | 'pix' | 'boleto' | 'outro'
+  taxaPercentual: number
+  taxaFixa: number
+  parcelasMax: number
+  diasRecebimento: number
+  ativo: boolean
+  createdAt: string
+}
+
+// 🛒 Venda (Resumo - para listagens)
+export interface VendaResumo {
+  id: number
+  codigoVenda: number
+  dataVenda: string
+  tipoVenda: 'presencial' | 'agendamento' | 'busca_entrega'
+  statusVenda: 'em_aberto' | 'pago' | 'parcial' | 'cancelado'
+  clienteId: number
+  clienteNome: string
+  usuarioId: number
+  usuarioNome: string
+  valorTotal: number
+  valorPago: number
+  valorPendente: number
+  quantidadeItens: number
+  quantidadeBaixas: number
+  percentualPago: number
+}
+
+// 🛒 Item da Venda (Detalhado)
+export interface VendaItemDetalhado {
+  id: number
+  animalServicoId: number
+  animalId: number
+  animalNome: string
+  animalTipo: string
+  animalRaca?: string
+  servicoId: number
+  servicoNome: string
+  valorItem: number
+  descontoItem: number
+  valorFinalItem: number
+  valorAdicionais: number
+  quantidadeAdicionais: number
+  observacoes?: string
+}
+
+// 💸 Baixa da Venda (Pagamento Detalhado)
+export interface VendaBaixaDetalhada {
+  id: number
+  dataBaixa: string
+  formaPagamentoId: number
+  formaPagamentoNome: string
+  formaPagamentoTipo: string
+  valorBaixa: number
+  valorTaxa: number
+  valorLiquido: number
+  numeroParcelas: number
+  dataPrimeiraParcela?: string
+  valorParcela: number
+  usuarioId: number
+  usuarioNome: string
+  observacoes?: string
+}
+
+// 🛒 Venda (Completa - para detalhes)
+export interface VendaCompleta {
+  id: number
+  codigoVenda: number
+  dataVenda: string
+  tipoVenda: 'presencial' | 'agendamento' | 'busca_entrega'
+  statusVenda: 'em_aberto' | 'pago' | 'parcial' | 'cancelado'
+  clienteId: number
+  clienteNome: string
+  clienteCpf?: string
+  usuarioId: number
+  usuarioNome: string
+  valorBruto: number
+  desconto: number
+  valorTotal: number
+  valorPago: number
+  valorPendente: number
+  percentualPago: number
+  quantidadeItens: number
+  quantidadeBaixas: number
+  observacoes?: string
+  canceladoEm?: string
+  motivoCancelamento?: string
+  itens: VendaItemDetalhado[]
+  baixas: VendaBaixaDetalhada[]
+}
+
+// 📝 Criar Venda - Item
+export interface CriarVendaItem {
+  // Para serviços que já existem como AnimalServico
+  animalServicoId?: number
+
+  // Para criar novos serviços na hora
+  animalId?: number // ID do animal
+  servicoId?: number // ID do serviço do catálogo
+
+  // Valores personalizados
+  valorItem?: number // Opcional, usa valor do serviço se não informado
+  descontoItem?: number
+  observacoes?: string
+}
+
+// 📝 Criar Venda
+export interface CriarVenda {
+  clienteId: number
+  usuarioId: number
+  tipoVenda?: 'presencial' | 'agendamento' | 'busca_entrega'
+  desconto?: number
+  observacoes?: string
+  animalServicoIds?: number[] // Opção 1: lista simples de IDs
+  itens?: CriarVendaItem[] // Opção 2: lista detalhada com valores customizados
+}
+
+// 📝 Atualizar Venda
+export interface AtualizarVenda {
+  tipoVenda?: string
+  desconto?: number
+  observacoes?: string
+  statusVenda?: string
+}
+
+// 📝 Cancelar Venda
+export interface CancelarVenda {
+  motivoCancelamento: string
+}
+
+// 📝 Criar Baixa (Registrar Pagamento)
+export interface CriarVendaBaixa {
+  vendaId: number
+  formaPagamentoId: number
+  valorBaixa: number
+  numeroParcelas?: number
+  dataPrimeiraParcela?: string // formato: "YYYY-MM-DD"
+  observacoes?: string
+  usuarioId: number
+}
+
+// 📊 Tipos de venda
+export const TIPOS_VENDA = ['presencial', 'agendamento', 'busca_entrega'] as const
+export type TipoVenda = typeof TIPOS_VENDA[number]
+
+// 📊 Status de venda
+export const STATUS_VENDA = ['em_aberto', 'pago', 'parcial', 'cancelado'] as const
+export type StatusVenda = typeof STATUS_VENDA[number]
+
+// 📊 Tipos de forma de pagamento
+export const TIPOS_FORMA_PAGAMENTO = ['dinheiro', 'debito', 'credito', 'pix', 'boleto', 'outro'] as const
+export type TipoFormaPagamento = typeof TIPOS_FORMA_PAGAMENTO[number]

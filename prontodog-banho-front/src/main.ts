@@ -79,7 +79,19 @@ import {
   faInbox,
   faCircle,
   faTag,
-  faShower
+  faShower,
+  faBoxOpen,
+  faStickyNote,
+  faStore,
+  faCalendarCheck,
+  faTruck,
+  faShoppingCart,
+  faCreditCard,
+  faReceipt,
+  faCalendar,
+  faTimesCircle,
+  faWallet,
+  faCut
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -152,7 +164,19 @@ library.add(
   faInbox,
   faCircle,
   faTag,
-  faShower
+  faShower,
+  faBoxOpen,
+  faStickyNote,
+  faStore,
+  faCalendarCheck,
+  faTruck,
+  faShoppingCart,
+  faCreditCard,
+  faReceipt,
+  faCalendar,
+  faTimesCircle,
+  faWallet,
+  faCut
 )
 
 const app = createApp(App)

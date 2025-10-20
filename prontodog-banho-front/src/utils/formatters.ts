@@ -111,3 +111,31 @@ export const getIconeTipoAnimal = (tipo: string): string => {
   }
   return icones[tipo] || '🐾'
 }
+
+/**
+ * 💰 FORMATAÇÃO DE VALORES MONETÁRIOS
+ * Formata número para formato brasileiro de moeda (R$)
+ */
+export const formatarValor = (valor: number | null | undefined): string => {
+  if (valor === null || valor === undefined) return 'R$ 0,00'
+
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+/**
+ * 💵 FORMATAÇÃO DE VALORES SEM SÍMBOLO
+ * Formata número para formato brasileiro sem o símbolo R$
+ */
+export const formatarNumero = (valor: number | null | undefined): string => {
+  if (valor === null || valor === undefined) return '0,00'
+
+  return valor.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
