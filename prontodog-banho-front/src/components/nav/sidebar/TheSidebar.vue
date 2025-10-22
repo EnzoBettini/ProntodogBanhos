@@ -86,6 +86,17 @@
         <SidebarItem title="Nova Venda" icon="plus" to="/vendas/novo" :collapsed="false" />
         <SidebarItem title="Formas de Pagamento" icon="credit-card" to="/formas-pagamento" :collapsed="false" />
       </SidebarDropdown>
+
+      <SidebarDropdown
+        title="Maquininhas"
+        icon="credit-card"
+        basePath="/maquininhas"
+        :collapsed="!sidebarStore.isOpen"
+      >
+        <SidebarItem title="Lista" icon="list" to="/maquininhas" :collapsed="false" />
+        <SidebarItem title="Nova Maquininha" icon="plus" to="/maquininhas/nova" :collapsed="false" />
+        <SidebarItem title="Fluxo de Caixa" icon="chart-line" to="/maquininhas/fluxo-caixa" :collapsed="false" />
+      </SidebarDropdown>
     </nav>
 
     <!-- ✨ Footer com gradiente sutil (apenas quando aberto) -->

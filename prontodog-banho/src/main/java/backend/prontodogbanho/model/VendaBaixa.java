@@ -58,6 +58,29 @@ public class VendaBaixa {
     @JsonBackReference("usuario-baixa")
     private Usuario usuario;
 
+    // Novos campos para suporte a maquininhas
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="maquininha_id")
+    @JsonBackReference("maquininha-baixa")
+    private Maquininha maquininha;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="bandeira_id")
+    @JsonBackReference("bandeira-baixa")
+    private Bandeira bandeira;
+
+    @Column(name="tipo_transacao", length=50)
+    private String tipoTransacao; // debito, credito_avista, credito_parcelado, pix
+
+    @Column(name="data_prevista_recebimento")
+    private LocalDate dataPrevistaRecebimento;
+
+    @Column(name="data_efetiva_recebimento")
+    private LocalDate dataEfetivaRecebimento;
+
+    @Column(name="status_recebimento", length=50)
+    private String statusRecebimento = "pendente"; // pendente, recebido, antecipado, estornado
+
     // Métodos helper para expor IDs
     public Long getVendaId() {
         return venda != null ? venda.getId() : null;
@@ -81,6 +104,22 @@ public class VendaBaixa {
 
     public String getUsuarioNome() {
         return usuario != null ? usuario.getNome() : null;
+    }
+
+    public Long getMaquininhaId() {
+        return maquininha != null ? maquininha.getId() : null;
+    }
+
+    public String getMaquininhaNome() {
+        return maquininha != null ? maquininha.getNome() : null;
+    }
+
+    public Long getBandeiraId() {
+        return bandeira != null ? bandeira.getId() : null;
+    }
+
+    public String getBandeiraNome() {
+        return bandeira != null ? bandeira.getNome() : null;
     }
 
     // Método para calcular taxa e valor líquido automaticamente
@@ -140,6 +179,86 @@ public class VendaBaixa {
         if (formaPagamento == null) return false;
         String tipo = formaPagamento.getTipo();
         return "debito".equals(tipo) || "credito".equals(tipo);
+    }
+
+    // Novos métodos para maquininhas
+    public boolean temMaquininha() {
+        return maquininha != null;
+    }
+
+    public boolean isDebito() {
+        return "debito".equalsIgnoreCase(tipoTransacao);
+    }
+
+    public boolean isCreditoAVista() {
+        return "credito_avista".equalsIgnoreCase(tipoTransacao);
+    }
+
+    public boolean isCreditoParcelado() {
+        return "credito_parcelado".equalsIgnoreCase(tipoTransacao);
+    }
+
+    public boolean isPixMaquininha() {
+        return "pix".equalsIgnoreCase(tipoTransacao);
+    }
+
+    public boolean isRecebimentoPendente() {
+        return "pendente".equalsIgnoreCase(statusRecebimento);
+    }
+
+    public boolean isRecebido() {
+        return "recebido".equalsIgnoreCase(statusRecebimento);
+    }
+
+    public boolean isAntecipado() {
+        return "antecipado".equalsIgnoreCase(statusRecebimento);
+    }
+
+    public boolean isEstornado() {
+        return "estornado".equalsIgnoreCase(statusRecebimento);
+    }
+
+    public boolean jaRecebeu() {
+        return dataEfetivaRecebimento != null;
+    }
+
+    // Calcular dias até recebimento
+    public Integer getDiasAteRecebimento() {
+        if (jaRecebeu() || dataPrevistaRecebimento == null) {
+            return 0;
+        }
+
+        LocalDate hoje = LocalDate.now();
+        if (dataPrevistaRecebimento.isBefore(hoje)) {
+            return 0; // Já passou da data
+        }
+
+        return (int) java.time.temporal.ChronoUnit.DAYS.between(hoje, dataPrevistaRecebimento);
+    }
+
+    // Verificar se está atrasado
+    public boolean isAtrasado() {
+        if (jaRecebeu()) return false;
+        if (dataPrevistaRecebimento == null) return false;
+        return dataPrevistaRecebimento.isBefore(LocalDate.now());
+    }
+
+    // Descrição do tipo de transação
+    public String getDescricaoTipoTransacao() {
+        if (tipoTransacao == null) return "-";
+
+        switch (tipoTransacao.toLowerCase()) {
+            case "debito":
+                return "Débito";
+            case "credito_avista":
+                return "Crédito à Vista";
+            case "credito_parcelado":
+                return "Crédito " + numeroParcelas + "x";
+            case "pix":
+                return "PIX";
+            default:
+                return tipoTransacao;
+        }
     }
 }
 

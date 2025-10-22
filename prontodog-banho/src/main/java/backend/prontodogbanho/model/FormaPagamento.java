@@ -1,5 +1,6 @@
 package backend.prontodogbanho.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,6 +47,12 @@ public class FormaPagamento {
     @Column(name="created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // Relacionamento opcional com maquininha
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="maquininha_id")
+    @JsonIgnore
+    private Maquininha maquininha;
+
     @OneToMany(mappedBy="formaPagamento", cascade=CascadeType.ALL)
     @JsonManagedReference("forma-pagamento-baixa")
     private List<VendaBaixa> baixas;
@@ -78,6 +85,16 @@ public class FormaPagamento {
     // Verificar se permite parcelamento
     public boolean permiteParcelamento() {
         return parcelasMax > 1;
+    }
+
+    // Helper para obter ID da maquininha (evita problemas de serialização)
+    public Long getMaquininhaId() {
+        return maquininha != null ? maquininha.getId() : null;
+    }
+
+    // Verificar se é uma forma de pagamento vinculada a maquininha
+    public boolean isMaquininha() {
+        return maquininha != null;
     }
 }
 

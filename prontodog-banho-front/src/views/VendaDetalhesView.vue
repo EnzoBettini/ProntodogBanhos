@@ -429,15 +429,145 @@
         </div>
 
         <div v-if="formaPagamentoSelecionada?.parcelasMax > 1">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Parcelas</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Parcelas
+            <span v-if="tipoTransacaoManual === 'debito'" class="text-xs text-orange-600 ml-2">
+              (débito não pode ser parcelado)
+            </span>
+            <span v-else-if="tipoTransacaoManual === 'pix'" class="text-xs text-orange-600 ml-2">
+              (PIX não pode ser parcelado)
+            </span>
+          </label>
           <select
             v-model.number="formPagamento.numeroParcelas"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500"
+            :disabled="tipoTransacaoManual === 'debito' || tipoTransacaoManual === 'pix'"
+            :class="[
+              'w-full px-4 py-2 border border-gray-300 rounded-lg',
+              tipoTransacaoManual === 'debito' || tipoTransacaoManual === 'pix'
+                ? 'bg-gray-100 cursor-not-allowed'
+                : 'focus:ring-2 focus:ring-violet-500'
+            ]"
           >
             <option v-for="n in formaPagamentoSelecionada.parcelasMax" :key="n" :value="n">
               {{ n }}x de {{ formatarMoeda((formPagamento.valorBaixa || 0) / n) }}
             </option>
           </select>
+        </div>
+
+        <!-- Campos de Maquininha (apenas se for débito/crédito/PIX) -->
+        <div v-if="usaMaquininha" class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+          <div class="flex items-center gap-2 mb-2">
+            <FontAwesome icon="credit-card" class="text-blue-600" />
+            <h4 class="font-semibold text-blue-900">Pagamento via Maquininha</h4>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Maquininha
+              <span v-if="formaPagamentoSelecionada?.maquininhaId" class="text-green-600 text-xs ml-2">
+                (vinculada automaticamente)
+              </span>
+            </label>
+            <select
+              v-model.number="formPagamento.maquininhaId"
+              :disabled="formaPagamentoSelecionada?.maquininhaId != null"
+              :class="[
+                'w-full px-4 py-2 border border-gray-300 rounded-lg',
+                formaPagamentoSelecionada?.maquininhaId
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-blue-500'
+              ]"
+            >
+              <option :value="null">Não informar maquininha</option>
+              <option v-for="maq in maquininhas" :key="maq.id" :value="maq.id">
+                {{ maq.nome }} - {{ maq.adquirenteNome }}
+              </option>
+            </select>
+          </div>
+
+          <!-- 1º: Tipo de Transação -->
+          <div v-if="formPagamento.maquininhaId">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Transação</label>
+            <select
+              v-model="tipoTransacaoManual"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Selecione o tipo...</option>
+              <option value="debito">Débito</option>
+              <option value="credito_avista" v-if="podeUsarCreditoAVista">Crédito à Vista</option>
+              <option value="credito_parcelado" v-if="podeUsarCreditoParcelado">Crédito Parcelado ({{ formPagamento.numeroParcelas }}x)</option>
+              <option value="pix" v-if="maquininhaSelecionadaAceitaPix">PIX</option>
+            </select>
+            <p class="text-xs text-blue-600 mt-2">
+              <FontAwesome icon="info-circle" class="mr-1" />
+              Selecione como o pagamento será processado na maquininha.
+            </p>
+          </div>
+
+          <!-- 2º: Bandeira do Cartão (só aparece se não for PIX) -->
+          <div v-if="formPagamento.maquininhaId && tipoTransacaoManual && tipoTransacaoManual !== 'pix'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Bandeira do Cartão
+              <span v-if="bandeirasDisponiveis.length === 0" class="text-orange-600 text-xs ml-2">
+                (nenhuma bandeira configurada)
+              </span>
+            </label>
+            <select
+              v-model.number="formPagamento.bandeiraId"
+              :disabled="bandeirasDisponiveis.length === 0"
+              :class="[
+                'w-full px-4 py-2 border border-gray-300 rounded-lg',
+                bandeirasDisponiveis.length === 0
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-blue-500'
+              ]"
+            >
+              <option :value="null">Selecione a bandeira...</option>
+              <option v-for="bandeira in bandeirasDisponiveis" :key="bandeira.id" :value="bandeira.id">
+                {{ bandeira.nome }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Preview do Cálculo -->
+          <div v-if="calculandoValor" class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex items-center gap-2 text-gray-600">
+              <FontAwesome icon="spinner" class="animate-spin" />
+              <span class="text-sm">Calculando valor com taxa...</span>
+            </div>
+          </div>
+
+          <div v-if="calculoMaquininha && !calculandoValor" class="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg">
+            <h5 class="font-semibold text-green-900 mb-3 flex items-center gap-2">
+              <FontAwesome icon="calculator" />
+              Resumo do Pagamento
+            </h5>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">Cliente paga:</span>
+                <span class="font-semibold text-gray-800">{{ formatarMoeda(calculoMaquininha.valorOriginal) }}</span>
+              </div>
+              <div class="flex justify-between items-center text-red-600">
+                <span class="flex items-center gap-1">
+                  <FontAwesome icon="minus" class="text-xs" />
+                  Taxa da maquininha ({{ calculoMaquininha.taxaPercentual }}%):
+                </span>
+                <span class="font-semibold">{{ formatarMoeda(calculoMaquininha.valorTaxa) }}</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t-2 border-green-300">
+                <span class="text-green-900 font-bold">Você recebe (líquido):</span>
+                <span class="font-bold text-lg text-green-900">{{ formatarMoeda(calculoMaquininha.valorFinal) }}</span>
+              </div>
+              <div class="flex justify-between items-center text-xs text-gray-600 pt-2 border-t border-green-200">
+                <span>Previsão de recebimento:</span>
+                <span class="font-semibold">{{ formatarData(calculoMaquininha.dataRecebimento) }}</span>
+              </div>
+              <div class="flex justify-between items-center text-xs text-gray-600">
+                <span>Parcelas:</span>
+                <span class="font-semibold">{{ formPagamento.numeroParcelas }}x de {{ formatarMoeda(calculoMaquininha.valorFinal / formPagamento.numeroParcelas) }}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -593,9 +723,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { vendasService, formasPagamentoService } from '@/services/api'
+import { vendasService, formasPagamentoService, maquininhasService, bandeirasService } from '@/services/api'
 import { FontAwesomeIcon as FontAwesome } from '@fortawesome/vue-fontawesome'
 import { formatarValor } from '@/utils/formatters'
 import BaseModal from '@/components/UI/BaseModal.vue'
@@ -608,17 +738,28 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 const formasPagamento = ref<any[]>([])
+const maquininhas = ref<any[]>([])
+const bandeiras = ref<any[]>([])
+const todasBandeiras = ref<any[]>([]) // Guarda todas as bandeiras
+const taxasMaquininha = ref<any[]>([]) // Taxas da maquininha selecionada
+const tipoTransacaoManual = ref<string>('') // Tipo selecionado manualmente
 const mostrarModalPagamento = ref(false)
 const mostrarModalAdicionarItem = ref(false)
 const animaisCliente = ref<any[]>([])
 const servicosCatalogo = ref<any[]>([])
+const calculoMaquininha = ref<any>(null)
+const calculandoValor = ref(false)
 
 const formPagamento = ref({
   formaPagamentoId: '',
   valorBaixa: 0,
   numeroParcelas: 1,
   observacoes: '',
-  usuarioId: 1 // TODO: pegar do contexto de autenticação
+  usuarioId: 1, // TODO: pegar do contexto de autenticação
+  // Campos opcionais para maquininhas
+  maquininhaId: null as number | null,
+  bandeiraId: null as number | null,
+  tipoTransacao: '' as string
 })
 
 const formNovoItem = ref({
@@ -641,6 +782,68 @@ const podeSalvarPagamento = computed(() => {
   return formPagamento.value.formaPagamentoId && formPagamento.value.valorBaixa > 0
 })
 
+const usaMaquininha = computed(() => {
+  const forma = formaPagamentoSelecionada.value
+  if (!forma) return false
+  // Verifica se a forma de pagamento tem maquininha vinculada
+  return forma.maquininhaId != null
+})
+
+// Verificar se maquininha selecionada aceita PIX
+const maquininhaSelecionadaAceitaPix = computed(() => {
+  if (!formPagamento.value.maquininhaId) return false
+  const maquininha = maquininhas.value.find(m => m.id === formPagamento.value.maquininhaId)
+  return maquininha?.aceitaPix === true
+})
+
+// Verificar se pode usar crédito à vista
+const podeUsarCreditoAVista = computed(() => {
+  return formPagamento.value.numeroParcelas === 1
+})
+
+// Verificar se pode usar crédito parcelado
+const podeUsarCreditoParcelado = computed(() => {
+  const forma = formaPagamentoSelecionada.value
+  // Só pode parcelar se:
+  // 1. Tiver mais de 1 parcela selecionada
+  // 2. Forma de pagamento permitir parcelamento (parcelasMax > 1)
+  return formPagamento.value.numeroParcelas > 1 && (forma?.parcelasMax || 1) > 1
+})
+
+// Filtrar bandeiras: mostrar apenas as que têm taxa cadastrada para esta maquininha
+const bandeirasDisponiveis = computed(() => {
+  if (!formPagamento.value.maquininhaId || taxasMaquininha.value.length === 0 || !tipoTransacaoManual.value) {
+    return []
+  }
+
+  const tipoTransacao = tipoTransacaoManual.value
+  const parcelas = formPagamento.value.numeroParcelas
+
+  // PIX não precisa de bandeira
+  if (tipoTransacao === 'pix') {
+    return []
+  }
+
+  // Buscar bandeiras que têm taxa para este tipo/parcelas
+  const bandeiraIdsDisponiveis = new Set(
+    taxasMaquininha.value
+      .filter(taxa => {
+        // Filtrar por tipo de transação
+        if (taxa.tipoTransacao !== tipoTransacao) return false
+
+        // Para parcelado, verificar número de parcelas
+        if (tipoTransacao === 'credito_parcelado' && taxa.numeroParcelas !== parcelas) {
+          return false
+        }
+
+        return true
+      })
+      .map(taxa => taxa.bandeiraId)
+  )
+
+  return todasBandeiras.value.filter(bandeira => bandeiraIdsDisponiveis.has(bandeira.id))
+})
+
 const carregarVenda = async () => {
   try {
     loading.value = true
@@ -660,6 +863,33 @@ const carregarFormasPagamento = async () => {
     formasPagamento.value = await formasPagamentoService.buscarAtivas()
   } catch (err) {
     console.error('Erro ao carregar formas de pagamento:', err)
+  }
+}
+
+const carregarMaquininhas = async () => {
+  try {
+    maquininhas.value = await maquininhasService.listarAtivas()
+  } catch (err) {
+    console.error('Erro ao carregar maquininhas:', err)
+  }
+}
+
+const carregarBandeiras = async () => {
+  try {
+    todasBandeiras.value = await bandeirasService.listarAtivas()
+  } catch (err) {
+    console.error('Erro ao carregar bandeiras:', err)
+  }
+}
+
+// Carregar taxas da maquininha selecionada
+const carregarTaxasMaquininha = async (maquininhaId: number) => {
+  try {
+    const response = await maquininhasService.buscarPorId(maquininhaId)
+    taxasMaquininha.value = response.taxas || []
+  } catch (err) {
+    console.error('Erro ao carregar taxas da maquininha:', err)
+    taxasMaquininha.value = []
   }
 }
 
@@ -691,8 +921,12 @@ const registrarPagamento = async () => {
       valorBaixa: 0,
       numeroParcelas: 1,
       observacoes: '',
-      usuarioId: 1
+      usuarioId: 1,
+      maquininhaId: null,
+      bandeiraId: null,
+      tipoTransacao: ''
     }
+    calculoMaquininha.value = null
   } catch (err: any) {
     alert('Erro ao registrar pagamento: ' + (err.message || 'Erro desconhecido'))
   }
@@ -1019,9 +1253,139 @@ const navegarParaAnimalServico = (animalServicoId: number) => {
   router.push(`/animal-servico/${animalServicoId}`)
 }
 
+// Calcular valor com taxa da maquininha
+const calcularValorComTaxa = async () => {
+  const tipoTransacao = tipoTransacaoManual.value
+
+  // Usar o valor que o usuário digitou, NÃO o valor pendente total
+  const valorDigitado = formPagamento.value.valorBaixa || 0
+
+  // PIX não precisa de bandeira, mas outros sim
+  const precisaBandeira = tipoTransacao !== 'pix'
+
+  // Só calcula se tiver maquininha, tipo e valor (bandeira só se não for PIX)
+  if (!formPagamento.value.maquininhaId ||
+      !tipoTransacao ||
+      (precisaBandeira && !formPagamento.value.bandeiraId) ||
+      valorDigitado <= 0) {
+    calculoMaquininha.value = null
+    return
+  }
+
+  try {
+    calculandoValor.value = true
+
+    const resultado = await maquininhasService.calcularValorFinal(
+      formPagamento.value.maquininhaId,
+      formPagamento.value.bandeiraId || 1, // PIX pode mandar qualquer bandeira (será ignorado no backend)
+      tipoTransacao,
+      formPagamento.value.numeroParcelas > 1 ? formPagamento.value.numeroParcelas : null,
+      valorDigitado
+    )
+
+    calculoMaquininha.value = resultado
+
+    // Atualizar o tipo de transação no form
+    formPagamento.value.tipoTransacao = tipoTransacao
+
+  } catch (error) {
+    console.error('Erro ao calcular valor:', error)
+    calculoMaquininha.value = null
+  } finally {
+    calculandoValor.value = false
+  }
+}
+
+// Watcher para pré-preencher maquininhaId ao selecionar forma de pagamento
+watch(
+  () => formPagamento.value.formaPagamentoId,
+  (novaFormaId) => {
+    const forma = formasPagamento.value.find(f => f.id === Number(novaFormaId))
+    if (forma?.maquininhaId) {
+      // Preenche automaticamente a maquininha vinculada
+      formPagamento.value.maquininhaId = forma.maquininhaId
+    } else {
+      // Limpa os campos de maquininha
+      formPagamento.value.maquininhaId = null
+      formPagamento.value.bandeiraId = null
+      formPagamento.value.tipoTransacao = ''
+      tipoTransacaoManual.value = ''
+      calculoMaquininha.value = null
+      taxasMaquininha.value = []
+    }
+  }
+)
+
+// Watcher para carregar taxas quando maquininha mudar
+watch(
+  () => formPagamento.value.maquininhaId,
+  async (novaMaquininhaId) => {
+    if (novaMaquininhaId) {
+      await carregarTaxasMaquininha(novaMaquininhaId)
+    } else {
+      taxasMaquininha.value = []
+    }
+    // Limpar bandeira e tipo ao mudar maquininha
+    formPagamento.value.bandeiraId = null
+    tipoTransacaoManual.value = ''
+    calculoMaquininha.value = null
+  }
+)
+
+// Watcher para limpar bandeira quando número de parcelas mudar
+watch(
+  () => formPagamento.value.numeroParcelas,
+  () => {
+    // Limpa bandeira e tipo pois as opções disponíveis mudaram
+    formPagamento.value.bandeiraId = null
+    tipoTransacaoManual.value = ''
+    calculoMaquininha.value = null
+  }
+)
+
+// Watcher para limpar bandeira quando tipo mudar + travar parcelas em débito/PIX
+watch(
+  () => tipoTransacaoManual.value,
+  (novoTipo) => {
+    // Se mudou para PIX, limpa bandeira E trava em 1x (PIX não parcela!)
+    if (novoTipo === 'pix') {
+      formPagamento.value.bandeiraId = null
+      formPagamento.value.numeroParcelas = 1
+    }
+
+    // Se mudou para DÉBITO, trava em 1 parcela (débito não parcela!)
+    if (novoTipo === 'debito') {
+      formPagamento.value.numeroParcelas = 1
+      formPagamento.value.bandeiraId = null
+    }
+
+    calculoMaquininha.value = null
+  }
+)
+
+// Watcher para recalcular quando mudar bandeira, tipo ou valor
+watch(
+  () => [formPagamento.value.bandeiraId, formPagamento.value.valorBaixa, tipoTransacaoManual.value],
+  () => {
+    const tipoTransacao = tipoTransacaoManual.value
+    const precisaBandeira = tipoTransacao !== 'pix'
+
+    if (formPagamento.value.maquininhaId &&
+        tipoTransacao &&
+        (!precisaBandeira || formPagamento.value.bandeiraId) &&
+        formPagamento.value.valorBaixa > 0) {
+      calcularValorComTaxa()
+    } else {
+      calculoMaquininha.value = null
+    }
+  }
+)
+
 onMounted(() => {
   carregarVenda()
   carregarFormasPagamento()
+  carregarMaquininhas()
+  carregarBandeiras()
 })
 </script>
 

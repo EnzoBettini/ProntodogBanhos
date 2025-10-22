@@ -966,6 +966,353 @@ export const formasPagamentoService = {
   }
 }
 
+// 🏦 SERVIÇOS DE MAQUININHAS
+// Aqui ficam todos os métodos relacionados ao sistema de maquininhas de cartão
+export const maquininhasService = {
+
+  // 📖 LISTAR TODAS AS MAQUININHAS
+  async listarTodas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏦 Buscando todas as maquininhas...')
+      const response = await api.get('/api/maquininhas')
+      devLog(`✅ ${response.data.length} maquininhas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as maquininhas.')
+  },
+
+  // 📖 LISTAR APENAS MAQUININHAS ATIVAS
+  async listarAtivas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏦 Buscando maquininhas ativas...')
+      const response = await api.get('/api/maquininhas/ativas')
+      devLog(`✅ ${response.data.length} maquininhas ativas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as maquininhas ativas.')
+  },
+
+  // 📖 LISTAR MAQUININHAS ATIVAS (RESUMO)
+  async listarAtivasResumo(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏦 Buscando resumo das maquininhas ativas...')
+      const response = await api.get('/api/maquininhas/ativas/resumo')
+      devLog(`✅ ${response.data.length} resumos encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar o resumo das maquininhas.')
+  },
+
+  // 🔍 BUSCAR MAQUININHA POR ID
+  async buscarPorId(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando maquininha com ID ${id}...`)
+      const response = await api.get(`/api/maquininhas/${id}`)
+      devLog('✅ Maquininha encontrada!')
+      return response.data
+    }, 'Não foi possível buscar a maquininha.')
+  },
+
+  // 💾 CRIAR NOVA MAQUININHA
+  async criar(dados: any): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('💾 Criando nova maquininha...', dados)
+      const response = await api.post('/api/maquininhas', dados)
+      devLog('✅ Maquininha criada com sucesso! ID:', response.data.id)
+      return response.data
+    }, 'Não foi possível criar a maquininha. Verifique os dados e tente novamente.')
+  },
+
+  // ✏️ ATUALIZAR MAQUININHA
+  async atualizar(id: number, dados: any): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando maquininha ${id}...`, dados)
+      const response = await api.put(`/api/maquininhas/${id}`, dados)
+      devLog('✅ Maquininha atualizada com sucesso!')
+      return response.data
+    }, 'Não foi possível atualizar a maquininha.')
+  },
+
+  // 🗑️ EXCLUIR MAQUININHA
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo maquininha ${id}...`)
+      await api.delete(`/api/maquininhas/${id}`)
+      devLog('✅ Maquininha excluída!')
+    }, 'Não foi possível excluir a maquininha.')
+  },
+
+  // ✅ ATIVAR MAQUININHA
+  async ativar(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✅ Ativando maquininha ${id}...`)
+      const response = await api.put(`/api/maquininhas/${id}/ativar`)
+      devLog('✅ Maquininha ativada!')
+      return response.data
+    }, 'Não foi possível ativar a maquininha.')
+  },
+
+  // 📊 LISTAR TAXAS DE UMA MAQUININHA
+  async listarTaxas(id: number): Promise<any[]> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`📊 Buscando taxas da maquininha ${id}...`)
+      const response = await api.get(`/api/maquininhas/${id}/taxas`)
+      devLog(`✅ ${response.data.length} taxas encontradas!`)
+      return response.data
+    }, 'Não foi possível buscar as taxas da maquininha.')
+  },
+
+  // ➕ ADICIONAR TAXA À MAQUININHA
+  async adicionarTaxa(id: number, taxa: any): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`➕ Adicionando taxa à maquininha ${id}...`, taxa)
+      const response = await api.post(`/api/maquininhas/${id}/taxas`, taxa)
+      devLog('✅ Taxa adicionada!')
+      return response.data
+    }, 'Não foi possível adicionar a taxa.')
+  },
+
+  // 🧮 CALCULAR TAXA PARA UMA TRANSAÇÃO
+  async calcularTaxa(maquininhaId: number, bandeiraId: number, tipoTransacao: string, numeroParcelas: number | null, valor: number): Promise<any> {
+    validateId(maquininhaId)
+    validateId(bandeiraId)
+    return withErrorHandling(async () => {
+      devLog(`🧮 Calculando taxa...`)
+      const params = new URLSearchParams({
+        bandeiraId: bandeiraId.toString(),
+        tipoTransacao,
+        valor: valor.toString()
+      })
+      if (numeroParcelas !== null) {
+        params.append('numeroParcelas', numeroParcelas.toString())
+      }
+      const response = await api.get(`/api/maquininhas/${maquininhaId}/calcular-taxa?${params}`)
+      devLog('✅ Taxa calculada!')
+      return response.data
+    }, 'Não foi possível calcular a taxa.')
+  },
+
+  // 💰 CALCULAR VALOR FINAL COM TAXA (repasse ao cliente)
+  async calcularValorFinal(maquininhaId: number, bandeiraId: number, tipoTransacao: string, numeroParcelas: number | null, valorOriginal: number): Promise<any> {
+    validateId(maquininhaId)
+    validateId(bandeiraId)
+    return withErrorHandling(async () => {
+      devLog(`💰 Calculando valor final com taxa...`)
+      const params = new URLSearchParams({
+        bandeiraId: bandeiraId.toString(),
+        tipoTransacao,
+        valorOriginal: valorOriginal.toString()
+      })
+      if (numeroParcelas !== null && numeroParcelas > 1) {
+        params.append('numeroParcelas', numeroParcelas.toString())
+      }
+      const response = await api.get(`/api/maquininhas/${maquininhaId}/calcular-valor-final?${params}`)
+      devLog('✅ Valor final calculado!', response.data)
+      return response.data
+    }, 'Não foi possível calcular o valor final.')
+  }
+}
+
+// 🏦 SERVIÇOS DE CONTAS BANCÁRIAS
+// Aqui ficam todos os métodos relacionados às contas bancárias
+export const contasBancariasService = {
+
+  // 📖 LISTAR TODAS AS CONTAS
+  async listarTodas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏦 Buscando todas as contas bancárias...')
+      const response = await api.get('/api/contas-bancarias')
+      devLog(`✅ ${response.data.length} contas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as contas bancárias.')
+  },
+
+  // 📖 LISTAR APENAS CONTAS ATIVAS
+  async listarAtivas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏦 Buscando contas bancárias ativas...')
+      const response = await api.get('/api/contas-bancarias/ativas')
+      devLog(`✅ ${response.data.length} contas ativas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as contas ativas.')
+  },
+
+  // 🔍 BUSCAR CONTA POR ID
+  async buscarPorId(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🔍 Buscando conta bancária com ID ${id}...`)
+      const response = await api.get(`/api/contas-bancarias/${id}`)
+      devLog('✅ Conta encontrada!')
+      return response.data
+    }, 'Não foi possível buscar a conta bancária.')
+  },
+
+  // 💾 CRIAR NOVA CONTA
+  async criar(dados: any): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog('💾 Criando nova conta bancária...', dados)
+      const response = await api.post('/api/contas-bancarias', dados)
+      devLog('✅ Conta criada com sucesso!')
+      return response.data
+    }, 'Não foi possível criar a conta bancária.')
+  },
+
+  // ✏️ ATUALIZAR CONTA
+  async atualizar(id: number, dados: any): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✏️ Atualizando conta bancária ${id}...`, dados)
+      const response = await api.put(`/api/contas-bancarias/${id}`, dados)
+      devLog('✅ Conta atualizada!')
+      return response.data
+    }, 'Não foi possível atualizar a conta bancária.')
+  },
+
+  // 🗑️ EXCLUIR CONTA
+  async excluir(id: number): Promise<void> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`🗑️ Excluindo conta bancária ${id}...`)
+      await api.delete(`/api/contas-bancarias/${id}`)
+      devLog('✅ Conta excluída!')
+    }, 'Não foi possível excluir a conta bancária.')
+  },
+
+  // ✅ ATIVAR CONTA
+  async ativar(id: number): Promise<any> {
+    validateId(id)
+    return withErrorHandling(async () => {
+      devLog(`✅ Ativando conta bancária ${id}...`)
+      const response = await api.put(`/api/contas-bancarias/${id}/ativar`)
+      devLog('✅ Conta ativada!')
+      return response.data
+    }, 'Não foi possível ativar a conta bancária.')
+  }
+}
+
+// 🏢 SERVIÇOS DE ADQUIRENTES
+// Aqui ficam todos os métodos relacionados aos adquirentes (empresas de maquininha)
+export const adquirentesService = {
+
+  // 📖 LISTAR TODOS OS ADQUIRENTES
+  async listarTodos(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏢 Buscando todos os adquirentes...')
+      const response = await api.get('/api/adquirentes')
+      devLog(`✅ ${response.data.length} adquirentes encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os adquirentes.')
+  },
+
+  // 📖 LISTAR APENAS ADQUIRENTES ATIVOS
+  async listarAtivos(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('🏢 Buscando adquirentes ativos...')
+      const response = await api.get('/api/adquirentes/ativos')
+      devLog(`✅ ${response.data.length} adquirentes ativos encontrados!`)
+      return response.data
+    }, 'Não foi possível carregar os adquirentes ativos.')
+  }
+}
+
+// 💳 SERVIÇOS DE BANDEIRAS
+// Aqui ficam todos os métodos relacionados às bandeiras de cartão
+export const bandeirasService = {
+
+  // 📖 LISTAR TODAS AS BANDEIRAS
+  async listarTodas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('💳 Buscando todas as bandeiras...')
+      const response = await api.get('/api/bandeiras')
+      devLog(`✅ ${response.data.length} bandeiras encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as bandeiras.')
+  },
+
+  // 📖 LISTAR APENAS BANDEIRAS ATIVAS
+  async listarAtivas(): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('💳 Buscando bandeiras ativas...')
+      const response = await api.get('/api/bandeiras/ativas')
+      devLog(`✅ ${response.data.length} bandeiras ativas encontradas!`)
+      return response.data
+    }, 'Não foi possível carregar as bandeiras ativas.')
+  }
+}
+
+// 📊 SERVIÇOS DE RECEBIMENTOS
+// Aqui ficam todos os métodos relacionados ao acompanhamento de recebimentos
+export const recebimentosService = {
+
+  // 📋 LISTAR RECEBIMENTOS PENDENTES
+  async listarPendentes(maquininhaId?: number, dataInicio?: string, dataFim?: string): Promise<any[]> {
+    return withErrorHandling(async () => {
+      devLog('📋 Buscando recebimentos pendentes...')
+      const params = new URLSearchParams()
+      if (maquininhaId) params.append('maquininhaId', maquininhaId.toString())
+      if (dataInicio) params.append('dataInicio', dataInicio)
+      if (dataFim) params.append('dataFim', dataFim)
+      const response = await api.get(`/api/recebimentos/pendentes?${params}`)
+      devLog(`✅ ${response.data.length} recebimentos pendentes encontrados!`)
+      return response.data
+    }, 'Não foi possível buscar os recebimentos pendentes.')
+  },
+
+  // ✅ MARCAR COMO RECEBIDO
+  async marcarComoRecebido(baixaId: number, dataRecebimento: string): Promise<any> {
+    validateId(baixaId)
+    return withErrorHandling(async () => {
+      devLog(`✅ Marcando baixa ${baixaId} como recebida...`)
+      const params = new URLSearchParams({ dataRecebimento })
+      const response = await api.put(`/api/recebimentos/${baixaId}/recebido?${params}`)
+      devLog('✅ Recebimento confirmado!')
+      return response.data
+    }, 'Não foi possível confirmar o recebimento.')
+  },
+
+  // 🔄 MARCAR COMO ANTECIPADO
+  async marcarComoAntecipado(baixaId: number, dataRecebimento: string, taxaAntecipacao: number): Promise<any> {
+    validateId(baixaId)
+    return withErrorHandling(async () => {
+      devLog(`🔄 Marcando baixa ${baixaId} como antecipada...`)
+      const params = new URLSearchParams({
+        dataRecebimento,
+        taxaAntecipacao: taxaAntecipacao.toString()
+      })
+      const response = await api.put(`/api/recebimentos/${baixaId}/antecipado?${params}`)
+      devLog('✅ Antecipação registrada!')
+      return response.data
+    }, 'Não foi possível registrar a antecipação.')
+  },
+
+  // ❌ MARCAR COMO ESTORNADO
+  async marcarComoEstornado(baixaId: number): Promise<any> {
+    validateId(baixaId)
+    return withErrorHandling(async () => {
+      devLog(`❌ Marcando baixa ${baixaId} como estornada...`)
+      const response = await api.put(`/api/recebimentos/${baixaId}/estornado`)
+      devLog('✅ Estorno registrado!')
+      return response.data
+    }, 'Não foi possível registrar o estorno.')
+  },
+
+  // 📊 BUSCAR PROJEÇÃO DE FLUXO DE CAIXA
+  async projecaoFluxoCaixa(diasFuturos: number = 30, maquininhaId?: number): Promise<any> {
+    return withErrorHandling(async () => {
+      devLog(`📊 Buscando projeção de fluxo de caixa para ${diasFuturos} dias...`)
+      const params = new URLSearchParams({ diasFuturos: diasFuturos.toString() })
+      if (maquininhaId) params.append('maquininhaId', maquininhaId.toString())
+      const response = await api.get(`/api/recebimentos/projecao-fluxo-caixa?${params}`)
+      devLog('✅ Projeção calculada!')
+      return response.data
+    }, 'Não foi possível calcular a projeção de fluxo de caixa.')
+  }
+}
+
 // 🔄 Exporta a instância do axios caso precise usar diretamente
 export { api }
 
