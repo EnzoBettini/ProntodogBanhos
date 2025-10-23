@@ -27,7 +27,7 @@ defineEmits<{
 
 const buttonClasses = computed(() => {
   const baseClasses =
-    'inline-flex items-center justify-center font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center font-semibold rounded-lg transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed'
 
   // Tamanhos
   const sizeClasses = {
@@ -38,12 +38,12 @@ const buttonClasses = computed(() => {
 
   // Variantes com nossa paleta Verde Natureza
   const variantClasses = {
-    primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500',
-    secondary: 'bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-500',
+    primary: 'bg-primary-500 text-white hover:bg-primary-600 border-2 border-transparent',
+    secondary: 'bg-secondary-500 text-white hover:bg-secondary-600 border-2 border-transparent',
     outline:
-      'border-2 border-primary-500 text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-    ghost: 'text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500',
+      'border-2 border-primary-500 text-primary-600 hover:bg-primary-50',
+    ghost: 'text-primary-600 hover:bg-primary-50 border-2 border-transparent',
+    danger: 'bg-red-500 text-white hover:bg-red-600 border-2 border-transparent',
   }
 
   return [

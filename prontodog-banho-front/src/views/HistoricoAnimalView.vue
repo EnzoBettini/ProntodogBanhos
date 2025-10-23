@@ -131,21 +131,30 @@
 
             <!-- Botões -->
             <div class="flex items-end gap-2">
-              <button
+              <BaseButton
+                variant="outline"
+                size="md"
                 @click="limparFiltros"
-                :disabled="!temFiltrosPreenchidos"
-                class="px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1"
               >
+                <FontAwesomeIcon :icon="['fas', 'times']" class="mr-2" />
                 Limpar
-              </button>
-              <button
+              </BaseButton>
+              <BaseButton
+                variant="primary"
+                size="md"
                 @click="buscarAnimaisFiltrados"
                 :disabled="carregandoAnimais || !temFiltrosPreenchidos"
-                class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 :title="!temFiltrosPreenchidos ? 'Preencha pelo menos um filtro para buscar' : ''"
+                class="flex-1"
               >
-                {{ carregandoAnimais ? 'Buscando...' : temFiltrosPreenchidos ? 'Buscar' : 'Preencha um filtro' }}
-              </button>
+                <FontAwesomeIcon 
+                  :icon="carregandoAnimais ? ['fas', 'spinner'] : ['fas', 'search']" 
+                  :class="{ 'animate-spin': carregandoAnimais }"
+                  class="mr-2" 
+                />
+                {{ carregandoAnimais ? 'Buscando...' : 'Buscar' }}
+              </BaseButton>
             </div>
           </div>
         </div>
@@ -360,6 +369,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import SearchSelect from '@/components/UI/SearchSelect.vue'
+import BaseButton from '@/components/UI/BaseButton.vue'
 import { animaisService } from '@/services/api'
 import type { Animal } from '@/types/api'
 import { formatarDataSegura } from '@/utils/formatters'
