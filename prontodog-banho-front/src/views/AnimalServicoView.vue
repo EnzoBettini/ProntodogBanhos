@@ -814,39 +814,41 @@
     </BaseModal>
 
     <!-- 🌊 Wave Footer Decoration -->
-    <div class="fixed bottom-0 left-0 right-0 w-full overflow-hidden z-10 pointer-events-none">
-      <svg
-        viewBox="0 0 1440 120"
-        class="w-full h-20 md:h-24"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <linearGradient id="animalServicoWave" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:0.9" />
-            <stop offset="25%" style="stop-color:#FBBF24;stop-opacity:0.8" />
-            <stop offset="50%" style="stop-color:#10B981;stop-opacity:0.8" />
-            <stop offset="75%" style="stop-color:#059669;stop-opacity:0.9" />
-            <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
-          </linearGradient>
-          <filter id="waveShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="-4" stdDeviation="8" flood-color="#000000" flood-opacity="0.15"/>
-          </filter>
-        </defs>
+    <div class="fixed bottom-0 left-0 right-0 overflow-hidden z-10 pointer-events-none">
+      <div :class="footerMarginClass" class="transition-all duration-300">
+        <svg
+          viewBox="0 0 1440 120"
+          class="w-full h-20 md:h-24"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="animalServicoWave" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:0.9" />
+              <stop offset="25%" style="stop-color:#FBBF24;stop-opacity:0.8" />
+              <stop offset="50%" style="stop-color:#10B981;stop-opacity:0.8" />
+              <stop offset="75%" style="stop-color:#059669;stop-opacity:0.9" />
+              <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+            </linearGradient>
+            <filter id="waveShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="-4" stdDeviation="8" flood-color="#000000" flood-opacity="0.15"/>
+            </filter>
+          </defs>
 
-        <!-- Wave principal -->
-        <path
-          d="M0,60 C120,45 240,30 360,45 C480,60 600,75 720,60 C840,45 960,30 1080,45 C1200,60 1320,75 1440,60 L1440,120 L0,120 Z"
-          fill="url(#animalServicoWave)"
-          filter="url(#waveShadow)"
-        />
+          <!-- Wave principal -->
+          <path
+            d="M0,60 C120,45 240,30 360,45 C480,60 600,75 720,60 C840,45 960,30 1080,45 C1200,60 1320,75 1440,60 L1440,120 L0,120 Z"
+            fill="url(#animalServicoWave)"
+            filter="url(#waveShadow)"
+          />
 
-        <!-- Wave secundária para profundidade -->
-        <path
-          d="M0,80 C150,65 300,50 450,65 C600,80 750,95 900,80 C1050,65 1200,50 1350,65 C1400,70 1420,75 1440,80 L1440,120 L0,120 Z"
-          fill="url(#animalServicoWave)"
-          opacity="0.6"
-        />
-      </svg>
+          <!-- Wave secundária para profundidade -->
+          <path
+            d="M0,80 C150,65 300,50 450,65 C600,80 750,95 900,80 C1050,65 1200,50 1350,65 C1400,70 1420,75 1440,80 L1440,120 L0,120 Z"
+            fill="url(#animalServicoWave)"
+            opacity="0.6"
+          />
+        </svg>
+      </div>
     </div>
   </div>
 </template>
@@ -953,8 +955,10 @@ import BaseModal from '@/components/UI/BaseModal.vue'
 import BaseBadge from '@/components/UI/BaseBadge.vue'
 import { animalServicoService, animaisService, servicosService, usuariosService, banhosIndividuaisService, clientesService, servicosAdicionaisService, type NovoBanhoIndividual } from '@/services/api'
 import type { AnimalServico, Animal, ServicoCompleto, Usuario } from '@/types/api'
+import { useSidebarStore } from '@/stores/sidebar'
 
 const router = useRouter()
+const sidebarStore = useSidebarStore()
 
 // 📊 Estados reativas
 const loading = ref(false)
@@ -1052,6 +1056,12 @@ const getStatusPagamentoTexto = (status: string): string => {
       return 'Indefinido'
   }
 }
+
+// 🎨 Computed property para margem do footer (respeitar sidebar)
+const footerMarginClass = computed(() => {
+  // Margem esquerda baseada no estado da sidebar
+  return sidebarStore.isOpen ? 'ml-64' : 'ml-20'
+})
 
 // 📄 Lista com filtros inteligentes aplicados
 const animalServicosFiltrados = computed(() => {
