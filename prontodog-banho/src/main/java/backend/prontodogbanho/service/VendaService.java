@@ -538,6 +538,15 @@ public class VendaService {
             baixa.setDataPrimeiraParcela(dto.getDataPrimeiraParcelaAsLocalDate());
         }
 
+        // 🔧 PREPARAÇÃO PARA INTEGRAÇÃO FUTURA: Campos de maquininha
+        // Por enquanto, apenas inicializa como null (não causa erro)
+        // TODO: Implementar lógica de maquininha quando integração estiver completa
+        baixa.setMaquininha(null);
+        baixa.setBandeira(null);
+        baixa.setTipoTransacao(null);
+        baixa.setDataPrevistaRecebimento(null);
+        baixa.setStatusRecebimento("pendente"); // Status padrão
+
         // Salvar (PrePersist calculará taxa e valor líquido)
         baixa = vendaBaixaRepository.save(baixa);
         System.out.println("💾 Baixa manual registrada: R$ " + baixa.getValorBaixa());

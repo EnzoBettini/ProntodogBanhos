@@ -111,6 +111,23 @@ const router = createRouter({
       name: 'formas-pagamento',
       component: () => import('../views/FormasPagamentoView.vue'),
     },
+    // Rotas de Maquininhas
+    {
+      path: '/maquininhas',
+      name: 'maquininhas',
+      component: () => import('../views/MaquininhasView.vue'),
+    },
+    {
+      path: '/maquininhas/nova',
+      name: 'maquininhas-nova',
+      component: () => import('../views/MaquininhasNovaView.vue'),
+    },
+    {
+      path: '/maquininhas/:id/editar',
+      name: 'maquininhas-editar',
+      component: () => import('../views/MaquininhasEditarView.vue'),
+      props: true,
+    },
   ],
 })
 

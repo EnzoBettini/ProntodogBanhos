@@ -1,6 +1,7 @@
 package backend.prontodogbanho.repository;
 
 import backend.prontodogbanho.model.FormaPagamento;
+import backend.prontodogbanho.model.Maquininha;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,8 @@ public interface FormaPagamentoRepository extends JpaRepository<FormaPagamento, 
     // Buscar formas que permitem parcelamento
     @Query("SELECT f FROM FormaPagamento f WHERE f.parcelasMax > 1 AND f.ativo = true")
     List<FormaPagamento> findFormasComParcelamento();
+
+    // Buscar forma de pagamento por maquininha
+    Optional<FormaPagamento> findByMaquininha(Maquininha maquininha);
 }
 

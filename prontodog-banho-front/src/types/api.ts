@@ -270,6 +270,7 @@ export interface FormaPagamento {
   diasRecebimento: number
   ativo: boolean
   createdAt: string
+  maquininhaId?: number | null // ID da maquininha vinculada (se for pagamento via maquininha)
 }
 
 // 🛒 Venda (Resumo - para listagens)
@@ -415,3 +416,112 @@ export type StatusVenda = typeof STATUS_VENDA[number]
 // 📊 Tipos de forma de pagamento
 export const TIPOS_FORMA_PAGAMENTO = ['dinheiro', 'debito', 'credito', 'pix', 'boleto', 'outro'] as const
 export type TipoFormaPagamento = typeof TIPOS_FORMA_PAGAMENTO[number]
+
+// 🏦 Sistema de Maquininhas
+
+// Conta Bancária
+export interface ContaBancaria {
+  id: number
+  nome: string
+  banco: string
+  agencia?: string
+  conta?: string
+  tipo: 'corrente' | 'poupanca' | 'pagamento'
+  pixChave?: string
+  ativo: boolean
+}
+
+// Adquirente
+export interface Adquirente {
+  id: number
+  nome: string
+  codigo: string
+  ativo: boolean
+}
+
+// Bandeira
+export interface Bandeira {
+  id: number
+  nome: string
+  codigo: string
+  ativo: boolean
+}
+
+// Taxa de Maquininha
+export interface MaquininhaTaxa {
+  id?: number
+  bandeiraId: number
+  bandeiraNome?: string
+  tipoTransacao: 'debito' | 'credito_avista' | 'credito_parcelado'
+  tipoTransacaoDescricao?: string
+  numeroParcelas?: number | null
+  taxaPercentual: number
+  taxaFixa?: number
+}
+
+// Maquininha Completa
+export interface Maquininha {
+  id: number
+  nome: string
+  ativo: boolean
+
+  // Adquirente
+  adquirenteId: number
+  adquirenteNome: string
+
+  // Conta bancária
+  contaBancariaId: number
+  contaBancariaNome: string
+
+  // Prazos
+  prazoRecebimentoDebito: number
+  prazoRecebimentoCredito: number
+
+  // Antecipação
+  aceitaAntecipacao: boolean
+  antecipacaoAutomatica: boolean
+  taxaAntecipacaoMensal: number
+
+  // PIX
+  aceitaPix: boolean
+  contaPixId?: number
+  contaPixNome?: string
+  taxaPix: number
+  prazoRecebimentoPix: number
+
+  // Taxas
+  taxas?: MaquininhaTaxa[]
+  totalTaxasConfiguradas?: number
+  totalBandeirasConfiguradas?: number
+
+  // Datas
+  createdAt?: string
+  updatedAt?: string
+}
+
+// Nova Maquininha (para criar)
+export interface NovaMaquininha {
+  nome: string
+  adquirenteId: number
+  contaBancariaId: number
+  prazoRecebimentoDebito: number
+  prazoRecebimentoCredito: number
+  aceitaAntecipacao: boolean
+  antecipacaoAutomatica: boolean
+  taxaAntecipacaoMensal: number
+  aceitaPix: boolean
+  contaPixId?: number | null
+  taxaPix: number
+  prazoRecebimentoPix: number
+  taxas?: MaquininhaTaxa[]
+}
+
+// Maquininha Resumo (para dropdowns)
+export interface MaquininhaResumo {
+  id: number
+  nome: string
+  adquirenteNome: string
+  contaBancariaNome: string
+  ativo: boolean
+  aceitaPix: boolean
+}
