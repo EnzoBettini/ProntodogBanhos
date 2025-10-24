@@ -63,8 +63,12 @@ public class FormaPagamento {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal taxaPerc = valor.multiply(taxaPercentual).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
-        return taxaPerc.add(taxaFixa);
+        // Garantir que taxas nunca sejam null
+        BigDecimal taxaPerc = taxaPercentual != null ? taxaPercentual : BigDecimal.ZERO;
+        BigDecimal taxaFix = taxaFixa != null ? taxaFixa : BigDecimal.ZERO;
+
+        BigDecimal taxaCalculadaPerc = valor.multiply(taxaPerc).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+        return taxaCalculadaPerc.add(taxaFix);
     }
 
     // Método helper para calcular valor líquido
@@ -74,6 +78,7 @@ public class FormaPagamento {
         }
 
         BigDecimal taxa = calcularTaxa(valorBruto);
+        // calcularTaxa() sempre retorna um valor válido (nunca null)
         return valorBruto.subtract(taxa);
     }
 

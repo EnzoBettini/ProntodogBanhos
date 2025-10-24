@@ -39,7 +39,7 @@ public class VendaBaixa {
     private BigDecimal valorTaxa = BigDecimal.ZERO;
 
     @Column(name="valor_liquido", precision=10, scale=2, nullable=false)
-    private BigDecimal valorLiquido;
+    private BigDecimal valorLiquido = BigDecimal.ZERO;
 
     @Column(name="data_baixa")
     private LocalDateTime dataBaixa = LocalDateTime.now();
@@ -126,14 +126,35 @@ public class VendaBaixa {
     @PrePersist
     @PreUpdate
     public void calcularValores() {
-        if (this.formaPagamento != null && this.valorBaixa != null) {
-            this.valorTaxa = this.formaPagamento.calcularTaxa(this.valorBaixa);
-            this.valorLiquido = this.valorBaixa.subtract(this.valorTaxa);
+        // Garantir que valorBaixa nunca seja null
+        if (this.valorBaixa == null) {
+            this.valorBaixa = BigDecimal.ZERO;
         }
+
+        // Calcular taxa
+        if (this.formaPagamento != null) {
+            BigDecimal taxaCalculada = this.formaPagamento.calcularTaxa(this.valorBaixa);
+            this.valorTaxa = taxaCalculada != null ? taxaCalculada : BigDecimal.ZERO;
+        } else {
+            this.valorTaxa = BigDecimal.ZERO;
+        }
+
+        // Garantir que valorTaxa nunca seja null antes de calcular valorLiquido
+        if (this.valorTaxa == null) {
+            this.valorTaxa = BigDecimal.ZERO;
+        }
+
+        // Calcular valor líquido (sempre seguro agora)
+        this.valorLiquido = this.valorBaixa.subtract(this.valorTaxa);
 
         // Se não definiu data da primeira parcela, usar data da baixa
         if (this.dataPrimeiraParcela == null && this.dataBaixa != null) {
             this.dataPrimeiraParcela = this.dataBaixa.toLocalDate();
+        }
+
+        // Inicializar statusRecebimento se null
+        if (this.statusRecebimento == null) {
+            this.statusRecebimento = "pendente";
         }
     }
 
