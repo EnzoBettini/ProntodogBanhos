@@ -91,7 +91,11 @@ import {
   faCalendar,
   faTimesCircle,
   faWallet,
-  faCut
+  faCut,
+  faWandMagicSparkles,
+  faBuilding,
+  faBolt,
+  faPercent
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -176,7 +180,11 @@ library.add(
   faCalendar,
   faTimesCircle,
   faWallet,
-  faCut
+  faCut,
+  faWandMagicSparkles,
+  faBuilding,
+  faBolt,
+  faPercent
 )
 
 const app = createApp(App)
