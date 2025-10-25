@@ -446,24 +446,63 @@
           </div>
         </BaseCard>
 
+        <!-- 📊 Card de Acesso Rápido ao Histórico -->
+        <!-- <BaseCard class="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200 animate-fade-in-up">
+          <div class="flex gap-4">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FontAwesomeIcon :icon="['fas', 'chart-line']" class="text-white text-lg animate-pulse" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-emerald-800 mb-2 flex items-center gap-2">
+                <FontAwesomeIcon :icon="['fas', 'history']" class="text-emerald-600" />
+                Acesso Rápido ao Histórico
+              </h3>
+              <p class="text-sm text-emerald-700 mb-3">
+                Visualize todos os serviços e procedimentos realizados neste animal com apenas um clique!
+              </p>
+              <div class="flex items-start gap-2 text-xs text-emerald-600 bg-white/60 rounded-lg p-3 border border-emerald-200">
+                <FontAwesomeIcon :icon="['fas', 'lightbulb']" class="text-yellow-500 mt-0.5" />
+                <div>
+                  <strong>Dica:</strong> O botão "Ver Histórico Completo" abaixo leva você diretamente para a página de histórico com este animal já selecionado, economizando tempo de navegação.
+                </div>
+              </div>
+            </div>
+          </div>
+        </BaseCard> -->
+
         <!-- 🎯 Botões de Ação -->
         <div class="flex flex-col sm:flex-row gap-4 justify-between animate-fade-in-up">
           <div class="flex flex-col sm:flex-row gap-4">
+            <!-- Botão Voltar -->
             <RouterLink to="/animais">
               <button
                 type="button"
-                class="w-full sm:w-auto px-8 py-3 text-lg font-medium border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-800 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+                class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 gap-2 whitespace-nowrap min-h-[52px]"
               >
                 <FontAwesomeIcon :icon="['fas', 'arrow-left']" />
                 Voltar
               </button>
             </RouterLink>
 
+            <!-- Botão Ver Histórico Completo -->
+            <RouterLink :to="`/historico?animalId=${animalId}`">
+              <button
+                type="button"
+                class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3 text-lg font-semibold border-2 border-emerald-400 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 gap-2 whitespace-nowrap min-h-[52px]"
+              >
+                <FontAwesomeIcon :icon="['fas', 'chart-line']" class="animate-pulse" />
+                Ver Histórico Completo
+              </button>
+            </RouterLink>
+
+            <!-- Botão Excluir Animal -->
             <BaseButton
               @click="confirmarExclusao"
               variant="danger"
               :disabled="loading || excluindo"
-              class="w-full sm:w-auto px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              class="w-full sm:w-auto px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 whitespace-nowrap min-h-[52px]"
             >
               <FontAwesomeIcon
                 v-if="excluindo"
@@ -479,11 +518,12 @@
             </BaseButton>
           </div>
 
+          <!-- Botão Salvar Alterações -->
           <BaseButton
             type="submit"
             variant="primary"
             :disabled="loading || excluindo"
-            class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0"
+            class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 whitespace-nowrap min-h-[52px]"
           >
             <FontAwesomeIcon
               v-if="loading"
