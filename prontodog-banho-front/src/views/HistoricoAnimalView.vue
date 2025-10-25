@@ -29,8 +29,22 @@
             </div>
           </div>
 
-          <!-- Botão de atualizar -->
+          <!-- Botões de ação -->
           <div class="flex items-center gap-3">
+            <!-- Botão Voltar ao Perfil (só aparece quando vem do perfil) -->
+            <button
+              v-if="veioDoPerfilAnimal"
+              @click="voltarAoPerfil"
+              class="group flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 backdrop-blur-sm text-white rounded-xl hover:bg-opacity-30 transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40 transform hover:-translate-y-1 hover:shadow-lg"
+            >
+              <FontAwesomeIcon
+                :icon="['fas', 'arrow-left']"
+                class="group-hover:-translate-x-1 transition-transform duration-300"
+              />
+              <span class="font-medium">Voltar ao Perfil</span>
+            </button>
+
+            <!-- Botão de atualizar -->
             <button
               v-if="animalSelecionado"
               @click="carregarHistorico"
@@ -159,6 +173,34 @@
           </div>
         </div>
       </div>
+
+      <!-- 🎯 Card Informativo: Veio do Perfil do Animal -->
+      <!-- <div v-if="veioDoPerfilAnimal && animalSelecionado" class="max-w-4xl mx-auto mb-8">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg border border-blue-200/80 p-6 animate-fade-in-up">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FontAwesomeIcon :icon="['fas', 'info-circle']" class="text-white text-lg animate-pulse" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <FontAwesomeIcon :icon="['fas', 'paw']" class="text-blue-600" />
+                Você está visualizando o histórico completo
+              </h3>
+              <p class="text-sm text-blue-700 mb-3">
+                Navegação direta a partir do perfil de <strong>{{ animalSelecionado.nome }}</strong>
+              </p>
+              <div class="flex items-start gap-2 text-xs text-blue-600 bg-white/60 rounded-lg p-3 border border-blue-200">
+                <FontAwesomeIcon :icon="['fas', 'arrow-left']" class="text-blue-500 mt-0.5" />
+                <div>
+                  Use o botão <strong>"Voltar ao Perfil"</strong> no topo da página para retornar à edição do animal.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
 
       <!-- Seleção de Animal -->
       <div class="max-w-4xl mx-auto mb-8">
@@ -368,17 +410,26 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { useRoute, useRouter } from 'vue-router'
 import SearchSelect from '@/components/UI/SearchSelect.vue'
 import BaseButton from '@/components/UI/BaseButton.vue'
 import { animaisService } from '@/services/api'
 import type { Animal } from '@/types/api'
 import { formatarDataSegura } from '@/utils/formatters'
 
+// Route e Router para navegação
+const route = useRoute()
+const router = useRouter()
+
 // Estados reativos
 const animalSelecionadoId = ref<number | string>('')
 const animalSelecionado = ref<Animal | null>(null)
 const carregandoAnimais = ref(false)
 const carregandoHistorico = ref(false)
+
+// Controle de navegação (detecta se veio do perfil)
+const veioDoPerfilAnimal = ref(false)
+const animalIdOriginal = ref<number | null>(null)
 
 // Dados
 const animais = ref<Animal[]>([])
@@ -548,6 +599,13 @@ const carregarHistorico = async (): Promise<void> => {
   }
 }
 
+// Voltar ao perfil do animal (quando veio do perfil)
+const voltarAoPerfil = (): void => {
+  if (animalIdOriginal.value) {
+    router.push(`/animais/${animalIdOriginal.value}/editar`)
+  }
+}
+
 // Classes de estilo baseadas no status
 const getStatusBorderClass = (status: string): string => {
   const classes = {
@@ -599,10 +657,59 @@ const formatarData = (data: string | null): string => {
   return formatarDataSegura(data)
 }
 
+// Carregar animal específico por ID (quando vir da URL)
+const carregarAnimalPorId = async (animalId: number): Promise<void> => {
+  try {
+    console.log('Carregando animal por ID da URL:', animalId)
+    carregandoAnimais.value = true
+
+    // Marcar que veio do perfil do animal
+    veioDoPerfilAnimal.value = true
+    animalIdOriginal.value = animalId
+
+    // Buscar o animal específico
+    const animal = await animaisService.buscarPorId(animalId)
+
+    if (animal) {
+      // Adicionar à lista de animais
+      animais.value = [animal]
+      prepararDadosAnimais()
+
+      // Selecionar automaticamente
+      animalSelecionadoId.value = animal.id
+      animalSelecionado.value = animal
+
+      // Carregar histórico
+      await carregarHistorico()
+
+      console.log('Animal carregado e histórico exibido:', animal.nome)
+    }
+  } catch (error) {
+    console.error('Erro ao carregar animal por ID:', error)
+  } finally {
+    carregandoAnimais.value = false
+  }
+}
+
 // Inicialização
 onMounted(() => {
-  console.log('Componente montado! Aguardando filtros para buscar...')
-  // Não busca automaticamente - aguarda o usuário preencher filtros
+  console.log('Componente montado!')
+
+  // Verificar se há um animalId na URL
+  const animalIdParam = route.query.animalId
+
+  if (animalIdParam) {
+    const animalId = Number(animalIdParam)
+    if (!isNaN(animalId) && animalId > 0) {
+      console.log('Detectado animalId na URL:', animalId)
+      carregarAnimalPorId(animalId)
+    } else {
+      console.log('animalId inválido na URL:', animalIdParam)
+    }
+  } else {
+    console.log('Aguardando filtros para buscar...')
+    // Não busca automaticamente - aguarda o usuário preencher filtros
+  }
 })
 </script>
 
